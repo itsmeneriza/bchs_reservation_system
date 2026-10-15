@@ -396,6 +396,7 @@ app.patch('/api/requests/:id', (req, res) => {
     // Read current requests.json
     const requestsPath = path.join(repoDataDir, 'requests.json');
     const requestsData = fs.existsSync(requestsPath) ? JSON.parse(fs.readFileSync(requestsPath, 'utf8')) : { requests: [] };
+    const requestIndex = requestsData.requests.findIndex(r => r.id === requestId);
     
     // Strip internal flag before saving (hoisted so it's available throughout)
     const { _editedByUser, rescheduleOptionIndex, ...cleanUpdates } = updates;
@@ -453,9 +454,6 @@ app.patch('/api/requests/:id', (req, res) => {
         }
       }
     }
-
-    // Find and update the request (upsert: if not found, add it)
-    const requestIndex = requestsData.requests.findIndex(r => r.id === requestId);
 
     if (Object.prototype.hasOwnProperty.call(updates, 'rescheduleOptionIndex')) {
       if (requestIndex === -1) {
