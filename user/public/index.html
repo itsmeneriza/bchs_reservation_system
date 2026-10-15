@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCHS Facility Reservation - Baguio City High School</title>
+    <link rel="stylesheet" href="/src/styles/common.css">
+    <link rel="stylesheet" href="/src/styles/landing.css">
+</head>
+<body>
+    <div class="landing-page">
+        <!-- Header -->
+        <header class="landing-header">
+            <div class="landing-header-content">
+                <div class="landing-logo-section">
+                    <div class="landing-logo">
+                        <img src="../src/styles/BCHS_logo.jpg " alt="City High School Logo">
+                    </div>
+                    <div class="landing-title">
+                        <h1>BCHS Facility Reservation</h1>
+                        <p>Baguio City High School</p>
+                    </div>
+                </div>
+                <nav class="landing-nav">
+                    <div class="book-dropdown">
+                        <button class="btn btn-primary" onclick="window.location.href='reservation.html'">
+                            Book a Room
+                        </button>
+                        <div class="book-dropdown-menu">
+                            <a href="reservation.html#calendar">Reservation Calendar</a>
+                            <a href="reservation.html#my-requests">My Requests</a>
+                            <a href="reservation.html#forecast">Booking Forecast</a>
+                            <a href="reservation.html#policy">Policy</a>
+                        </div>
+                    </div>
+                    <!-- Auth -->
+                    <div id="landing-auth-unlogged">
+                        <button class="btn btn-secondary" id="landing-login-btn">Login</button>
+                    </div>
+                    <div id="landing-auth-logged" style="display:none;">
+                        <div id="landing-profile-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span id="landing-user-name"></span>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="landing-main">
+            <!-- Left Side - Events -->
+            <div class="landing-content">
+                <!-- Hero Section -->
+                <div class="landing-hero">
+                    <h2>Welcome to BCHS</h2>
+                    <p>Discover and reserve facilities at Baguio City High School for your activities with ease.</p>
+                    <div class="landing-hero-buttons">
+                        <button class="btn btn-primary" onclick="window.location.href='reservation.html'">
+                            Start reservation
+                        </button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('upcoming').scrollIntoView({ behavior: 'smooth' })">
+                            View Events
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Events Section -->
+                <div class="landing-section">
+                    <div class="events-section-header">
+                        <div class="events-toggle">
+                            <button class="toggle-btn active" data-target="upcoming">Upcoming</button>
+                            <button class="toggle-btn" data-target="past">Past</button>
+                        </div>
+                    </div>
+                    <div id="upcoming" class="events-panel active">
+                        <h3>Upcoming Events</h3>
+                        <div id="upcoming-events-grid" class="event-grid">
+                            <p class="empty-message">Loading events...</p>
+                        </div>
+                    </div>
+                    <div id="past" class="events-panel">
+                        <h3>Past Events</h3>
+                        <div id="past-events-grid" class="event-grid">
+                            <p class="empty-message">Loading events...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Background Image -->
+            <div class="landing-background">
+                <div class="landing-background-sticky">
+                    <div class="landing-background-overlay">
+                        <h2>Excellence in Education</h2>
+                        <p>reservation made easy with Baguio City National High School</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="landing-login-modal" class="landing-modal">
+        <div class="landing-modal-box">
+            <div class="landing-modal-header">
+                <h2>BCHS Portal Login</h2>
+                <button id="landing-login-close" class="landing-modal-close">&times;</button>
+            </div>
+            <form id="landing-login-form">
+                <div class="landing-staff-toggle-row">
+                    <span>Staff member?</span>
+                    <label class="landing-switch">
+                        <input type="checkbox" id="landing-staff-toggle">
+                        <span id="landing-slider" class="landing-slider"></span>
+                    </label>
+                </div>
+                <div id="landing-phone-group" class="landing-form-group">
+                    <label>Phone Number *</label>
+                    <div style="display:flex;align-items:center;border:1px solid #cbd5e1;border-radius:0.5rem;overflow:hidden;background:white;">
+                        <span style="padding:0.6rem 0.75rem;background:#f1f5f9;color:#475569;font-size:0.875rem;font-weight:600;border-right:1px solid #cbd5e1;white-space:nowrap;">+63</span>
+                        <input type="tel" id="landing-phone" placeholder="9171234567" pattern="9\d{9}" maxlength="10"
+                            style="border:none;outline:none;padding:0.6rem 0.75rem;font-size:0.875rem;width:100%;background:transparent;">
+                    </div>
+                    <small style="color:#64748b;font-size:0.72rem;margin-top:0.25rem;display:block;">10 digits after +63 (e.g. 9171234567)</small>
+                </div>
+                <div id="landing-staffid-group" class="landing-form-group" style="display:none;">
+                    <label>Staff ID *</label>
+                    <input type="text" id="landing-staffid" placeholder="Enter Staff ID">
+                </div>
+                <div id="landing-login-error" class="landing-error"></div>
+                <button type="submit" class="landing-submit-btn">Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Menu -->
+    <div id="landing-user-menu" class="landing-modal">
+        <div class="landing-modal-box" style="max-width:360px;">
+            <div class="landing-modal-header">
+                <h2>Profile</h2>
+                <button id="landing-menu-close" class="landing-modal-close">&times;</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+                <div class="landing-avatar" id="landing-user-initial">U</div>
+                <div>
+                    <div id="landing-profile-name" style="font-weight:700;color:#1e293b;font-size:0.95rem;"></div>
+                    <div id="landing-profile-type" style="font-size:0.78rem;color:#64748b;"></div>
+                </div>
+            </div>
+            <button id="landing-logout-btn" class="landing-logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <script src="/src/landing.js"></script>
+    <script type="module" src="/src/components/landing-auth.js"></script>
+</body>
+</html>

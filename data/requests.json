@@ -1,0 +1,351 @@
+{
+  "requests": [
+    {
+      "id": "1790297213496",
+      "roomId": "gym",
+      "roomName": "gym",
+      "totalAmount": 3800,
+      "paymentStatus": "paid",
+      "isStaff": false,
+      "name": "Florest",
+      "email": "Ellice@gmail.com",
+      "contact": "09276163474",
+      "date": "2026-10-30",
+      "startTime": "13:00",
+      "endTime": "16:00",
+      "attendees": 150,
+      "purpose": "Cultural Event",
+      "additionalNotes": "Podium",
+      "status": "approved",
+      "submittedAt": "2026-09-25T00:46:53.495Z",
+      "appointmentDate": "2026-09-25",
+      "appointmentTime": "6:00 PM",
+      "adminEditSnapshot": {
+        "changedAt": "2026-09-25T10:32:33.527Z",
+        "changes": {
+          "roomName": {
+            "before": "Gym",
+            "after": "gym"
+          }
+        }
+      },
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "downPaymentPaid": true,
+      "remainingBalancePaid": true
+    },
+    {
+      "id": "1790297284594",
+      "roomId": "grounds",
+      "roomName": "Grounds",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "name": "Dr. Aris Ramos",
+      "email": "aris.ramos@bchs.edu.ph",
+      "contact": "09171234567",
+      "date": "2026-09-29",
+      "startTime": "13:00",
+      "endTime": "15:00",
+      "attendees": 120,
+      "purpose": "camping",
+      "additionalNotes": "",
+      "status": "pending",
+      "submittedAt": "2026-09-25T00:48:04.594Z",
+      "appointmentDate": "2026-10-14",
+      "appointmentTime": "1:00 PM – 2:00 PM",
+      "visitOptions": [],
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "userEditSnapshot": {
+        "changedAt": "2026-10-05T02:03:19.469Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-14"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "1:00 PM – 2:00 PM"
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-05T02:01:44.510Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-03",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "11:30 AM",
+            "after": ""
+          }
+        }
+      }
+    },
+    {
+      "id": "1790388279179",
+      "roomId": "auditorium",
+      "roomName": "Auditorium",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "name": "Prof. Linda Cruz",
+      "email": "linda.cruz@bchs.edu.ph",
+      "contact": "09201234570",
+      "date": "2026-10-22",
+      "startTime": "13:00",
+      "endTime": "16:00",
+      "attendees": 500,
+      "purpose": "Graduation Ceremony",
+      "additionalNotes": "Chairs",
+      "status": "approved",
+      "submittedAt": "2026-09-26T02:05:04.765Z",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "appointmentDate": "2026-10-10",
+      "appointmentTime": "9:30 AM",
+      "userEditSnapshot": {
+        "changedAt": "2026-09-26T02:05:07.753Z",
+        "changes": {
+          "date": {
+            "before": "2026-09-30",
+            "after": "2026-10-22"
+          },
+          "startTime": {
+            "before": "14:00",
+            "after": "13:00"
+          },
+          "attendees": {
+            "before": 496,
+            "after": 500
+          },
+          "appointmentDate": {
+            "after": null
+          },
+          "appointmentTime": {
+            "after": null
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-09-28T01:55:41.354Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-09-28",
+            "after": "2026-10-10"
+          }
+        }
+      },
+      "downPaymentPaid": false,
+      "remainingBalancePaid": false
+    },
+    {
+      "id": "1790562064714",
+      "roomId": "auditorium",
+      "roomName": "auditorium",
+      "totalAmount": 1800,
+      "paymentStatus": "paid",
+      "isStaff": false,
+      "name": "Dom Vance",
+      "email": "dvancce@gmail.com",
+      "contact": "09876544442",
+      "date": "2026-10-28",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "attendees": 90,
+      "purpose": "Team Building",
+      "additionalNotes": "Net",
+      "status": "approved",
+      "submittedAt": "2026-09-28T02:21:04.714Z",
+      "appointmentDate": "2026-10-13",
+      "appointmentTime": "9:00 AM – 10:00 AM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-09T03:57:34.475Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-15",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "2:00 PM – 3:00 PM",
+            "after": ""
+          }
+        }
+      },
+      "downPaymentPaid": true,
+      "remainingBalancePaid": true,
+      "rescheduleReason": null,
+      "rescheduleRequestedAt": null,
+      "rescheduledDate": null,
+      "rescheduledStartTime": null,
+      "rescheduledEndTime": null,
+      "visitOptions": [],
+      "userEditSnapshot": {
+        "changedAt": "2026-10-13T06:49:47.888Z",
+        "changes": {
+          "date": {
+            "before": "2026-10-29",
+            "after": "2026-10-28"
+          },
+          "startTime": {
+            "before": "17:00",
+            "after": "09:00"
+          },
+          "endTime": {
+            "before": "18:00",
+            "after": "10:00"
+          }
+        }
+      },
+      "adminRescheduleNote": "jkhgvbnm,",
+      "rescheduleOptions": [],
+      "rescheduleFinalizedAt": "2026-10-13T06:49:47.888Z"
+    },
+    {
+      "id": "event_1790570633448",
+      "roomId": "auditorium",
+      "roomName": "Auditorium",
+      "name": "Shooting Drill",
+      "contact": "School Event",
+      "email": "admin@bchs.edu",
+      "date": "2026-10-31",
+      "startTime": "13:00",
+      "endTime": "15:00",
+      "purpose": "All students and staff will be participating in this drill",
+      "attendees": 0,
+      "status": "approved",
+      "paymentStatus": "paid",
+      "totalAmount": 0,
+      "isSchoolEvent": true,
+      "submittedAt": "2026-09-28T04:43:53.463Z",
+      "remainingBalancePaid": true,
+      "downPaymentPaid": true
+    },
+    {
+      "id": "1790920854688",
+      "roomId": "avr",
+      "roomName": "AVR",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "name": "Dr. Aris Ramos",
+      "email": "aris.ramos@bchs.edu.ph",
+      "contact": "09171234567",
+      "date": "2026-10-20",
+      "startTime": "13:00",
+      "endTime": "15:00",
+      "attendees": 80,
+      "purpose": "Parent-Teacher Meeting",
+      "additionalNotes": "",
+      "status": "cancelled",
+      "submittedAt": "2026-10-05T02:28:49.313Z",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "appointmentDate": "2026-10-14",
+      "appointmentTime": "9:00 AM – 10:00 AM",
+      "userEditSnapshot": {
+        "changedAt": "2026-10-13T06:48:28.613Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-14"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "9:00 AM – 10:00 AM"
+          }
+        }
+      },
+      "userEditReason": "sjdfnsdjnvs",
+      "visitOptions": [],
+      "cancellationReason": "werf4r",
+      "cancellationRequestedAt": "2026-10-14T01:03:07.534Z"
+    },
+    {
+      "id": "1791939629475",
+      "roomId": "grounds",
+      "roomName": "Grounds",
+      "totalAmount": 2800,
+      "paymentStatus": "pending",
+      "isStaff": false,
+      "userId": "09171234567",
+      "name": "kwjdhjmwhs3e",
+      "email": "swdfch@gmail.com",
+      "contact": "09171234567",
+      "date": "2026-10-15",
+      "startTime": "12:00",
+      "endTime": "16:00",
+      "attendees": 300,
+      "purpose": "Basketball Practice",
+      "additionalNotes": "",
+      "status": "pending",
+      "submittedAt": "2026-10-14T01:00:31.855Z",
+      "visitOptions": [],
+      "appointmentDate": "2026-10-16",
+      "appointmentTime": "7:00 AM – 8:00 AM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "userEditSnapshot": {
+        "changedAt": "2026-10-14T01:06:00.118Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-16"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "7:00 AM – 8:00 AM"
+          }
+        }
+      }
+    },
+    {
+      "id": "1791939700626",
+      "roomId": "avr",
+      "roomName": "AVR",
+      "totalAmount": 1800,
+      "paymentStatus": "pending",
+      "isStaff": false,
+      "userId": "09171234567",
+      "name": "regf24rgt3t4",
+      "email": "aliya@gmail.com",
+      "contact": "09171234567",
+      "date": "2026-10-15",
+      "startTime": "15:00",
+      "endTime": "17:00",
+      "attendees": 40,
+      "purpose": "Performance/Concert",
+      "additionalNotes": "Podium",
+      "status": "cancelled",
+      "submittedAt": "2026-10-14T01:01:42.519Z",
+      "cancellationReason": "wqdferf",
+      "cancellationRequestedAt": "2026-10-14T01:03:10.418Z"
+    },
+    {
+      "id": "1791939731281",
+      "roomId": "grounds",
+      "roomName": "Grounds",
+      "totalAmount": 2800,
+      "paymentStatus": "pending",
+      "isStaff": false,
+      "userId": "09171234567",
+      "name": "3rg4redr",
+      "email": "aliay@gmail.com",
+      "contact": "09171234567",
+      "date": "2026-10-15",
+      "startTime": "07:00",
+      "endTime": "11:00",
+      "attendees": 50,
+      "purpose": "Outdoor Activity",
+      "additionalNotes": "",
+      "status": "cancelled",
+      "submittedAt": "2026-10-14T01:02:12.790Z",
+      "cancellationReason": "dwew",
+      "cancellationRequestedAt": "2026-10-14T01:03:13.826Z"
+    }
+  ]
+}

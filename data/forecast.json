@@ -1,0 +1,225 @@
+{
+  "forecast": {
+    "lastUpdated": "2026-10-14T05:51:50.370Z",
+    "analyzedYear": 2025,
+    "schemaVersion": 5,
+    "totalAnalyzed": 291,
+    "summary": {
+      "totalreservations": 291,
+      "mostPopularRoom": "Auditorium",
+      "peakHours": "1:00 PM - 9:00 AM",
+      "averageAttendees": 153
+    },
+    "roomAnalytics": [
+      {
+        "roomId": "auditorium",
+        "roomName": "Auditorium",
+        "totalreservations": 95,
+        "averageAttendees": 174,
+        "utilizationRate": "7%",
+        "trend": "increasing",
+        "peakDays": [
+          "Mon",
+          "Wed"
+        ],
+        "predictedNextWeek": 3,
+        "predictionConfidence": "medium",
+        "predictionMethod": "seasonal-baseline"
+      },
+      {
+        "roomId": "library",
+        "roomName": "Library",
+        "totalreservations": 71,
+        "averageAttendees": 70,
+        "utilizationRate": "6%",
+        "trend": "decreasing",
+        "peakDays": [
+          "Sat",
+          "Mon"
+        ],
+        "predictedNextWeek": 1,
+        "predictionConfidence": "low",
+        "predictionMethod": "weighted-moving-average"
+      },
+      {
+        "roomId": "grounds",
+        "roomName": "Grounds",
+        "totalreservations": 35,
+        "averageAttendees": 399,
+        "utilizationRate": "6%",
+        "trend": "increasing",
+        "peakDays": [
+          "Sat",
+          "Fri"
+        ],
+        "predictedNextWeek": 1,
+        "predictionConfidence": "low",
+        "predictionMethod": "weighted-moving-average"
+      },
+      {
+        "roomId": "avr",
+        "roomName": "AVR",
+        "totalreservations": 43,
+        "averageAttendees": 98,
+        "utilizationRate": "5%",
+        "trend": "increasing",
+        "peakDays": [
+          "Thu",
+          "Mon"
+        ],
+        "predictedNextWeek": 1,
+        "predictionConfidence": "medium",
+        "predictionMethod": "seasonal-baseline"
+      },
+      {
+        "roomId": "gym",
+        "roomName": "Gym",
+        "totalreservations": 42,
+        "averageAttendees": 114,
+        "utilizationRate": "6%",
+        "trend": "increasing",
+        "peakDays": [
+          "Fri",
+          "Wed"
+        ],
+        "predictedNextWeek": 1,
+        "predictionConfidence": "medium",
+        "predictionMethod": "seasonal-baseline"
+      }
+    ],
+    "weeklyTrends": [
+      {
+        "week": "May 2026",
+        "totalreservations": 15,
+        "auditorium": 5,
+        "library": 3,
+        "grounds": 0,
+        "avr": 3,
+        "gym": 4
+      },
+      {
+        "week": "Jun 2026",
+        "totalreservations": 19,
+        "auditorium": 6,
+        "library": 4,
+        "grounds": 3,
+        "avr": 3,
+        "gym": 2
+      },
+      {
+        "week": "Jul 2026",
+        "totalreservations": 17,
+        "auditorium": 7,
+        "library": 2,
+        "grounds": 2,
+        "avr": 3,
+        "gym": 2
+      },
+      {
+        "week": "Aug 2026",
+        "totalreservations": 11,
+        "auditorium": 1,
+        "library": 3,
+        "grounds": 0,
+        "avr": 5,
+        "gym": 2
+      },
+      {
+        "week": "Sep 2026",
+        "totalreservations": 24,
+        "auditorium": 9,
+        "library": 6,
+        "grounds": 3,
+        "avr": 3,
+        "gym": 3
+      },
+      {
+        "week": "Oct 2026",
+        "totalreservations": 11,
+        "auditorium": 6,
+        "library": 2,
+        "grounds": 0,
+        "avr": 0,
+        "gym": 3
+      },
+      {
+        "week": "Predicted: Nov 2026",
+        "totalreservations": 18,
+        "auditorium": 4,
+        "library": 4,
+        "grounds": 2,
+        "avr": 2,
+        "gym": 2
+      },
+      {
+        "week": "Predicted: Dec 2026",
+        "totalreservations": 31,
+        "auditorium": 8,
+        "library": 9,
+        "grounds": 3,
+        "avr": 2,
+        "gym": 2
+      },
+      {
+        "week": "Predicted: Jan 2027",
+        "totalreservations": 16,
+        "auditorium": 3,
+        "library": 5,
+        "grounds": 3,
+        "avr": 2,
+        "gym": 1
+      }
+    ],
+    "aheadPredictions": [
+      {
+        "week": "Predicted: Nov 2026",
+        "totalreservations": 18,
+        "auditorium": 4,
+        "library": 4,
+        "grounds": 2,
+        "avr": 2,
+        "gym": 2
+      },
+      {
+        "week": "Predicted: Dec 2026",
+        "totalreservations": 31,
+        "auditorium": 8,
+        "library": 9,
+        "grounds": 3,
+        "avr": 2,
+        "gym": 2
+      },
+      {
+        "week": "Predicted: Jan 2027",
+        "totalreservations": 16,
+        "auditorium": 3,
+        "library": 5,
+        "grounds": 3,
+        "avr": 2,
+        "gym": 1
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "low",
+        "message": "Auditorium utilization is low at 7%. Consider promotional campaigns to boost bookings."
+      },
+      {
+        "priority": "low",
+        "message": "Library utilization is low at 6%. Consider promotional campaigns to boost bookings."
+      },
+      {
+        "priority": "low",
+        "message": "Grounds utilization is low at 6%. Consider promotional campaigns to boost bookings."
+      },
+      {
+        "priority": "low",
+        "message": "AVR utilization is low at 5%. Consider promotional campaigns to boost bookings."
+      },
+      {
+        "priority": "low",
+        "message": "Gym utilization is low at 6%. Consider promotional campaigns to boost bookings."
+      }
+    ]
+  }
+}
