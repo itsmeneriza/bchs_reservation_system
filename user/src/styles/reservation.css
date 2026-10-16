@@ -1441,6 +1441,7 @@
 
     .room-section { padding: 0.5rem !important; }
     .room-section .section-title { font-size: 0.8rem; margin-bottom: 0.35rem; margin-left: 0.25rem; }
+    .calendar-header .section-title { font-size: 1rem; }
 
     #room-list {
         display: flex !important;
@@ -1487,7 +1488,7 @@
     }
 
     .calendar-legend-mobile .legend-item {
-        font-size: 0.6rem;
+        font-size: 0.7rem;
         gap: 0.2rem;
     }
 
@@ -1527,7 +1528,7 @@
     .day-cell {
         width: 100% !important;
         aspect-ratio: 1 !important;
-        font-size: 0.62rem !important;
+        font-size: 0.75rem !important;
         border-radius: 3px !important;
         min-height: unset !important;
         padding: 1px !important;
@@ -1570,7 +1571,7 @@
 
 /* ── Extra small (≤ 390px) ── */
 @media (max-width: 390px) {
-    .day-cell { font-size: 0.55rem !important; }
-    .room-card-mini { min-width: 60px !important; font-size: 0.65rem !important; }
+    .day-cell { font-size: 0.7rem !important; }
+    .room-card-mini { min-width: 60px !important; font-size: 0.7rem !important; }
     .modal-body { padding: 0.75rem !important; }
 }

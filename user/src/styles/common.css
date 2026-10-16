@@ -4,7 +4,7 @@
  */
 
 html {
-    font-size: 17px; /* up from browser default 16px — scales all rem units */
+    font-size: 16px;
 }
 
 :root {
