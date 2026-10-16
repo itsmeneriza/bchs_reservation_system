@@ -1,6 +1,6 @@
 {
   "forecast": {
-    "lastUpdated": "2026-10-14T05:51:50.370Z",
+    "lastUpdated": "2026-10-16T03:27:41.647Z",
     "analyzedYear": 2025,
     "schemaVersion": 5,
     "totalAnalyzed": 291,
@@ -22,7 +22,7 @@
           "Mon",
           "Wed"
         ],
-        "predictedNextWeek": 3,
+        "predictedNextWeek": 1,
         "predictionConfidence": "medium",
         "predictionMethod": "seasonal-baseline"
       },
@@ -52,7 +52,7 @@
           "Sat",
           "Fri"
         ],
-        "predictedNextWeek": 1,
+        "predictedNextWeek": 0,
         "predictionConfidence": "low",
         "predictionMethod": "weighted-moving-average"
       },

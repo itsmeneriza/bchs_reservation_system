@@ -44,9 +44,9 @@
       "name": "Prof. Linda Cruz",
       "email": "linda.cruz@bchs.edu.ph",
       "contact": "09201234570",
-      "date": "2026-10-22",
-      "startTime": "13:00",
-      "endTime": "16:00",
+      "date": "2026-10-18",
+      "startTime": "09:00",
+      "endTime": "10:00",
       "attendees": 500,
       "purpose": "Graduation Ceremony",
       "additionalNotes": "Chairs",
@@ -57,25 +57,19 @@
       "appointmentDate": "2026-10-10",
       "appointmentTime": "9:30 AM",
       "userEditSnapshot": {
-        "changedAt": "2026-09-26T02:05:07.753Z",
+        "changedAt": "2026-10-16T03:27:41.564Z",
         "changes": {
           "date": {
-            "before": "2026-09-30",
-            "after": "2026-10-22"
+            "before": "2026-10-22",
+            "after": "2026-10-18"
           },
           "startTime": {
-            "before": "14:00",
-            "after": "13:00"
+            "before": "13:00",
+            "after": "09:00"
           },
-          "attendees": {
-            "before": 496,
-            "after": 500
-          },
-          "appointmentDate": {
-            "after": null
-          },
-          "appointmentTime": {
-            "after": null
+          "endTime": {
+            "before": "16:00",
+            "after": "10:00"
           }
         }
       },
@@ -89,7 +83,15 @@
         }
       },
       "downPaymentPaid": false,
-      "remainingBalancePaid": false
+      "remainingBalancePaid": false,
+      "rescheduleReason": null,
+      "rescheduleRequestedAt": null,
+      "rescheduledDate": null,
+      "rescheduledStartTime": null,
+      "rescheduledEndTime": null,
+      "rescheduleOptions": [],
+      "adminRescheduleNote": "",
+      "rescheduleFinalizedAt": "2026-10-16T03:27:41.564Z"
     },
     {
       "id": "1790562064714",

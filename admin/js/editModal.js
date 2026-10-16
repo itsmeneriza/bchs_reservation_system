@@ -29,6 +29,7 @@ const VISIT_TIME_OPTIONS = [
     '4:00 PM – 5:00 PM'
 ];
 const MAX_VISIT_TIME_SELECTION = 9;
+const RESCHEDULE_SLOT_DURATION_MINUTES = 60;
 
 /** Returns the ISO date string (YYYY-MM-DD) for tomorrow in local time. */
 function _getEarliestVisitDate() {
@@ -115,16 +116,13 @@ function getVisitTimeChoices() {
     }
 
     const request = requests.find(item => item.id === selectedRequestToEdit);
-    const startMinutes = parseTimeToMinutes(request?.startTime);
-    const endMinutes = parseTimeToMinutes(request?.endTime);
-    const duration = startMinutes !== null && endMinutes !== null ? endMinutes - startMinutes : null;
-    if (!Number.isFinite(duration) || duration <= 0) return [];
+    if (!request) return [];
 
     const formatTime = minutes => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
     const fixedStartTimes = [7 * 60, 8 * 60, 9 * 60, 10 * 60, 11 * 60, 13 * 60, 14 * 60, 15 * 60, 16 * 60];
     const choices = [];
     fixedStartTimes.forEach(startMinutesValue => {
-        const endMinutesValue = startMinutesValue + duration;
+        const endMinutesValue = startMinutesValue + RESCHEDULE_SLOT_DURATION_MINUTES;
         if (endMinutesValue > 18 * 60) return;
         const startTime = formatTime(startMinutesValue);
         const endTime = formatTime(endMinutesValue);
@@ -206,17 +204,14 @@ window.addVisitSlot = function() {
     let addedCount = 0;
     let conflictCount = 0;
     const request = isReschedule ? requests.find(item => item.id === selectedRequestToEdit) : null;
-    const startMinutes = parseTimeToMinutes(request?.startTime);
-    const endMinutes = parseTimeToMinutes(request?.endTime);
-    const duration = startMinutes !== null && endMinutes !== null ? endMinutes - startMinutes : null;
     const formatTime = minutes => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
     selectedVisitDates.forEach(date => selectedVisitTimes.forEach(time => {
         if (isReschedule) {
-            if (!request || !Number.isFinite(duration) || duration <= 0) return;
+            if (!request) return;
             const timeMinutes = parseTimeToMinutes(time);
             if (timeMinutes === null) return;
-            const endTime = formatTime(timeMinutes + duration);
+            const endTime = formatTime(timeMinutes + RESCHEDULE_SLOT_DURATION_MINUTES);
             if (adminCheckConflict(request.roomId, date, time, endTime, request.id)) {
                 conflictCount++;
                 return;
@@ -411,7 +406,7 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     }
     if (visitSlotInstructions) {
         visitSlotInstructions.textContent = isRescheduleMode
-            ? 'Select alternative dates and times for the event reservation. Each option keeps the original event duration. When the requester chooses an option, it becomes the finalized event schedule.'
+            ? 'Select alternative dates and times for the event reservation. Each option is a 1-hour event schedule. When the requester chooses an option, it becomes the finalized event schedule.'
             : 'Select up to 5 dates and up to 9 time slots. Adding them creates a separate option for each date and time combination.';
     }
     if (visitCalendarTitle) visitCalendarTitle.textContent = isRescheduleMode ? 'Alternate dates' : 'Dates';
