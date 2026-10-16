@@ -54,14 +54,19 @@ If you want the system accessible to everyone on the same Wi-Fi or LAN network (
    ```bash
    npm install
    ```
-3. Set up environment variables by editing `.env.local` in the root folder:
+3. Create or edit `.env.local` in the repository root and add your private environment values (do NOT commit `.env.local`).
    ```
    EMAIL_USER=your_email@gmail.com
    EMAIL_PASS=your_app_password
    EMAIL_FROM=BCHS Reservations <your_email@gmail.com>
+   GEMINI_API_KEY=your_gemini_api_key
+   GEMINI_MODEL=gemini-3.5-flash-lite
    ```
    > For `EMAIL_PASS`, use a Gmail **App Password**, not your regular password.
    > Generate one at: [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+   > Get a Gemini API key from Google AI Studio (or your Google Cloud project). The chatbot reads `GEMINI_API_KEY` from `.env.local`; keep this key private and do not commit it. The repository's `.gitignore` already excludes `.env*.local`.
+   > If Gemini is not configured or temporarily unavailable, the chatbot will show saved reservation guidance instead.
+
 
 ---
 

@@ -8,7 +8,7 @@ import { state, addChatMessage, setChatLoading } from '../core/state.js';
 
 // Default suggestion chips shown after every assistant reply
 const DEFAULT_CHIPS = ['How to reserve?', 'Room prices', 'Room capacity', 'How to cancel?', 'Check availability'];
-const CHAT_REQUEST_TIMEOUT_MS = 10000;
+const CHAT_REQUEST_TIMEOUT_MS = 55000;
 const OUT_OF_SCOPE_REPLY = 'I can only help with BCHS facility reservations, including availability, pricing, policies, and booking procedures. What reservation question can I help with?';
 
 const escapeHtml = (value = '') => String(value)
@@ -56,11 +56,11 @@ const getOfflineReply = (question) => {
     const asksCapacity = /capacit|how many|people|pax|attendee/.test(normalized);
 
     if (/cancel|cancellation|refund/.test(normalized)) {
-        return 'To cancel, select your reservation in the Daily Schedule and follow the email verification steps. Cancellations are not accepted within 2 weeks of the event, and the ₱2,000 down payment is non-refundable. Contact the Administration Office for help.';
+        return 'To cancel, select your reservation in the Daily Schedule and follow the email verification steps. Cancellations are not accepted within 2 weeks of the event, and the required down payment is non-refundable. Contact the Administration Office for help.';
     }
 
     if (/payment|pay|down payment|deposit|balance/.test(normalized)) {
-        return 'The down payment is ₱2,000 (non-refundable; waived for staff) and is due at the Admin Office within 3 working days of approval. The remaining balance is due at least 3 working days before the event. Payments are made in person.';
+        return 'A down payment is required for non-staff reservations. The amount depends on the reservation total and is confirmed after approval. It is non-refundable and due at the Admin Office within 3 working days of approval. The remaining balance is due at least 3 working days before the event. Payments are made in person.';
     }
 
     if (/availability|available|free slot|open date|check.*date/.test(normalized)) {
@@ -68,7 +68,7 @@ const getOfflineReply = (question) => {
     }
 
     if (/reserve|reservation|booking|book/.test(normalized)) {
-        return 'To reserve: select a room, double-click an available calendar date, complete the form and time slots, accept the facility usage policy, then follow the payment instructions after approval. The ₱2,000 down payment is due within 3 working days of approval.';
+        return 'To reserve: select a room, double-click an available calendar date, complete the form and time slots, accept the facility usage policy, then follow the payment instructions after approval. A down payment is required for non-staff reservations; the amount is confirmed after approval and is due within 3 working days.';
     }
 
     if (asksPrice || asksCapacity || mentionedRoom) {
@@ -213,7 +213,10 @@ export class Chat {
             if (response.ok && (data.success || typeof data.reply === 'string')) {
                 this.addMessage('assistant', data.reply || 'I can help with BCHS reservation questions about room availability, pricing, booking steps, and cancellation policies.', DEFAULT_CHIPS);
             } else if (response.status >= 500 || response.status === 408 || response.status === 429) {
-                this.addMessage('assistant', `The assistant is temporarily unavailable, so here’s saved guidance:\n\n${getOfflineReply(text)}`, DEFAULT_CHIPS);
+                const reason = response.status === 503
+                    ? 'The AI assistant is not configured. Showing saved guidance:'
+                    : 'The assistant is temporarily unavailable, so here’s saved guidance:';
+                this.addMessage('assistant', `${reason}\n\n${getOfflineReply(text)}`, DEFAULT_CHIPS);
             } else {
                 const errText = data.message || 'Something went wrong. Please try again.';
                 this.addMessage('assistant', errText, DEFAULT_CHIPS);
