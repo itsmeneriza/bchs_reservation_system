@@ -214,6 +214,123 @@
           }
         }
       }
+    },
+    {
+      "id": "1792138729402",
+      "roomId": "avr",
+      "roomName": "AVR",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "userId": "09181234568",
+      "name": "Ms. Elena Garcia",
+      "email": "elena.garcia@bchs.edu.ph",
+      "contact": "09181234568",
+      "date": "2026-10-23",
+      "startTime": "08:00",
+      "endTime": "10:00",
+      "attendees": 60,
+      "purpose": "Performance/Concert",
+      "additionalNotes": "Chairs, Podium",
+      "status": "pending",
+      "submittedAt": "2026-10-16T08:18:58.412Z",
+      "visitOptions": [],
+      "appointmentDate": "2026-10-17",
+      "appointmentTime": "9:00 AM – 10:00 AM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "adminRevisionReason": "",
+      "userEditSnapshot": {
+        "changedAt": "2026-10-16T08:21:27.923Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-17"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "9:00 AM – 10:00 AM"
+          }
+        }
+      }
+    },
+    {
+      "id": "1792138997335",
+      "roomId": "grounds",
+      "roomName": "Grounds",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "userId": "09181234568",
+      "name": "Ms. Elena Garcia",
+      "email": "elena.garcia@bchs.edu.ph",
+      "contact": "09181234568",
+      "date": "2026-10-21",
+      "startTime": "14:00",
+      "endTime": "16:00",
+      "attendees": 90,
+      "purpose": "Training Session",
+      "additionalNotes": "",
+      "status": "pending",
+      "submittedAt": "2026-10-16T08:23:19.553Z",
+      "visitOptions": [],
+      "appointmentDate": "2026-10-17",
+      "appointmentTime": "10:00 AM – 11:00 AM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "adminRevisionReason": "",
+      "userEditSnapshot": {
+        "changedAt": "2026-10-16T08:24:13.595Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-17"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "10:00 AM – 11:00 AM"
+          }
+        }
+      }
+    },
+    {
+      "id": "1792139286427",
+      "roomId": "avr",
+      "roomName": "AVR",
+      "totalAmount": 1300,
+      "paymentStatus": "pending",
+      "isStaff": false,
+      "userId": "09237377711",
+      "name": "Bituin Santos",
+      "email": "starin@gmal.com",
+      "contact": "09237377711",
+      "date": "2026-10-26",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "attendees": 40,
+      "purpose": "Club Meeting",
+      "additionalNotes": "Podium",
+      "status": "pending",
+      "submittedAt": "2026-10-16T08:28:08.199Z",
+      "visitOptions": [],
+      "appointmentDate": "2026-10-17",
+      "appointmentTime": "1:00 PM – 2:00 PM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "adminRevisionReason": "",
+      "userEditSnapshot": {
+        "changedAt": "2026-10-16T08:28:52.802Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-17"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "1:00 PM – 2:00 PM"
+          }
+        }
+      }
     }
   ]
 }

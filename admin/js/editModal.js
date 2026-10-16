@@ -354,6 +354,11 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
             <strong style="display:block;margin-bottom:4px;font-size:11px;color:#1d4ed8;text-transform:uppercase;">User's Reason for Editing</strong>
             <span style="color:#1e40af;">${r.userEditReason}</span>
         </div>` : ''}
+        ${r.adminRevisionReason ? `
+        <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;">
+            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#6d28d9;text-transform:uppercase;">Admin Revision Reason</strong>
+            <span style="color:#4c1d95;">${escapeAdminText(r.adminRevisionReason)}</span>
+        </div>` : ''}
         ${r.rescheduleReason || r.rescheduleRequestedAt ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#fffbeb;border:1px solid #fef3c7;border-radius:6px;">
             <strong style="display:block;margin-bottom:4px;font-size:11px;color:#92400e;text-transform:uppercase;">User Requested Reschedule</strong>
@@ -401,6 +406,8 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     const addVisitSlotButton = document.getElementById('addVisitSlotButton');
     const adminRescheduleNoteSection = document.getElementById('adminRescheduleNoteSection');
     const adminRescheduleNote = document.getElementById('adminRescheduleNote');
+    const adminRevisionReasonSection = document.getElementById('adminRevisionReasonSection');
+    const adminRevisionReason = document.getElementById('adminRevisionReason');
     if (visitSectionTitle) {
         visitSectionTitle.textContent = isRescheduleMode ? 'Alternate Schedule Available' : 'Confirmation Visit';
     }
@@ -412,8 +419,11 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     if (visitCalendarTitle) visitCalendarTitle.textContent = isRescheduleMode ? 'Alternate dates' : 'Dates';
     if (visitTimesTitle) visitTimesTitle.textContent = isRescheduleMode ? 'Available event schedules' : 'Time slots';
     if (addVisitSlotButton) addVisitSlotButton.textContent = isRescheduleMode ? '+ Add Alternate Schedules' : '+ Add Selected Date & Time Options';
+    const showAdminRevisionReason = ['FULL_EDIT', 'CONFIRMED_EDIT', 'CONFIRMED_MANAGE', 'RESCHEDULE_OR_REJECT'].includes(mode);
     if (adminRescheduleNoteSection) adminRescheduleNoteSection.style.display = isRescheduleMode ? '' : 'none';
     if (adminRescheduleNote) adminRescheduleNote.value = isRescheduleMode ? (r.adminRescheduleNote || '') : '';
+    if (adminRevisionReasonSection) adminRevisionReasonSection.style.display = showAdminRevisionReason ? '' : 'none';
+    if (adminRevisionReason) adminRevisionReason.value = r.adminRevisionReason || '';
     if (slotBuilder && singleSlot) {
         if (isQueueReview || mode === 'RESCHEDULE_OR_REJECT') {
             slotBuilder.style.display = 'block';
@@ -698,6 +708,7 @@ async function savereservationChanges() {
     if (currentModalMode === 'VIEW_ONLY') return;
     const idx = requests.findIndex(x => x.id === selectedRequestToEdit);
     if (idx === -1) return;
+    const adminRevisionReason = document.getElementById('adminRevisionReason')?.value.trim() || '';
 
     // In CONFIRMED_EDIT mode, "Update & Approve" always approves
     if (currentModalMode === 'CONFIRMED_EDIT') {
@@ -733,7 +744,8 @@ async function savereservationChanges() {
                 appointmentTime: '',
                 status:          document.getElementById('editStatus').value,
                 blockReschedulePending: false,
-                blockRescheduleReason:  null
+                blockRescheduleReason:  null,
+                adminRevisionReason
             };
         } else {
             // Fallback: single-slot (backward compat)
@@ -749,7 +761,8 @@ async function savereservationChanges() {
                 visitOptions:    [],
                 status:          document.getElementById('editStatus').value,
                 blockReschedulePending: false,
-                blockRescheduleReason:  null
+                blockRescheduleReason:  null,
+                adminRevisionReason
             };
         }
     } else if (['CONFIRMED_MANAGE','RESCHEDULE_OR_REJECT'].includes(currentModalMode)) {
@@ -763,6 +776,7 @@ async function savereservationChanges() {
                 rescheduleOptions: pendingVisitOptions,
                 blockReschedulePending: false,
                 blockRescheduleReason:  null,
+                adminRevisionReason,
                 adminRescheduleNote: document.getElementById('adminRescheduleNote')?.value.trim() || '',
                 // Clear any pending user reschedule metadata since admin responded
                 rescheduleReason: null,
@@ -777,7 +791,8 @@ async function savereservationChanges() {
                 appointmentTime: document.getElementById('editAppointmentTime').value,
                 status:          document.getElementById('editStatus').value,
                 blockReschedulePending: false,
-                blockRescheduleReason:  null
+                blockRescheduleReason:  null,
+                adminRevisionReason
             };
         }
     } else {
@@ -794,7 +809,8 @@ async function savereservationChanges() {
             paymentStatus:       isStaff ? 'paid' : document.getElementById('editPaymentStatus').value,
             downPaymentPaid:     isStaff ? false  : document.getElementById('downPaymentPaid').checked,
             remainingBalancePaid: isStaff ? false  : document.getElementById('remainingBalancePaid').checked,
-            status:              document.getElementById('editStatus').value
+            status:              document.getElementById('editStatus').value,
+            adminRevisionReason
         };
     }
 
@@ -803,6 +819,17 @@ async function savereservationChanges() {
     const requestedPaymentStatus = update.paymentStatus;
     if (currentPaymentStatus === 'paid' && requestedPaymentStatus && requestedPaymentStatus !== 'paid') {
         showToast('Payment tracking is already marked PAID and cannot be changed.', 'error');
+        return;
+    }
+
+    const dateChanged = typeof update.appointmentDate !== 'undefined' && String(update.appointmentDate ?? '') !== String(requests[idx].appointmentDate ?? '');
+    const timeChanged = typeof update.appointmentTime !== 'undefined' && String(update.appointmentTime ?? '') !== String(requests[idx].appointmentTime ?? '');
+    const visitOptionsChanged = Array.isArray(update.visitOptions) && update.visitOptions.length > 0;
+    const rescheduleOptionsChanged = Array.isArray(update.rescheduleOptions) && update.rescheduleOptions.length > 0;
+    const requiresRevisionReason = ['FULL_EDIT', 'CONFIRMED_EDIT', 'CONFIRMED_MANAGE', 'RESCHEDULE_OR_REJECT'].includes(currentModalMode) && (dateChanged || timeChanged || visitOptionsChanged || rescheduleOptionsChanged);
+    if (requiresRevisionReason && !adminRevisionReason) {
+        showToast('Please provide a reason for this revision before saving.', 'error');
+        document.getElementById('adminRevisionReason')?.focus();
         return;
     }
 
