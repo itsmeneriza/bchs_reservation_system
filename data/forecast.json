@@ -1,6 +1,6 @@
 {
   "forecast": {
-    "lastUpdated": "2026-10-16T08:28:52.889Z",
+    "lastUpdated": "2026-10-19T03:20:17.276Z",
     "analyzedYear": 2025,
     "schemaVersion": 5,
     "totalAnalyzed": 291,
@@ -22,7 +22,7 @@
           "Mon",
           "Wed"
         ],
-        "predictedNextWeek": 1,
+        "predictedNextWeek": 3,
         "predictionConfidence": "medium",
         "predictionMethod": "seasonal-baseline"
       },
@@ -67,9 +67,9 @@
           "Thu",
           "Mon"
         ],
-        "predictedNextWeek": 1,
-        "predictionConfidence": "medium",
-        "predictionMethod": "seasonal-baseline"
+        "predictedNextWeek": 0,
+        "predictionConfidence": "low",
+        "predictionMethod": "weighted-moving-average"
       },
       {
         "roomId": "gym",

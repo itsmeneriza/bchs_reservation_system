@@ -65,6 +65,27 @@ module.exports = function createRequestsRouter({ dataDir, generateForecastFromDa
     return { dailyCount, weeklyCount };
   }
   
+  function getVisitEndTime(startTime) {
+    if (!startTime || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime)) return null;
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = (hours * 60) + minutes + 60;
+    if (totalMinutes > (23 * 60) + 59) return null;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+  }
+  
+  function hasVisitConflictForRequest(requests, requestId, roomId, date, startTime, endTime = getVisitEndTime(startTime)) {
+    if (!roomId || !date || !startTime || !endTime) return false;
+    return requests.some(r => {
+      if (r.id === requestId) return false;
+      if (!['approved', 'accepted', 'pending', 'blocked'].includes(r.status)) return false;
+      if ((r.roomId !== roomId && !(r.status === 'blocked' && r.roomId === 'global')) || r.date !== date) return false;
+      if (r.status === 'blocked' && r.isFullDayBlock) return true;
+      return r.startTime < endTime && r.endTime > startTime;
+    });
+  }
+  
   // API endpoint to save new requests to requests.json
   router.post('/api/requests', (req, res) => {
     try {
@@ -447,6 +468,46 @@ module.exports = function createRequestsRouter({ dataDir, generateForecastFromDa
             return res.status(409).json({
               success: false,
               message: 'This reschedule conflicts with another approved or blocked reservation.'
+            });
+          }
+        }
+      }
+      
+      const existingRequest = requestIndex !== -1 ? requestsData.requests[requestIndex] : null;
+      const appointmentDate = cleanUpdates.appointmentDate !== undefined ? cleanUpdates.appointmentDate : existingRequest?.appointmentDate;
+      const appointmentTime = cleanUpdates.appointmentTime !== undefined ? cleanUpdates.appointmentTime : existingRequest?.appointmentTime;
+      const appointmentRoomId = cleanUpdates.roomId ?? existingRequest?.roomId;
+      if (appointmentRoomId && appointmentDate && appointmentTime) {
+        const normalizedDate = String(appointmentDate).trim();
+        const normalizedTime = String(appointmentTime).trim();
+        const visitEndTime = getVisitEndTime(normalizedTime);
+        if (normalizedDate && normalizedTime && visitEndTime) {
+          const conflictWithExisting = hasVisitConflictForRequest(
+            requestsData.requests,
+            requestId,
+            appointmentRoomId,
+            normalizedDate,
+            normalizedTime,
+            visitEndTime
+          );
+          if (conflictWithExisting) {
+            return res.status(409).json({
+              success: false,
+              message: 'This visit date and time conflicts with another confirmed or blocked reservation for the same facility.'
+            });
+          }
+        }
+      }
+      if (Array.isArray(cleanUpdates.visitOptions)) {
+        for (const option of cleanUpdates.visitOptions) {
+          const optionDate = String(option?.date || '').trim();
+          const optionStart = String(option?.startTime || option?.time || '').trim();
+          const optionEnd = String(option?.endTime || getVisitEndTime(optionStart) || '').trim();
+          if (!optionDate || !optionStart || !optionEnd) continue;
+          if (hasVisitConflictForRequest(requestsData.requests, requestId, appointmentRoomId || existingRequest?.roomId, optionDate, optionStart, optionEnd)) {
+            return res.status(409).json({
+              success: false,
+              message: 'One or more visit options conflict with another reservation or facility block.'
             });
           }
         }

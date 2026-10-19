@@ -15,6 +15,16 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character =>
     "'": '&#39;'
 }[character]));
 
+const getVisitEndTime = (startTime) => {
+    if (!startTime || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime)) return null;
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = (hours * 60) + minutes + 60;
+    if (totalMinutes > (23 * 60) + 59) return null;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+};
+
 export class MyRequests {
     constructor() {
         this.container = document.getElementById('my-requests-container');
@@ -51,6 +61,23 @@ export class MyRequests {
 
         window.selectVisitSlot = async (requestId, date, time) => {
             try {
+                const requestRes = await fetch('/api/requests');
+                const requestData = requestRes.ok ? await requestRes.json().catch(() => ({ requests: [] })) : { requests: [] };
+                const currentRequest = (requestData.requests || []).find(r => r.id === requestId);
+                const visitEndTime = getVisitEndTime(time);
+                const hasConflict = (requestData.requests || []).some(r => {
+                    if (!visitEndTime || !currentRequest) return false;
+                    if (r.id === requestId || !['approved', 'accepted', 'pending', 'blocked'].includes(r.status)) return false;
+                    if ((r.roomId !== currentRequest.roomId && !(r.status === 'blocked' && r.roomId === 'global')) || r.date !== date) return false;
+                    if (r.status === 'blocked' && r.isFullDayBlock) return true;
+                    return r.startTime < visitEndTime && r.endTime > time;
+                });
+                if (hasConflict) {
+                    const { showToast } = await import('./NotificationComponent.js');
+                    showToast('This visit time conflicts with an existing reservation or blocked time for this facility. Please choose another slot.', 'error');
+                    return;
+                }
+
                 const patchRes = await fetch(`/api/requests/${requestId}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },

@@ -51,7 +51,8 @@ function _isAllowedVisitDate(date) {
 function renderVisitCalendar() {
     const calendar = document.getElementById('visitCalendar');
     if (!calendar) return;
-    const isRescheduleMode = currentModalMode === 'RESCHEDULE_OR_REJECT';
+    const isEventRescheduleMode = currentModalMode === 'RESCHEDULE_OR_REJECT';
+    const isVisitRescheduleMode = currentModalMode === 'VISIT_RESCHEDULE_OR_REJECT';
 
     const year = visitCalendarMonth.getFullYear();
     const month = visitCalendarMonth.getMonth();
@@ -79,7 +80,7 @@ function renderVisitCalendar() {
             <strong>${monthLabel}</strong>
             <button type="button" class="visit-calendar-nav" onclick="changeVisitCalendarMonth(1)" aria-label="Next month">›</button>
         </div>
-        <div class="visit-calendar-grid" role="group" aria-label="${isRescheduleMode ? 'Choose alternate event dates' : 'Choose visit dates'}">
+        <div class="visit-calendar-grid" role="group" aria-label="${isEventRescheduleMode || isVisitRescheduleMode ? (isEventRescheduleMode ? 'Choose alternate event dates' : 'Choose alternate visit dates') : 'Choose visit dates'}">
             ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => `<span class="visit-calendar-weekday">${day}</span>`).join('')}
             ${cells.join('')}
         </div>`;
@@ -187,13 +188,14 @@ window.toggleVisitTime = function(index) {
 
 /** Add every selected date/time combination as a separate visit option. */
 window.addVisitSlot = function() {
-    const isReschedule = currentModalMode === 'RESCHEDULE_OR_REJECT';
+    const isEventReschedule = currentModalMode === 'RESCHEDULE_OR_REJECT';
+    const isVisitReschedule = currentModalMode === 'VISIT_RESCHEDULE_OR_REJECT';
     if (selectedVisitDates.length === 0) {
-        showToast(`Please select at least one ${isReschedule ? 'alternate schedule date' : 'visit date'}.`, 'error');
+        showToast(`Please select at least one ${isEventReschedule ? 'alternate schedule date' : isVisitReschedule ? 'alternate visit date' : 'visit date'}.`, 'error');
         return;
     }
     if (selectedVisitTimes.length === 0) {
-        showToast(`Please select at least one ${isReschedule ? 'available start time' : 'time slot'}.`, 'error');
+        showToast(`Please select at least one ${isEventReschedule ? 'available start time' : isVisitReschedule ? 'alternate visit time' : 'time slot'}.`, 'error');
         return;
     }
     if (selectedVisitDates.some(date => !_isAllowedVisitDate(date))) {
@@ -203,11 +205,11 @@ window.addVisitSlot = function() {
 
     let addedCount = 0;
     let conflictCount = 0;
-    const request = isReschedule ? requests.find(item => item.id === selectedRequestToEdit) : null;
+    const request = requests.find(item => item.id === selectedRequestToEdit) || null;
     const formatTime = minutes => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
     selectedVisitDates.forEach(date => selectedVisitTimes.forEach(time => {
-        if (isReschedule) {
+        if (isEventReschedule) {
             if (!request) return;
             const timeMinutes = parseTimeToMinutes(time);
             if (timeMinutes === null) return;
@@ -228,6 +230,14 @@ window.addVisitSlot = function() {
                 addedCount++;
             }
         } else {
+            if (request) {
+                const timeMinutes = parseTimeToMinutes(time);
+                const endTime = timeMinutes === null ? null : formatTime(timeMinutes + 60);
+                if (endTime && adminCheckConflict(request.roomId, date, time, endTime, request.id)) {
+                    conflictCount++;
+                    return;
+                }
+            }
             const newKey = `${date}::${time}`;
             const exists = pendingVisitOptions.some(slot => {
                 const sDate = String(slot.date || '').trim();
@@ -257,9 +267,9 @@ window.addVisitSlot = function() {
     renderVisitTimeOptions();
     renderVisitSlotList();
     if (conflictCount > 0) {
-        showToast(`${addedCount} alternate schedule${addedCount === 1 ? '' : 's'} added; ${conflictCount} conflicting option${conflictCount === 1 ? '' : 's'} skipped.`, 'error');
+        showToast(`${addedCount} ${isEventReschedule ? 'alternate schedule' : 'visit option'}${addedCount === 1 ? '' : 's'} added; ${conflictCount} conflicting option${conflictCount === 1 ? '' : 's'} skipped.`, 'error');
     } else {
-        showToast(`${addedCount} ${isReschedule ? 'alternate schedule' : 'visit option'}${addedCount === 1 ? '' : 's'} added.`, 'success');
+        showToast(`${addedCount} ${isVisitReschedule ? 'alternate visit slot' : isEventReschedule ? 'alternate schedule' : 'visit option'}${addedCount === 1 ? '' : 's'} added.`, 'success');
     }
 };
 
@@ -273,8 +283,10 @@ window.removeVisitSlot = function(idx) {
 function renderVisitSlotList() {
     const list = document.getElementById('visitSlotList');
     if (!list) return;
+    const isEventRescheduleMode = currentModalMode === 'RESCHEDULE_OR_REJECT';
+    const isVisitRescheduleMode = currentModalMode === 'VISIT_RESCHEDULE_OR_REJECT';
     if (pendingVisitOptions.length === 0) {
-        list.innerHTML = `<p style="font-size:12px;color:#94a3b8;margin:0;">${currentModalMode === 'RESCHEDULE_OR_REJECT' ? 'No alternate schedules added yet.' : 'No visit slots added yet.'}</p>`;
+        list.innerHTML = `<p style="font-size:12px;color:#94a3b8;margin:0;">${isEventRescheduleMode ? 'No alternate schedules added yet.' : isVisitRescheduleMode ? 'No alternate visit slots added yet.' : 'No visit slots added yet.'}</p>`;
         return;
     }
     list.innerHTML = pendingVisitOptions.map((s, i) => `
@@ -285,10 +297,10 @@ function renderVisitSlotList() {
     `).join('');
     // Update save button label
     const saveBtn = document.getElementById('saveEdit');
-    if (saveBtn && (currentModalMode === 'QUEUE_REVIEW' || currentModalMode === 'RESCHEDULE_OR_REJECT')) {
+    if (saveBtn && (currentModalMode === 'QUEUE_REVIEW' || currentModalMode === 'RESCHEDULE_OR_REJECT' || currentModalMode === 'VISIT_RESCHEDULE_OR_REJECT')) {
         saveBtn.textContent = pendingVisitOptions.length > 0
-            ? (currentModalMode === 'RESCHEDULE_OR_REJECT' ? 'Offer Alternate Schedules' : 'Send Visit Options')
-            : (currentModalMode === 'RESCHEDULE_OR_REJECT' ? 'Offer Alternate Schedules' : 'Set Visit');
+            ? (isEventRescheduleMode ? 'Offer Alternate Schedules' : isVisitRescheduleMode ? 'Offer Alternate Visit Slots' : 'Send Visit Options')
+            : (isEventRescheduleMode ? 'Offer Alternate Schedules' : isVisitRescheduleMode ? 'Offer Alternate Visit Slots' : 'Set Visit');
     }
 }
 
@@ -311,12 +323,13 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
 
     // Title
     const titles = {
-        VIEW_ONLY:           'View Reservation Record',
-        PAYMENT_ONLY:        'Request Details',
-        CONFIRMED_EDIT:      'Edit Reservation Details',
-        CONFIRMED_MANAGE:    'Manage Confirmed Appointment',
-        RESCHEDULE_OR_REJECT:'Review Event Rescheduling Request',
-        QUEUE_REVIEW:        'Review Reservation Request'
+        VIEW_ONLY:                    'View Reservation Record',
+        PAYMENT_ONLY:                 'Request Details',
+        CONFIRMED_EDIT:              'Edit Reservation Details',
+        CONFIRMED_MANAGE:            'Manage Confirmed Appointment',
+        RESCHEDULE_OR_REJECT:        'Review Event Rescheduling Request',
+        VISIT_RESCHEDULE_OR_REJECT:  'Review Visit Rescheduling Request',
+        QUEUE_REVIEW:                'Review Reservation Request'
     };
     document.getElementById('editModalTitle').textContent = titles[mode] || 'Manage Reservation Entry';
 
@@ -327,14 +340,15 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     // Footer: context-aware buttons based on mode
     const isQueueMode         = mode === 'QUEUE_REVIEW';
     const isConfirmedEditMode = mode === 'CONFIRMED_EDIT';
-    const isRescheduleMode    = mode === 'RESCHEDULE_OR_REJECT';
+    const isEventRescheduleMode = mode === 'RESCHEDULE_OR_REJECT';
+    const isVisitRescheduleMode = mode === 'VISIT_RESCHEDULE_OR_REJECT';
     const statusSection  = document.getElementById('reservationStatusSection');
     const rejectEditBtn  = document.getElementById('rejectEditBtn');
     const saveEditBtn    = document.getElementById('saveEdit');
-    const hideStatus     = isQueueMode || isConfirmedEditMode || isRescheduleMode || mode === 'VIEW_ONLY' || mode === 'PAYMENT_ONLY';
+    const hideStatus     = isQueueMode || isConfirmedEditMode || isEventRescheduleMode || isVisitRescheduleMode || mode === 'VIEW_ONLY' || mode === 'PAYMENT_ONLY';
     if (statusSection) statusSection.style.display = hideStatus ? 'none' : '';
-    if (rejectEditBtn) rejectEditBtn.style.display  = (isQueueMode || isConfirmedEditMode || isRescheduleMode) ? 'inline-flex' : 'none';
-    if (saveEditBtn)   saveEditBtn.textContent       = isQueueMode ? 'Set Visit' : isConfirmedEditMode ? 'Update & Approve' : isRescheduleMode ? 'Offer Alternate Schedules' : 'Update & Save';
+    if (rejectEditBtn) rejectEditBtn.style.display  = (isQueueMode || isConfirmedEditMode || isEventRescheduleMode || isVisitRescheduleMode) ? 'inline-flex' : 'none';
+    if (saveEditBtn)   saveEditBtn.textContent       = isQueueMode ? 'Set Visit' : isConfirmedEditMode ? 'Update & Approve' : isEventRescheduleMode ? 'Offer Alternate Schedules' : isVisitRescheduleMode ? 'Offer Alternate Visit Slots' : 'Update & Save';
 
     // Summary
     document.getElementById('edit-summary').innerHTML = `
@@ -371,7 +385,7 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
             <span style="color:#334155;">${escapeAdminText(r.adminRescheduleNote)}</span>
         </div>` : ''}`;
 
-    const isConfirmedManage = mode === 'CONFIRMED_MANAGE' || mode === 'RESCHEDULE_OR_REJECT';
+    const isConfirmedManage = mode === 'CONFIRMED_MANAGE' || mode === 'RESCHEDULE_OR_REJECT' || mode === 'VISIT_RESCHEDULE_OR_REJECT';
     const isConfirmedEdit   = mode === 'CONFIRMED_EDIT';
     const lockFields        = mode === 'PAYMENT_ONLY' || mode === 'VIEW_ONLY';
     const readOnlyAll       = mode === 'VIEW_ONLY';
@@ -396,7 +410,7 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     const apptSelect = document.getElementById('editAppointmentTime');
     apptSelect.value = apptTime;
 
-    // ── QUEUE_REVIEW / RESCHEDULE_OR_REJECT: show multi-slot builder, hide single-slot fields ──
+    // ── QUEUE_REVIEW / event or visit reschedule: show multi-slot builder, hide single-slot fields ──
     const slotBuilder = document.getElementById('visitSlotBuilder');
     const singleSlot  = document.getElementById('visitSingleSlot');
     const visitSectionTitle = document.getElementById('visitSectionTitle');
@@ -409,27 +423,27 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     const adminRevisionReasonSection = document.getElementById('adminRevisionReasonSection');
     const adminRevisionReason = document.getElementById('adminRevisionReason');
     if (visitSectionTitle) {
-        visitSectionTitle.textContent = isRescheduleMode ? 'Alternate Schedule Available' : 'Confirmation Visit';
+        visitSectionTitle.textContent = isEventRescheduleMode ? 'Alternate Schedule Available' : isVisitRescheduleMode ? 'Alternate Visit Time Available' : 'Confirmation Visit';
     }
     if (visitSlotInstructions) {
-        visitSlotInstructions.textContent = isRescheduleMode
+        visitSlotInstructions.textContent = isEventRescheduleMode
             ? 'Select alternative dates and times for the event reservation. Each option is a 1-hour event schedule. When the requester chooses an option, it becomes the finalized event schedule.'
+            : isVisitRescheduleMode
+            ? 'Select alternate visit dates and times for the confirmation visit. These options are independent from any event rescheduling request.'
             : 'Select up to 5 dates and up to 9 time slots. Adding them creates a separate option for each date and time combination.';
     }
-    if (visitCalendarTitle) visitCalendarTitle.textContent = isRescheduleMode ? 'Alternate dates' : 'Dates';
-    if (visitTimesTitle) visitTimesTitle.textContent = isRescheduleMode ? 'Available event schedules' : 'Time slots';
-    if (addVisitSlotButton) addVisitSlotButton.textContent = isRescheduleMode ? '+ Add Alternate Schedules' : '+ Add Selected Date & Time Options';
+    if (visitCalendarTitle) visitCalendarTitle.textContent = isEventRescheduleMode ? 'Alternate dates' : isVisitRescheduleMode ? 'Alternate visit dates' : 'Dates';
+    if (visitTimesTitle) visitTimesTitle.textContent = isEventRescheduleMode ? 'Available event schedules' : isVisitRescheduleMode ? 'Available visit times' : 'Time slots';
+    if (addVisitSlotButton) addVisitSlotButton.textContent = isEventRescheduleMode ? '+ Add Alternate Schedules' : isVisitRescheduleMode ? '+ Add Alternate Visit Slots' : '+ Add Selected Date & Time Options';
     const showAdminRevisionReason = ['FULL_EDIT', 'CONFIRMED_EDIT', 'CONFIRMED_MANAGE', 'RESCHEDULE_OR_REJECT'].includes(mode);
-    if (adminRescheduleNoteSection) adminRescheduleNoteSection.style.display = isRescheduleMode ? '' : 'none';
-    if (adminRescheduleNote) adminRescheduleNote.value = isRescheduleMode ? (r.adminRescheduleNote || '') : '';
+    if (adminRescheduleNoteSection) adminRescheduleNoteSection.style.display = isEventRescheduleMode ? '' : 'none';
+    if (adminRescheduleNote) adminRescheduleNote.value = isEventRescheduleMode ? (r.adminRescheduleNote || '') : '';
     if (adminRevisionReasonSection) adminRevisionReasonSection.style.display = showAdminRevisionReason ? '' : 'none';
     if (adminRevisionReason) adminRevisionReason.value = r.adminRevisionReason || '';
     if (slotBuilder && singleSlot) {
-        if (isQueueReview || mode === 'RESCHEDULE_OR_REJECT') {
+        if (isQueueReview || isEventRescheduleMode || isVisitRescheduleMode) {
             slotBuilder.style.display = 'block';
             singleSlot.style.display  = 'none';
-            // Keep alternate event schedules separate from confirmation visit options.
-            // Normalize and deduplicate any pre-existing visit/reschedule options to avoid duplicated entries
             function _normalizeOptions(arr) {
                 const list = Array.isArray(arr) ? arr.map(s => ({ ...s })) : [];
                 const seen = new Set();
@@ -445,8 +459,10 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
                 });
             }
 
-            pendingVisitOptions = isRescheduleMode
+            pendingVisitOptions = isEventRescheduleMode
                 ? _normalizeOptions(Array.isArray(r.rescheduleOptions) ? r.rescheduleOptions : [])
+                : isVisitRescheduleMode
+                ? _normalizeOptions(Array.isArray(r.visitOptions) ? r.visitOptions : [])
                 : _normalizeOptions(Array.isArray(r.visitOptions) ? r.visitOptions : []);
             renderVisitSlotList();
             selectedVisitDates = [];
@@ -489,7 +505,7 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
     // Payment status buttons
     const paymentStatus  = isStaff ? 'paid' : (r.paymentStatus || 'pending');
     // Unlock payment fields during CONFIRMED_EDIT only for non-staff (visitor is physically present)
-    const lockPayment    = readOnlyAll || isQueueReview || isStaff || mode === 'RESCHEDULE_OR_REJECT';
+    const lockPayment    = readOnlyAll || isQueueReview || isStaff || mode === 'RESCHEDULE_OR_REJECT' || mode === 'VISIT_RESCHEDULE_OR_REJECT';
     const lockBreakdown  = isStaff || (lockPayment && !isConfirmedEdit);
     const lockAmount     = isStaff || (lockPayment && !isConfirmedEdit);
 
@@ -765,25 +781,36 @@ async function savereservationChanges() {
                 adminRevisionReason
             };
         }
-    } else if (['CONFIRMED_MANAGE','RESCHEDULE_OR_REJECT'].includes(currentModalMode)) {
+    } else if (['CONFIRMED_MANAGE','RESCHEDULE_OR_REJECT','VISIT_RESCHEDULE_OR_REJECT'].includes(currentModalMode)) {
         if (currentModalMode === 'RESCHEDULE_OR_REJECT') {
             if (pendingVisitOptions.length === 0) {
                 showToast('Please add at least one alternate event schedule.', 'error');
                 return;
             }
-            // The requester will choose one offered schedule to update the main reservation.
             update = {
                 rescheduleOptions: pendingVisitOptions,
                 blockReschedulePending: false,
                 blockRescheduleReason:  null,
                 adminRevisionReason,
                 adminRescheduleNote: document.getElementById('adminRescheduleNote')?.value.trim() || '',
-                // Clear any pending user reschedule metadata since admin responded
                 rescheduleReason: null,
                 rescheduleRequestedAt: null,
                 rescheduledDate: null,
                 rescheduledStartTime: null,
                 rescheduledEndTime: null
+            };
+        } else if (currentModalMode === 'VISIT_RESCHEDULE_OR_REJECT') {
+            if (pendingVisitOptions.length === 0) {
+                showToast('Please add at least one alternate visit slot.', 'error');
+                return;
+            }
+            update = {
+                visitOptions: pendingVisitOptions,
+                appointmentDate: '',
+                appointmentTime: '',
+                blockReschedulePending: false,
+                blockRescheduleReason:  null,
+                adminRevisionReason
             };
         } else {
             update = {

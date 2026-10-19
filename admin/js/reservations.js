@@ -345,12 +345,12 @@ function getConfirmedEditMode(req) {
     const apptDateTime = new Date(`${req.appointmentDate}T${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:00`);
     const diffHours    = (new Date() - apptDateTime) / (1000 * 60 * 60);
     if (diffHours >= 0 && diffHours < 1.5) return 'CONFIRMED_EDIT';
-    if (diffHours >= 1.5) return 'RESCHEDULE_OR_REJECT';
+    if (diffHours >= 1.5) return 'VISIT_RESCHEDULE_OR_REJECT';
     return 'VIEW_ONLY';
 }
 
 window.rescheduleConfirmed = (id) => {
-    openEditModal(id, 'QUEUE_REVIEW');
+    openEditModal(id, 'VISIT_RESCHEDULE_OR_REJECT');
     setTimeout(() => {
         const titleEl = document.getElementById('editModalTitle');
         if (titleEl) titleEl.textContent = 'Reschedule Confirmation Visit';
@@ -376,7 +376,7 @@ function renderConfirmed() {
         const hasVisitOptions = Array.isArray(req.visitOptions) && req.visitOptions.length > 0 && (!req.appointmentDate || req.appointmentDate.trim() === '');
         const editMode      = hasVisitOptions ? 'VIEW_ONLY' : getConfirmedEditMode(req);
         const isLive        = editMode === 'CONFIRMED_EDIT';
-        const isPastWin     = editMode === 'RESCHEDULE_OR_REJECT';
+        const isPastWin     = editMode === 'VISIT_RESCHEDULE_OR_REJECT';
         const isViewOnly    = editMode === 'VIEW_ONLY';
         const isBlockForced = req.blockReschedulePending === true;
 
@@ -400,11 +400,12 @@ function renderConfirmed() {
 
         const btnMode  = hasVisitOptions ? 'QUEUE_REVIEW'
                        : isBlockForced   ? 'RESCHEDULE_OR_REJECT'
+                       : isPastWin      ? 'VISIT_RESCHEDULE_OR_REJECT'
                        : editMode;
         const btnLabel = hasVisitOptions ? 'Edit Options'
                        : isBlockForced   ? 'Reschedule'
                        : isLive          ? 'Edit'
-                       : isPastWin       ? 'Reschedule'
+                       : isPastWin       ? 'Reschedule Visit'
                        : isViewOnly      ? 'View'
                        : 'Manage';
         const btnStyle = hasVisitOptions ? 'background:#1d4ed8;border-color:#1d4ed8;color:white;'

@@ -35,65 +35,6 @@
       "remainingBalancePaid": true
     },
     {
-      "id": "1790388279179",
-      "roomId": "auditorium",
-      "roomName": "Auditorium",
-      "totalAmount": 0,
-      "paymentStatus": "paid",
-      "isStaff": true,
-      "name": "Prof. Linda Cruz",
-      "email": "linda.cruz@bchs.edu.ph",
-      "contact": "09201234570",
-      "date": "2026-10-18",
-      "startTime": "09:00",
-      "endTime": "10:00",
-      "attendees": 500,
-      "purpose": "Graduation Ceremony",
-      "additionalNotes": "Chairs",
-      "status": "approved",
-      "submittedAt": "2026-09-26T02:05:04.765Z",
-      "blockReschedulePending": false,
-      "blockRescheduleReason": null,
-      "appointmentDate": "2026-10-10",
-      "appointmentTime": "9:30 AM",
-      "userEditSnapshot": {
-        "changedAt": "2026-10-16T03:27:41.564Z",
-        "changes": {
-          "date": {
-            "before": "2026-10-22",
-            "after": "2026-10-18"
-          },
-          "startTime": {
-            "before": "13:00",
-            "after": "09:00"
-          },
-          "endTime": {
-            "before": "16:00",
-            "after": "10:00"
-          }
-        }
-      },
-      "adminEditSnapshot": {
-        "changedAt": "2026-09-28T01:55:41.354Z",
-        "changes": {
-          "appointmentDate": {
-            "before": "2026-09-28",
-            "after": "2026-10-10"
-          }
-        }
-      },
-      "downPaymentPaid": false,
-      "remainingBalancePaid": false,
-      "rescheduleReason": null,
-      "rescheduleRequestedAt": null,
-      "rescheduledDate": null,
-      "rescheduledStartTime": null,
-      "rescheduledEndTime": null,
-      "rescheduleOptions": [],
-      "adminRescheduleNote": "",
-      "rescheduleFinalizedAt": "2026-10-16T03:27:41.564Z"
-    },
-    {
       "id": "1790562064714",
       "roomId": "auditorium",
       "roomName": "auditorium",
@@ -197,20 +138,34 @@
       "status": "pending",
       "submittedAt": "2026-10-16T03:15:55.643Z",
       "visitOptions": [],
-      "appointmentDate": "2026-10-17",
-      "appointmentTime": "11:00 AM – 12:00 PM",
+      "appointmentDate": "2026-10-20",
+      "appointmentTime": "9:00 AM – 10:00 AM",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
       "userEditSnapshot": {
-        "changedAt": "2026-10-16T03:17:10.712Z",
+        "changedAt": "2026-10-19T03:19:19.856Z",
         "changes": {
           "appointmentDate": {
             "before": "",
-            "after": "2026-10-17"
+            "after": "2026-10-20"
           },
           "appointmentTime": {
             "before": "",
-            "after": "11:00 AM – 12:00 PM"
+            "after": "9:00 AM – 10:00 AM"
+          }
+        }
+      },
+      "adminRevisionReason": "",
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-19T03:12:37.314Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-17",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "11:00 AM – 12:00 PM",
+            "after": ""
           }
         }
       }
@@ -235,21 +190,34 @@
       "status": "pending",
       "submittedAt": "2026-10-16T08:18:58.412Z",
       "visitOptions": [],
-      "appointmentDate": "2026-10-17",
-      "appointmentTime": "9:00 AM – 10:00 AM",
+      "appointmentDate": "2026-10-20",
+      "appointmentTime": "11:00 AM – 12:00 PM",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
       "adminRevisionReason": "",
       "userEditSnapshot": {
-        "changedAt": "2026-10-16T08:21:27.923Z",
+        "changedAt": "2026-10-19T03:20:14.209Z",
         "changes": {
           "appointmentDate": {
             "before": "",
-            "after": "2026-10-17"
+            "after": "2026-10-20"
           },
           "appointmentTime": {
             "before": "",
-            "after": "9:00 AM – 10:00 AM"
+            "after": "11:00 AM – 12:00 PM"
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-19T03:12:44.034Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-17",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "9:00 AM – 10:00 AM",
+            "after": ""
           }
         }
       }
@@ -274,21 +242,34 @@
       "status": "pending",
       "submittedAt": "2026-10-16T08:23:19.553Z",
       "visitOptions": [],
-      "appointmentDate": "2026-10-17",
-      "appointmentTime": "10:00 AM – 11:00 AM",
+      "appointmentDate": "2026-10-20",
+      "appointmentTime": "11:00 AM – 12:00 PM",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
       "adminRevisionReason": "",
       "userEditSnapshot": {
-        "changedAt": "2026-10-16T08:24:13.595Z",
+        "changedAt": "2026-10-19T03:20:17.205Z",
         "changes": {
           "appointmentDate": {
             "before": "",
-            "after": "2026-10-17"
+            "after": "2026-10-20"
           },
           "appointmentTime": {
             "before": "",
-            "after": "10:00 AM – 11:00 AM"
+            "after": "11:00 AM – 12:00 PM"
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-19T03:12:55.810Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-17",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "10:00 AM – 11:00 AM",
+            "after": ""
           }
         }
       }
@@ -313,21 +294,34 @@
       "status": "pending",
       "submittedAt": "2026-10-16T08:28:08.199Z",
       "visitOptions": [],
-      "appointmentDate": "2026-10-17",
-      "appointmentTime": "1:00 PM – 2:00 PM",
+      "appointmentDate": "2026-10-20",
+      "appointmentTime": "9:00 AM – 10:00 AM",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
       "adminRevisionReason": "",
       "userEditSnapshot": {
-        "changedAt": "2026-10-16T08:28:52.802Z",
+        "changedAt": "2026-10-19T03:14:21.596Z",
         "changes": {
           "appointmentDate": {
             "before": "",
-            "after": "2026-10-17"
+            "after": "2026-10-20"
           },
           "appointmentTime": {
             "before": "",
-            "after": "1:00 PM – 2:00 PM"
+            "after": "9:00 AM – 10:00 AM"
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-19T03:13:04.749Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-17",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "1:00 PM – 2:00 PM",
+            "after": ""
           }
         }
       }
