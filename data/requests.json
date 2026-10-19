@@ -325,6 +325,40 @@
           }
         }
       }
+    },
+    {
+      "id": "event_1792382183215",
+      "roomId": "grounds",
+      "roomName": "Grounds",
+      "name": "Scout camping",
+      "contact": "School Event",
+      "email": "admin@bchs.edu",
+      "date": "2026-10-23",
+      "startTime": "16:00",
+      "endTime": "18:00",
+      "purpose": "all scouts please bring your own sleeping bag",
+      "attendees": 0,
+      "status": "approved",
+      "paymentStatus": "paid",
+      "totalAmount": 0,
+      "isSchoolEvent": true,
+      "submittedAt": "2026-10-19T03:56:23.257Z",
+      "userId": "school event"
+    },
+    {
+      "id": "block_1792382291688_up2g4",
+      "roomId": "global",
+      "roomName": "ALL FACILITIES",
+      "name": "ADMIN BLOCK",
+      "email": "admin@bchs.edu",
+      "date": "Oct 27, 2026",
+      "startTime": "07:00",
+      "endTime": "18:00",
+      "purpose": "ADMIN MANUAL BLOCK: Bayanihan",
+      "status": "blocked",
+      "isFullDayBlock": true,
+      "submittedAt": "2026-10-19T03:58:11.692Z",
+      "userId": "admin@bchs.edu"
     }
   ]
 }

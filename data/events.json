@@ -1,16 +1,134 @@
 {
   "events": [
-    {"id":"4","title":"Parent-Teacher Conference","date":"2026-02-10","time":"1:00 PM - 5:00 PM","location":"Library","attendees":150,"description":"Quarterly academic progress discussions","image":"https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"},
-    {"id":"5","title":"Sports Day","date":"2026-09-15","time":"8:00 AM - 5:00 PM","location":"Grounds","attendees":1200,"description":"Annual inter-house sports competition and games","image":"https://images.unsplash.com/photo-1729553199932-5c969712e895?w=800"},
-    {"id":"6","title":"Foundation Day Celebration","date":"2026-02-01","time":"9:00 AM - 3:00 PM","location":"Auditorium","attendees":950,"description":"School anniversary celebration with performances and exhibits","image":"https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"},
-    {"id":"7","title":"Alumni Homecoming","date":"2026-02-20","time":"2:00 PM - 7:00 PM","location":"Grounds","attendees":600,"description":"Annual gathering of BCHS alumni from different batches","image":"https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"},
-    {"id":"8","title":"Academic Recognition Day","date":"2026-01-30","time":"10:00 AM - 12:00 PM","location":"Auditorium","attendees":400,"description":"Honors and awards ceremony for outstanding students","image":"https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"},
-    {"id":"1774075246685","title":"Graduation of K12","date":"2026-03-21","time":"7:30 AM - 10:00 AM","location":"Auditorium","attendees":0,"description":"Call time is 7:30am","image":"https://thumbs.dreamstime.com/b/white-isolated-graphic-featuring-black-gold-graduation-theme-cap-diploma-numeric-elements-s-designed-as-422848410.jpg"},
-    {"id":"1774075935573","title":"Moving up","date":"2026-03-30","time":"8:00 AM - 10:00 AM","location":"Auditorium","attendees":0,"description":"7:30 call time. return the toga after the ceremony","image":"https://thumbs.dreamstime.com/b/white-isolated-graphic-featuring-black-gold-graduation-theme-cap-diploma-numeric-elements-s-designed-as-422848410.jpg"},
-    {"id":"1781864788759","title":"Prom for the G-10","date":"2026-06-30","time":"4:00 PM - 6:00 PM","location":"Auditorium","attendees":0,"description":"please attend your morning class, since it is half day","image":"__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"},
-    {"id":"1784083942906","title":"Cordilleras day","date":"2026-07-15","time":"8:00 AM - 10:00 AM","location":"Auditorium","attendees":0,"description":"No school","image":"__gradient__linear-gradient(135deg, #e0c3fc, #8ec5fc)"},
-    {"id":"1784084043406","title":"me birthday","date":"2026-07-26","time":"10:00 AM - 1:00 PM","location":"AVR","attendees":0,"description":"everyoe is invited","image":"__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"},
-    {"id":"1784084346899","title":"ndghnhfgn","date":"2026-07-18","time":"8:00 AM - 10:00 AM","location":"Auditorium","attendees":0,"description":"dhftgnfhn","image":"__gradient__linear-gradient(135deg, #4facfe, #00f2fe)"},
-    {"id":"1790570633448","title":"Shooting Drill","date":"2026-10-31","time":"1:00 PM - 3:00 PM","location":"Auditorium","attendees":0,"description":"All students and staff will be participating in this drill","image":"__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"}
+    {
+      "id": "4",
+      "title": "Parent-Teacher Conference",
+      "date": "2026-02-10",
+      "time": "1:00 PM - 5:00 PM",
+      "location": "Library",
+      "attendees": 150,
+      "description": "Quarterly academic progress discussions",
+      "image": "https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"
+    },
+    {
+      "id": "5",
+      "title": "Sports Day",
+      "date": "2026-09-15",
+      "time": "8:00 AM - 5:00 PM",
+      "location": "Grounds",
+      "attendees": 1200,
+      "description": "Annual inter-house sports competition and games",
+      "image": "https://images.unsplash.com/photo-1729553199932-5c969712e895?w=800"
+    },
+    {
+      "id": "6",
+      "title": "Foundation Day Celebration",
+      "date": "2026-02-01",
+      "time": "9:00 AM - 3:00 PM",
+      "location": "Auditorium",
+      "attendees": 950,
+      "description": "School anniversary celebration with performances and exhibits",
+      "image": "https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"
+    },
+    {
+      "id": "7",
+      "title": "Alumni Homecoming",
+      "date": "2026-02-20",
+      "time": "2:00 PM - 7:00 PM",
+      "location": "Grounds",
+      "attendees": 600,
+      "description": "Annual gathering of BCHS alumni from different batches",
+      "image": "https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"
+    },
+    {
+      "id": "8",
+      "title": "Academic Recognition Day",
+      "date": "2026-01-30",
+      "time": "10:00 AM - 12:00 PM",
+      "location": "Auditorium",
+      "attendees": 400,
+      "description": "Honors and awards ceremony for outstanding students",
+      "image": "https://images.unsplash.com/photo-1758316727379-4c995d3ae455?w=800"
+    },
+    {
+      "id": "1774075246685",
+      "title": "Graduation of K12",
+      "date": "2026-03-21",
+      "time": "7:30 AM - 10:00 AM",
+      "location": "Auditorium",
+      "attendees": 0,
+      "description": "Call time is 7:30am",
+      "image": "https://thumbs.dreamstime.com/b/white-isolated-graphic-featuring-black-gold-graduation-theme-cap-diploma-numeric-elements-s-designed-as-422848410.jpg"
+    },
+    {
+      "id": "1774075935573",
+      "title": "Moving up",
+      "date": "2026-03-30",
+      "time": "8:00 AM - 10:00 AM",
+      "location": "Auditorium",
+      "attendees": 0,
+      "description": "7:30 call time. return the toga after the ceremony",
+      "image": "https://thumbs.dreamstime.com/b/white-isolated-graphic-featuring-black-gold-graduation-theme-cap-diploma-numeric-elements-s-designed-as-422848410.jpg"
+    },
+    {
+      "id": "1781864788759",
+      "title": "Prom for the G-10",
+      "date": "2026-06-30",
+      "time": "4:00 PM - 6:00 PM",
+      "location": "Auditorium",
+      "attendees": 0,
+      "description": "please attend your morning class, since it is half day",
+      "image": "__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"
+    },
+    {
+      "id": "1784083942906",
+      "title": "Cordilleras day",
+      "date": "2026-07-15",
+      "time": "8:00 AM - 10:00 AM",
+      "location": "Auditorium",
+      "attendees": 0,
+      "description": "No school",
+      "image": "__gradient__linear-gradient(135deg, #e0c3fc, #8ec5fc)"
+    },
+    {
+      "id": "1784084043406",
+      "title": "me birthday",
+      "date": "2026-07-26",
+      "time": "10:00 AM - 1:00 PM",
+      "location": "AVR",
+      "attendees": 0,
+      "description": "everyoe is invited",
+      "image": "__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"
+    },
+    {
+      "id": "1784084346899",
+      "title": "ndghnhfgn",
+      "date": "2026-07-18",
+      "time": "8:00 AM - 10:00 AM",
+      "location": "Auditorium",
+      "attendees": 0,
+      "description": "dhftgnfhn",
+      "image": "__gradient__linear-gradient(135deg, #4facfe, #00f2fe)"
+    },
+    {
+      "id": "1790570633448",
+      "title": "Shooting Drill",
+      "date": "2026-10-31",
+      "time": "1:00 PM - 3:00 PM",
+      "location": "Auditorium",
+      "attendees": 0,
+      "description": "All students and staff will be participating in this drill",
+      "image": "__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"
+    },
+    {
+      "id": "1792382183215",
+      "title": "Scout camping",
+      "date": "2026-10-23",
+      "time": "4:00 PM - 6:00 PM",
+      "location": "Grounds",
+      "attendees": 0,
+      "description": "all scouts please bring your own sleeping bag",
+      "image": "__gradient__linear-gradient(135deg, #96fbc4, #f9f586)"
+    }
   ]
 }

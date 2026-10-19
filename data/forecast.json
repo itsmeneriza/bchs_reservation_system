@@ -1,14 +1,14 @@
 {
   "forecast": {
-    "lastUpdated": "2026-10-19T03:20:17.276Z",
+    "lastUpdated": "2026-10-19T03:58:11.764Z",
     "analyzedYear": 2025,
     "schemaVersion": 5,
-    "totalAnalyzed": 291,
+    "totalAnalyzed": 292,
     "summary": {
-      "totalreservations": 291,
+      "totalreservations": 292,
       "mostPopularRoom": "Auditorium",
       "peakHours": "1:00 PM - 9:00 AM",
-      "averageAttendees": 153
+      "averageAttendees": 152
     },
     "roomAnalytics": [
       {
@@ -44,13 +44,13 @@
       {
         "roomId": "grounds",
         "roomName": "Grounds",
-        "totalreservations": 35,
-        "averageAttendees": 399,
+        "totalreservations": 36,
+        "averageAttendees": 388,
         "utilizationRate": "6%",
         "trend": "increasing",
         "peakDays": [
-          "Sat",
-          "Fri"
+          "Fri",
+          "Sat"
         ],
         "predictedNextWeek": 0,
         "predictionConfidence": "low",
@@ -135,10 +135,10 @@
       },
       {
         "week": "Oct 2026",
-        "totalreservations": 11,
+        "totalreservations": 12,
         "auditorium": 6,
         "library": 2,
-        "grounds": 0,
+        "grounds": 1,
         "avr": 0,
         "gym": 3
       },
@@ -153,7 +153,7 @@
       },
       {
         "week": "Predicted: Dec 2026",
-        "totalreservations": 31,
+        "totalreservations": 32,
         "auditorium": 8,
         "library": 9,
         "grounds": 3,
@@ -182,7 +182,7 @@
       },
       {
         "week": "Predicted: Dec 2026",
-        "totalreservations": 31,
+        "totalreservations": 32,
         "auditorium": 8,
         "library": 9,
         "grounds": 3,

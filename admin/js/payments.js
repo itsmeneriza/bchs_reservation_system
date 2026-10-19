@@ -25,13 +25,17 @@ function clearPaymentFilters() {
     filterPayments();
 }
 
+function isSchoolEventRequest(request) {
+    return request.isSchoolEvent === true || /^(?:event|evt)_/.test(String(request.id || ''));
+}
+
 // ─── Render Payments Tab ──────────────────────────────────────────────────────
 
 function renderPayments() {
     const body = document.getElementById('paidTableBody');
     if (!body) return;
 
-    const approved = requests.filter(r => r.status === 'approved');
+    const approved = requests.filter(r => r.status === 'approved' && !isSchoolEventRequest(r));
 
     // ── Collect payment totals ────────────────────────────────────────────────
     // For each approved booking we track:
