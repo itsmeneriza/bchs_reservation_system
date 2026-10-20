@@ -10,7 +10,7 @@ function getFacilityName(id) {
   const r = (
     facilities && facilities.length > 0 ? facilities : FacilityUtils.FACILITIES_FALLBACK
   ).find((x) => x.id === id);
-  return r ? r.name : FacilityUtils.ROOM_NAMES[id] || id;
+  return r ? r.name : FacilityUtils.FACILITY_NAMES[id] || id;
 }
 
 // ─── Time Formatters ─────────────────────────────────────────────────────────

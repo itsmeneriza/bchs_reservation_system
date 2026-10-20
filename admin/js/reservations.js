@@ -17,11 +17,11 @@ function _getAdminMinPax(facilityId) {
   const facility = _getAdminFacilities().find((r) => r.id === facilityId);
   return facility && facility.minPax != null
     ? facility.minPax
-    : FacilityUtils.ROOM_MIN_PAX[facilityId] || 0;
+    : FacilityUtils.FACILITY_MIN_PAX[facilityId] || 0;
 }
 
 function _getFacilityPriceFallback(facilityId) {
-  return FacilityUtils.ROOM_PRICE_FALLBACK[facilityId] || 0;
+  return FacilityUtils.FACILITY_PRICE_FALLBACK[facilityId] || 0;
 }
 
 // ─── Render All Tabs ──────────────────────────────────────────────────────────

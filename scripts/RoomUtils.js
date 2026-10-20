@@ -43,17 +43,17 @@ const FACILITIES_FALLBACK = [
 // these are also used when the live facilities array is available (same shape).
 
 /** @type {{ [facilityId: string]: number }} */
-const ROOM_PRICE_FALLBACK = Object.fromEntries(
+const FACILITY_PRICE_FALLBACK = Object.fromEntries(
   FACILITIES_FALLBACK.map((r) => [r.id, r.pricePerHour]),
 );
 
 /** @type {{ [facilityId: string]: number }} */
-const ROOM_MIN_PAX = Object.fromEntries(
+const FACILITY_MIN_PAX = Object.fromEntries(
   FACILITIES_FALLBACK.map((r) => [r.id, r.minPax]),
 );
 
 /** @type {{ [facilityId: string]: string }} */
-const ROOM_NAMES = Object.fromEntries(
+const FACILITY_NAMES = Object.fromEntries(
   FACILITIES_FALLBACK.map((r) => [r.id, r.name]),
 );
 
@@ -72,12 +72,12 @@ function getFacilityName(id, liveFacilities) {
   if (id === "global") return "ALL FACILITIES";
   const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : FACILITIES_FALLBACK;
   const r = source.find((x) => x.id === id);
-  return r ? r.name : ROOM_NAMES[id] || id;
+  return r ? r.name : FACILITY_NAMES[id] || id;
 }
 
 /**
  * Returns the price-per-hour for a facility.
- * Uses the live facilities array when available, falls back to ROOM_PRICE_FALLBACK.
+ * Uses the live facilities array when available, falls back to FACILITY_PRICE_FALLBACK.
  *
  * @param {string}   facilityId
  * @param {object[]} [liveFacilities]
@@ -88,12 +88,12 @@ function getFacilityPrice(facilityId, liveFacilities) {
   const facility = source.find((r) => r.id === facilityId);
   return facility
     ? facility.pricePerHour
-    : (ROOM_PRICE_FALLBACK[facilityId] ?? 0);
+    : (FACILITY_PRICE_FALLBACK[facilityId] ?? 0);
 }
 
 /**
  * Returns the minimum pax for a facility, reading from the live facilities array first
- * (where facilities.json has a minPax field), then ROOM_MIN_PAX, then 0.
+ * (where facilities.json has a minPax field), then FACILITY_MIN_PAX, then 0.
  *
  * @param {string}   facilityId
  * @param {object[]} [liveFacilities]
@@ -103,7 +103,7 @@ function getFacilityMinPax(facilityId, liveFacilities) {
   const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : FACILITIES_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   if (facility && facility.minPax != null) return facility.minPax;
-  return ROOM_MIN_PAX[facilityId] ?? 0;
+  return FACILITY_MIN_PAX[facilityId] ?? 0;
 }
 
 /**
@@ -121,9 +121,9 @@ function getFacilities(liveFacilities) {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     FACILITIES_FALLBACK,
-    ROOM_PRICE_FALLBACK,
-    ROOM_MIN_PAX,
-    ROOM_NAMES,
+    FACILITY_PRICE_FALLBACK,
+    FACILITY_MIN_PAX,
+    FACILITY_NAMES,
     getFacilityName,
     getFacilityPrice,
     getFacilityMinPax,
@@ -134,9 +134,9 @@ if (typeof module !== "undefined" && module.exports) {
 if (typeof window !== "undefined") {
   window.FacilityUtils = {
     FACILITIES_FALLBACK,
-    ROOM_PRICE_FALLBACK,
-    ROOM_MIN_PAX,
-    ROOM_NAMES,
+    FACILITY_PRICE_FALLBACK,
+    FACILITY_MIN_PAX,
+    FACILITY_NAMES,
     getFacilityName,
     getFacilityPrice,
     getFacilityMinPax,

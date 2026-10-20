@@ -1292,7 +1292,7 @@ export class Forecast {
       gym: "GYM",
       avr: "AVR",
     };
-    const facilityIcon = facilityIcons[facility.facilityId] || "ROOM";
+    const facilityIcon = facilityIcons[facility.facilityId] || "FACILITY";
 
     const medals = ["1st", "2nd", "3rd", "4th", "5th"];
     const rankBadge =
