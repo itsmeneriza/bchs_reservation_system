@@ -1,10 +1,10 @@
-const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const express = require("express");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 module.exports = function createChatRouter() {
   const router = express.Router();
   // --- Gemini AI Chat Endpoint -------------------------------------------------
-  
+
   const BCHS_SYSTEM_PROMPT = `You are the BCHS (Batangas City High School) Reservation Assistant, a helpful, friendly chatbot embedded in the school's facility booking system.
   
   Your only job is to help with BCHS facility reservations, including facilities, availability, pricing, payments, booking procedures, cancellations, and reservation policies. Keep replies concise and use plain text.
@@ -30,7 +30,7 @@ module.exports = function createChatRouter() {
   - Final Balance: remaining amount due at least 3 working days before the event
   
   == RESERVATION PROCEDURE ==
-  1. Select a room from the sidebar
+  1. Select a facility from the sidebar
   2. Double-click an available date on the calendar
   3. Fill in the reservation form (details, event purpose, time slots)
   4. Accept the facility usage policy
@@ -46,7 +46,7 @@ module.exports = function createChatRouter() {
   - Recommend giving at least 2 weeks notice
   
   == GENERAL RULES ==
-  - Keep rooms clean after use; report any damage immediately
+  - Keep facilitys clean after use; report any damage immediately
   - Arrive on time
   - No smoking anywhere on campus
   - No unauthorized equipment modifications
@@ -64,49 +64,77 @@ module.exports = function createChatRouter() {
   
   == ACCURACY ==
   Do not fabricate information not listed above. If a reservation-related question cannot be answered from the available information, say that you do not have that information and direct the user to the Administration Office.`;
-  
-  const normalizeAssistantReply = (rawText = '') => String(rawText || '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/?(strong|b|em|i|p|ul|ol|li|span)>/gi, '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#039;/gi, "'")
-    .replace(/<[^>]+>/g, '')
-    .replace(/\r\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
 
-  router.post('/api/chat', async (req, res) => {
+  const normalizeAssistantReply = (rawText = "") =>
+    String(rawText || "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/?(strong|b|em|i|p|ul|ol|li|span)>/gi, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#039;/gi, "'")
+      .replace(/<[^>]+>/g, "")
+      .replace(/\r\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+  router.post("/api/chat", async (req, res) => {
     try {
       const messages = req.body?.messages;
 
-      if (!Array.isArray(messages) || messages.length === 0 || messages.some(message =>
-        !message ||
-        typeof message !== 'object' ||
-        !['user', 'assistant'].includes(message.sender) ||
-        typeof message.text !== 'string'
-      )) {
-        return res.status(400).json({ success: false, message: 'messages must be a non-empty array of user or assistant messages' });
+      if (
+        !Array.isArray(messages) ||
+        messages.length === 0 ||
+        messages.some(
+          (message) =>
+            !message ||
+            typeof message !== "object" ||
+            !["user", "assistant"].includes(message.sender) ||
+            typeof message.text !== "string",
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "messages must be a non-empty array of user or assistant messages",
+          });
       }
-  
-      const apiKey = String(process.env.GEMINI_API_KEY || '').trim();
-      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-        return res.status(503).json({ success: false, message: 'Gemini API key is not configured. Please set GEMINI_API_KEY in .env.local.' });
+
+      const apiKey = String(process.env.GEMINI_API_KEY || "").trim();
+      if (!apiKey || apiKey === "your_gemini_api_key_here") {
+        return res
+          .status(503)
+          .json({
+            success: false,
+            message:
+              "Gemini API key is not configured. Please set GEMINI_API_KEY in .env.local.",
+          });
       }
-  
+
       const genAI = new GoogleGenerativeAI(apiKey);
-      const modelCandidates = Array.from(new Set([
-        process.env.GEMINI_MODEL,
-        'gemini-3.5-flash-lite',
-        'gemini-3.8-flash'
-      ].filter(Boolean)));
-  
+      const modelCandidates = Array.from(
+        new Set(
+          [
+            process.env.GEMINI_MODEL,
+            "gemini-3.5-flash-lite",
+            "gemini-3.8-flash",
+          ].filter(Boolean),
+        ),
+      );
+
       // Strip HTML tags from a message so history text is plain
-      const stripHtml = (html) => html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
-  
+      const stripHtml = (html) =>
+        html
+          .replace(/<[^>]*>/g, "")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .trim();
+
       // Convert frontend format { sender: 'user'|'assistant', text } to
       // Gemini format { role: 'user'|'model', parts: [{ text }] }.
       // Gemini requires strictly alternating user/model turns in history �
@@ -114,56 +142,72 @@ module.exports = function createChatRouter() {
       const rawHistory = messages.slice(0, -1).slice(-10);
       const history = [];
       for (const m of rawHistory) {
-        const role = m.sender === 'user' ? 'user' : 'model';
+        const role = m.sender === "user" ? "user" : "model";
         const text = stripHtml(m.text).trim();
         if (!text) continue;
         // Skip if same role as the last entry (would break alternation)
-        if (history.length > 0 && history[history.length - 1].role === role) continue;
+        if (history.length > 0 && history[history.length - 1].role === role)
+          continue;
         history.push({ role, parts: [{ text }] });
       }
-  
+
       // Gemini history must start with a 'user' turn
-      while (history.length > 0 && history[0].role !== 'user') history.shift();
-  
+      while (history.length > 0 && history[0].role !== "user") history.shift();
+
       const lastMessage = messages[messages.length - 1];
-      if (!lastMessage || lastMessage.sender !== 'user') {
-        return res.status(400).json({ success: false, message: 'Last message must be from the user' });
+      if (!lastMessage || lastMessage.sender !== "user") {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "Last message must be from the user",
+          });
       }
-  
-      const userText = String(lastMessage.text || '').trim();
+
+      const userText = String(lastMessage.text || "").trim();
       if (!userText) {
-        return res.status(400).json({ success: false, message: 'User message cannot be empty' });
+        return res
+          .status(400)
+          .json({ success: false, message: "User message cannot be empty" });
       }
-  
+
       let model = null;
       for (const candidate of modelCandidates) {
         try {
-          model = genAI.getGenerativeModel({
-            model: candidate,
-            systemInstruction: BCHS_SYSTEM_PROMPT,
-            generationConfig: { maxOutputTokens: 256 }
-          }, { timeout: 25000 });
+          model = genAI.getGenerativeModel(
+            {
+              model: candidate,
+              systemInstruction: BCHS_SYSTEM_PROMPT,
+              generationConfig: { maxOutputTokens: 256 },
+            },
+            { timeout: 25000 },
+          );
           const chat = model.startChat({ history });
           const result = await chat.sendMessage(userText);
           const reply = normalizeAssistantReply(result.response.text());
-          if (!reply) throw new Error('Gemini returned an empty response');
+          if (!reply) throw new Error("Gemini returned an empty response");
           return res.status(200).json({ success: true, reply });
         } catch (error) {
-          console.warn(`Gemini model ${candidate} failed:`, error?.message || error);
+          console.warn(
+            `Gemini model ${candidate} failed:`,
+            error?.message || error,
+          );
           if (![404, 503].includes(error?.status)) break;
         }
       }
-  
+
       return res.status(502).json({
         success: false,
-        message: 'The AI assistant is temporarily unavailable. Please try again later.'
+        message:
+          "The AI assistant is temporarily unavailable. Please try again later.",
       });
     } catch (error) {
-      console.error('Gemini chat error:', error.message);
-      if (error.cause) console.error('  cause:', error.cause);
+      console.error("Gemini chat error:", error.message);
+      if (error.cause) console.error("  cause:", error.cause);
       res.status(502).json({
         success: false,
-        message: 'The AI assistant is temporarily unavailable. Please try again later.'
+        message:
+          "The AI assistant is temporarily unavailable. Please try again later.",
       });
     }
   });

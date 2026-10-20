@@ -4,10 +4,10 @@
  */
 
 var requests = [];
-var staff    = [];
-var rooms    = [];
+var staff = [];
+var facilitys = [];
 var adminEvents = [];
 
-var currentCalendarDate  = new Date();
+var currentCalendarDate = new Date();
 var selectedRequestToEdit = null;
-var currentModalMode     = 'FULL_EDIT'; // FULL_EDIT | PAYMENT_ONLY | VIEW_ONLY | CONFIRMED_EDIT | QUEUE_REVIEW
+var currentModalMode = "FULL_EDIT"; // FULL_EDIT | PAYMENT_ONLY | VIEW_ONLY | CONFIRMED_EDIT | QUEUE_REVIEW

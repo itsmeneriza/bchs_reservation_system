@@ -8,13 +8,13 @@ A web-based facility reservation system built with Node.js and Express. Includes
 
 Minimum specs to run this system on a dedicated machine (e.g. a school server or office PC):
 
-| Component | Minimum | Recommended |
-|---|---|---|
-| CPU | Dual-core 1.6 GHz | Quad-core 2.0 GHz or better |
-| RAM | 2 GB | 4 GB or more |
-| Storage | 10 GB free space | 20 GB+ (for data growth) |
-| Network | Wired or Wi-Fi connection | Wired LAN (more stable) |
-| OS | Windows 10, Ubuntu 20.04, or macOS 11 | Ubuntu 22.04 LTS (for servers) |
+| Component | Minimum                               | Recommended                    |
+| --------- | ------------------------------------- | ------------------------------ |
+| CPU       | Dual-core 1.6 GHz                     | Quad-core 2.0 GHz or better    |
+| RAM       | 2 GB                                  | 4 GB or more                   |
+| Storage   | 10 GB free space                      | 20 GB+ (for data growth)       |
+| Network   | Wired or Wi-Fi connection             | Wired LAN (more stable)        |
+| OS        | Windows 10, Ubuntu 20.04, or macOS 11 | Ubuntu 22.04 LTS (for servers) |
 
 > The system is lightweight - it runs entirely on Node.js with no database engine required. Even older office computers can handle it.
 
@@ -41,6 +41,7 @@ If you want the system accessible to everyone on the same Wi-Fi or LAN network (
 
 - [Node.js](https://nodejs.org/) v18 or higher
 - A Gmail account (for email notifications)
+
 ---
 
 ## Installation
@@ -67,7 +68,6 @@ If you want the system accessible to everyone on the same Wi-Fi or LAN network (
    > Get a Gemini API key from Google AI Studio (or your Google Cloud project). The chatbot reads `GEMINI_API_KEY` from `.env.local`; keep this key private and do not commit it. The repository's `.gitignore` already excludes `.env*.local`.
    > If Gemini is not configured or temporarily unavailable, the chatbot will show saved reservation guidance instead.
 
-
 ---
 
 ## Running Locally
@@ -77,6 +77,7 @@ npm start
 ```
 
 Then open in your browser:
+
 - User app: [http://localhost:3000](http://localhost:3000)
 - Admin panel: [http://localhost:3000/admin/admin.html](http://localhost:3000/admin/admin.html)
 
@@ -84,7 +85,7 @@ Then open in your browser:
 
 `server.js` configures Express, serves the static frontends, mounts the API routers, starts scheduled jobs, and listens for requests. API handlers are grouped by feature in `routes/`:
 
-- `requests.js` handles reservations, rooms, events, and accepted reservations.
+- `requests.js` handles reservations, facilitys, events, and accepted reservations.
 - `history.js` handles archived reservations and periodic archiving.
 - `forecast.js` handles forecast calculation, caching, and refresh.
 - `notifications.js` handles email notifications, reminders, and cancellation OTPs.
@@ -155,14 +156,14 @@ The shared email transport is configured in `services/mailer.js`; existing date,
 
 All data is stored as JSON files in the `data/` folder:
 
-| File | Description |
-|---|---|
-| `requests.json` | Pending and active reservation requests |
-| `accepted.json` | Approved reservations |
-| `history.json` | Archived past reservations |
-| `events.json` | Scheduled events |
-| `rooms.json` | Facility/room definitions |
-| `staff.json` | Staff accounts |
-| `forecast.json` | Cached usage forecast |
+| File             | Description                             |
+| ---------------- | --------------------------------------- |
+| `requests.json`  | Pending and active reservation requests |
+| `accepted.json`  | Approved reservations                   |
+| `history.json`   | Archived past reservations              |
+| `events.json`    | Scheduled events                        |
+| `facilitys.json` | Facility/facility definitions           |
+| `staff.json`     | Staff accounts                          |
+| `forecast.json`  | Cached usage forecast                   |
 
 > When hosting on platforms like Railway or Render, note that the file system is **ephemeral** - data resets on redeploy. For persistent storage, consider migrating to a database like MongoDB Atlas or PostgreSQL.

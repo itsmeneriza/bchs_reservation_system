@@ -2,8 +2,8 @@
   "accepted": [
     {
       "id": "1790297213496",
-      "roomId": "gym",
-      "roomName": "gym",
+      "facilityId": "gym",
+      "facilityName": "gym",
       "totalAmount": 3800,
       "paymentStatus": "pending",
       "isStaff": false,
@@ -23,7 +23,7 @@
       "adminEditSnapshot": {
         "changedAt": "2026-09-25T10:32:33.527Z",
         "changes": {
-          "roomName": {
+          "facilityName": {
             "before": "Gym",
             "after": "gym"
           }
@@ -36,8 +36,8 @@
     },
     {
       "id": "1790388279179",
-      "roomId": "auditorium",
-      "roomName": "Auditorium",
+      "facilityId": "auditorium",
+      "facilityName": "Auditorium",
       "totalAmount": 0,
       "paymentStatus": "paid",
       "isStaff": true,
@@ -95,8 +95,8 @@
     },
     {
       "id": "1790562064714",
-      "roomId": "auditorium",
-      "roomName": "auditorium",
+      "facilityId": "auditorium",
+      "facilityName": "auditorium",
       "totalAmount": 1800,
       "paymentStatus": "paid",
       "isStaff": false,

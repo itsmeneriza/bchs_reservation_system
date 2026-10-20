@@ -1,7 +1,7 @@
 [
   {
     "id": "1",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Sarah Chen",
     "date": "2025-12-03",
     "startTime": "10:00",
@@ -12,7 +12,7 @@
   },
   {
     "id": "2",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Michael Torres",
     "date": "2025-12-04",
     "startTime": "14:00",
@@ -23,7 +23,7 @@
   },
   {
     "id": "3",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Aisha Johnson",
     "date": "2025-12-05",
     "startTime": "09:00",
@@ -34,7 +34,7 @@
   },
   {
     "id": "4",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "John Doe",
     "date": "2025-12-02",
     "startTime": "08:00",
@@ -45,7 +45,7 @@
   },
   {
     "id": "5",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Dr. Emily Patel",
     "date": "2025-12-06",
     "startTime": "13:00",
@@ -56,7 +56,7 @@
   },
   {
     "id": "6",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Robert Kim",
     "date": "2025-12-07",
     "startTime": "11:00",
@@ -67,7 +67,7 @@
   },
   {
     "id": "7",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Grace Wong",
     "date": "2025-12-08",
     "startTime": "18:30",
@@ -78,7 +78,7 @@
   },
   {
     "id": "8",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Daniel Smith",
     "date": "2025-12-09",
     "startTime": "16:00",
@@ -89,7 +89,7 @@
   },
   {
     "id": "9",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Prof. Leonard Hayes",
     "date": "2025-12-10",
     "startTime": "10:00",
@@ -100,7 +100,7 @@
   },
   {
     "id": "10",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Olivia Martinez",
     "date": "2025-12-11",
     "startTime": "09:30",
@@ -111,7 +111,7 @@
   },
   {
     "id": "11",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "James Wilson",
     "date": "2025-12-12",
     "startTime": "14:00",
@@ -122,7 +122,7 @@
   },
   {
     "id": "12",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Noah Williams",
     "date": "2025-12-13",
     "startTime": "15:00",
@@ -133,7 +133,7 @@
   },
   {
     "id": "13",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Dr. Fatima Nkosi",
     "date": "2025-12-14",
     "startTime": "08:30",
@@ -144,7 +144,7 @@
   },
   {
     "id": "14",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Elena Rodriguez",
     "date": "2025-12-15",
     "startTime": "13:30",
@@ -155,7 +155,7 @@
   },
   {
     "id": "15",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Thomas Lee",
     "date": "2025-12-16",
     "startTime": "19:00",
@@ -166,7 +166,7 @@
   },
   {
     "id": "16",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Dr. Samuel Adeyemi",
     "date": "2025-12-17",
     "startTime": "11:00",
@@ -177,7 +177,7 @@
   },
   {
     "id": "17",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Zoe Thompson",
     "date": "2025-12-18",
     "startTime": "17:00",
@@ -188,7 +188,7 @@
   },
   {
     "id": "18",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Benjamin Clark",
     "date": "2025-12-19",
     "startTime": "10:00",
@@ -199,7 +199,7 @@
   },
   {
     "id": "19",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Dr. Lisa Park",
     "date": "2025-12-20",
     "startTime": "09:00",
@@ -210,7 +210,7 @@
   },
   {
     "id": "20",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Kevin Zhang",
     "date": "2025-12-21",
     "startTime": "14:00",
@@ -221,7 +221,7 @@
   },
   {
     "id": "21",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Prof. Nadia Costa",
     "date": "2025-01-05",
     "startTime": "10:00",
@@ -232,7 +232,7 @@
   },
   {
     "id": "22",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Rachel Green",
     "date": "2025-01-06",
     "startTime": "15:00",
@@ -243,7 +243,7 @@
   },
   {
     "id": "23",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Dr. Omar Hassan",
     "date": "2025-01-07",
     "startTime": "13:00",
@@ -254,7 +254,7 @@
   },
   {
     "id": "24",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Isabella Rossi",
     "date": "2025-01-08",
     "startTime": "12:00",
@@ -265,7 +265,7 @@
   },
   {
     "id": "25",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Ethan Brooks",
     "date": "2025-01-09",
     "startTime": "18:00",
@@ -276,7 +276,7 @@
   },
   {
     "id": "26",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Sophia Adams",
     "date": "2025-01-10",
     "startTime": "09:00",
@@ -287,7 +287,7 @@
   },
   {
     "id": "27",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Lucas Moore",
     "date": "2025-01-11",
     "startTime": "11:00",
@@ -298,7 +298,7 @@
   },
   {
     "id": "28",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Dr. Priya Sharma",
     "date": "2025-01-12",
     "startTime": "16:00",
@@ -309,7 +309,7 @@
   },
   {
     "id": "29",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Marcus Johnson",
     "date": "2025-01-13",
     "startTime": "19:30",
@@ -320,7 +320,7 @@
   },
   {
     "id": "30",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Dr. Hannah Kim",
     "date": "2025-01-14",
     "startTime": "08:30",
@@ -331,7 +331,7 @@
   },
   {
     "id": "31",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Patricia Smith",
     "date": "2025-11-15",
     "startTime": "10:00",
@@ -342,7 +342,7 @@
   },
   {
     "id": "32",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "David Johnson",
     "date": "2025-11-16",
     "startTime": "14:00",
@@ -353,7 +353,7 @@
   },
   {
     "id": "33",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Maria Garcia",
     "date": "2025-11-17",
     "startTime": "09:00",
@@ -364,7 +364,7 @@
   },
   {
     "id": "34",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Robert Brown",
     "date": "2025-11-18",
     "startTime": "13:00",
@@ -375,7 +375,7 @@
   },
   {
     "id": "35",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Linda Davis",
     "date": "2025-11-19",
     "startTime": "10:00",
@@ -386,7 +386,7 @@
   },
   {
     "id": "36",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "James Wilson",
     "date": "2025-11-20",
     "startTime": "16:00",
@@ -397,7 +397,7 @@
   },
   {
     "id": "37",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Jennifer Martinez",
     "date": "2025-11-21",
     "startTime": "09:00",
@@ -408,7 +408,7 @@
   },
   {
     "id": "38",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Michael Anderson",
     "date": "2025-11-22",
     "startTime": "10:00",
@@ -419,7 +419,7 @@
   },
   {
     "id": "39",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Susan Taylor",
     "date": "2025-11-23",
     "startTime": "14:00",
@@ -430,7 +430,7 @@
   },
   {
     "id": "40",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Christopher Lee",
     "date": "2025-11-24",
     "startTime": "11:00",
@@ -441,7 +441,7 @@
   },
   {
     "id": "41",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Elizabeth White",
     "date": "2025-10-10",
     "startTime": "09:00",
@@ -452,7 +452,7 @@
   },
   {
     "id": "42",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Daniel Harris",
     "date": "2025-10-11",
     "startTime": "15:00",
@@ -463,7 +463,7 @@
   },
   {
     "id": "43",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Jessica Clark",
     "date": "2025-10-12",
     "startTime": "08:00",
@@ -474,7 +474,7 @@
   },
   {
     "id": "44",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Matthew Lewis",
     "date": "2025-10-13",
     "startTime": "13:00",
@@ -485,7 +485,7 @@
   },
   {
     "id": "45",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Sarah Walker",
     "date": "2025-10-14",
     "startTime": "10:00",
@@ -496,7 +496,7 @@
   },
   {
     "id": "46",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Kevin Hall",
     "date": "2025-10-15",
     "startTime": "17:00",
@@ -507,7 +507,7 @@
   },
   {
     "id": "47",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Nancy Allen",
     "date": "2025-10-16",
     "startTime": "14:00",
@@ -518,7 +518,7 @@
   },
   {
     "id": "48",
-    "roomId": "grounds",
+    "facilityId": "grounds",
     "name": "Paul Young",
     "date": "2025-10-17",
     "startTime": "09:00",
@@ -529,7 +529,7 @@
   },
   {
     "id": "49",
-    "roomId": "auditorium",
+    "facilityId": "auditorium",
     "name": "Karen King",
     "date": "2025-10-18",
     "startTime": "11:00",
@@ -540,7 +540,7 @@
   },
   {
     "id": "50",
-    "roomId": "library",
+    "facilityId": "library",
     "name": "Steven Wright",
     "date": "2025-10-19",
     "startTime": "09:00",
@@ -551,8 +551,8 @@
   },
   {
     "id": "req_1730801000_def456",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Michael Chen",
     "contact": "555-0192",
     "email": "michael.chen@bchs.edu",
@@ -570,8 +570,8 @@
   },
   {
     "id": "req_1730802000_ghi789",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Sarah Thompson",
     "contact": "555-0193",
     "email": "sarah.thompson@bchs.edu",
@@ -589,8 +589,8 @@
   },
   {
     "id": "req_1730815000_tuv678",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Kevin Bautista",
     "contact": "555-0206",
     "email": "kevin.bautista@bchs.edu",
@@ -608,8 +608,8 @@
   },
   {
     "id": "req_1730816000_wxy901",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Stephanie Flores",
     "contact": "555-0207",
     "email": "stephanie.flores@bchs.edu",
@@ -627,8 +627,8 @@
   },
   {
     "id": "block_1773807628967_itn18",
-    "roomId": "global",
-    "roomName": "ALL FACILITIES",
+    "facilityId": "global",
+    "facilityName": "ALL FACILITIES",
     "name": "ADMIN BLOCK",
     "email": "admin@bchs.edu",
     "date": "2026-03-20",
@@ -641,8 +641,8 @@
   },
   {
     "id": "block_1774073949452_2sfj5",
-    "roomId": "global",
-    "roomName": "ALL FACILITIES",
+    "facilityId": "global",
+    "facilityName": "ALL FACILITIES",
     "name": "ADMIN BLOCK",
     "email": "admin@bchs.edu",
     "date": "2026-03-20",
@@ -655,8 +655,8 @@
   },
   {
     "id": "1773972993294",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Mr. Roberto Santos",
@@ -678,8 +678,8 @@
   },
   {
     "id": "1773655095522",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 50,
     "paymentStatus": "paid",
     "name": "Mr. Roberto Santos",
@@ -700,8 +700,8 @@
   },
   {
     "id": "1773980606952",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 2600,
     "paymentStatus": "pending",
     "name": "Aliya Roi",
@@ -722,8 +722,8 @@
   },
   {
     "id": "req_1730800000_abc123",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "name": "Patricia Martinez",
     "contact": "555-0191",
     "email": "patricia.martinez@bchs.edu",
@@ -745,8 +745,8 @@
   },
   {
     "id": "1774318215642",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 800,
     "paymentStatus": "pending",
     "name": "Aliya Roi",
@@ -766,8 +766,8 @@
   },
   {
     "id": "1773987527495",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Ms. Elena Garcia",
@@ -785,8 +785,8 @@
   },
   {
     "id": "1773988995511",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Ms. Elena Garcia",
@@ -804,8 +804,8 @@
   },
   {
     "id": "1774665699151",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Dr. Aris Ramos",
@@ -827,8 +827,8 @@
   },
   {
     "id": "1773979653046",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Mr. Roberto Santos",
@@ -852,8 +852,8 @@
   },
   {
     "id": "1774576861385",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 2800,
     "paymentStatus": "pending",
     "name": "Aliya",
@@ -875,8 +875,8 @@
   },
   {
     "id": "1774488363857",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 4400,
     "paymentStatus": "paid",
     "name": "Evania Olivia",
@@ -898,8 +898,8 @@
   },
   {
     "id": "1775099559011",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 4800,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -919,11 +919,11 @@
     "adminEditSnapshot": {
       "changedAt": "2026-04-02T03:14:21.491Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "gym",
           "after": "auditorium"
         },
-        "roomName": {
+        "facilityName": {
           "before": "Gym",
           "after": "auditorium"
         },
@@ -938,8 +938,8 @@
   },
   {
     "id": "1774233155041",
-    "roomId": "",
-    "roomName": "",
+    "facilityId": "",
+    "facilityName": "",
     "totalAmount": 3800,
     "paymentStatus": "paid",
     "name": "Aliya Roi",
@@ -961,8 +961,8 @@
   },
   {
     "id": "block_1774678474649_g5y0c",
-    "roomId": "global",
-    "roomName": "ALL FACILITIES",
+    "facilityId": "global",
+    "facilityName": "ALL FACILITIES",
     "name": "ADMIN BLOCK",
     "email": "admin@bchs.edu",
     "date": "2026-04-18",
@@ -976,8 +976,8 @@
   },
   {
     "id": "1775004879671",
-    "roomId": "library",
-    "roomName": "library",
+    "facilityId": "library",
+    "facilityName": "library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Ms. Elena Garcia",
@@ -999,8 +999,8 @@
   },
   {
     "id": "1775097705538",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1020,11 +1020,11 @@
     "adminEditSnapshot": {
       "changedAt": "2026-04-02T02:43:15.069Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "grounds",
           "after": "auditorium"
         },
-        "roomName": {
+        "facilityName": {
           "before": "Grounds",
           "after": "auditorium"
         },
@@ -1043,8 +1043,8 @@
   },
   {
     "id": "1775100515727",
-    "roomId": "grounds",
-    "roomName": "grounds",
+    "facilityId": "grounds",
+    "facilityName": "grounds",
     "totalAmount": 140,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -1064,7 +1064,7 @@
     "adminEditSnapshot": {
       "changedAt": "2026-04-02T03:47:58.712Z",
       "changes": {
-        "roomName": {
+        "facilityName": {
           "before": "Grounds",
           "after": "grounds"
         },
@@ -1087,8 +1087,8 @@
   },
   {
     "id": "1774318086167",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "name": "Ms. Elena Garcia",
@@ -1109,8 +1109,8 @@
   },
   {
     "id": "req_1730814000_qrs345",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "name": "Nicole Cruz",
     "contact": "555-0205",
     "email": "nicole.cruz@bchs.edu",
@@ -1129,7 +1129,7 @@
     "adminEditSnapshot": {
       "changedAt": "2026-04-27T11:42:12.266Z",
       "changes": {
-        "roomName": {
+        "facilityName": {
           "before": "Auditorium",
           "after": "auditorium"
         },
@@ -1144,8 +1144,8 @@
   },
   {
     "id": "1777291096919",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 1400,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -1166,8 +1166,8 @@
   },
   {
     "id": "1778822053087",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1198,8 +1198,8 @@
   },
   {
     "id": "1778822289039",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1230,8 +1230,8 @@
   },
   {
     "id": "1777290320988",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1800,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -1264,8 +1264,8 @@
   },
   {
     "id": "admin_1781860469912",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "name": "battle of the bands",
     "contact": "09373719288",
     "email": "aliyaroispaculan@gmail.com",
@@ -1290,8 +1290,8 @@
   },
   {
     "id": "1781863019722",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 1800,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -1311,11 +1311,11 @@
     "adminEditSnapshot": {
       "changedAt": "2026-06-19T10:24:55.821Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "gym",
           "after": "auditorium"
         },
-        "roomName": {
+        "facilityName": {
           "before": "Gym",
           "after": "auditorium"
         }
@@ -1326,8 +1326,8 @@
   },
   {
     "id": "event_1781864788759",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Prom for the G-10",
     "contact": "School Event",
     "email": "admin@bchs.edu",
@@ -1344,8 +1344,8 @@
   },
   {
     "id": "block_1781864817835_spmqp",
-    "roomId": "global",
-    "roomName": "ALL FACILITIES",
+    "facilityId": "global",
+    "facilityName": "ALL FACILITIES",
     "name": "ADMIN BLOCK",
     "email": "admin@bchs.edu",
     "date": "2026-06-24",
@@ -1358,8 +1358,8 @@
   },
   {
     "id": "block_1781865598077_44hvv",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "ADMIN BLOCK",
     "email": "admin@bchs.edu",
     "date": "2026-06-22",
@@ -1372,8 +1372,8 @@
   },
   {
     "id": "1781050657274",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1404,8 +1404,8 @@
   },
   {
     "id": "1781140370045",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 2200,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -1436,8 +1436,8 @@
   },
   {
     "id": "1781865511904",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 4400,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -1457,7 +1457,7 @@
     "adminEditSnapshot": {
       "changedAt": "2026-06-19T10:39:14.199Z",
       "changes": {
-        "roomName": {
+        "facilityName": {
           "before": "Auditorium",
           "after": "auditorium"
         }
@@ -1468,8 +1468,8 @@
   },
   {
     "id": "event_1784083942906",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Cordilleras day",
     "contact": "School Event",
     "email": "admin@bchs.edu",
@@ -1486,8 +1486,8 @@
   },
   {
     "id": "block_1784084101666_evth7",
-    "roomId": "global",
-    "roomName": "ALL FACILITIES",
+    "facilityId": "global",
+    "facilityName": "ALL FACILITIES",
     "name": "ADMIN BLOCK",
     "email": "admin@bchs.edu",
     "date": "2026-07-26",
@@ -1500,8 +1500,8 @@
   },
   {
     "id": "event_1784084346899",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "ndghnhfgn",
     "contact": "School Event",
     "email": "admin@bchs.edu",
@@ -1518,8 +1518,8 @@
   },
   {
     "id": "1784084392560",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1539,11 +1539,11 @@
     "adminEditSnapshot": {
       "changedAt": "2026-07-15T03:04:57.149Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "grounds",
           "after": "auditorium"
         },
-        "roomName": {
+        "facilityName": {
           "before": "grounds",
           "after": "auditorium"
         },
@@ -1566,8 +1566,8 @@
   },
   {
     "id": "admin_1784084805844",
-    "roomId": "library",
-    "roomName": "library",
+    "facilityId": "library",
+    "facilityName": "library",
     "name": "rgrdfgvds",
     "contact": "09487376612",
     "email": "yjmjghfngdfgh@gmail.com",
@@ -1589,8 +1589,8 @@
   },
   {
     "id": "admin_1784085100870",
-    "roomId": "library",
-    "roomName": "library",
+    "facilityId": "library",
+    "facilityName": "library",
     "name": "uyvhbjhknj",
     "contact": "09276163474",
     "email": "aliyaroispaculan@gmail.com",
@@ -1612,8 +1612,8 @@
   },
   {
     "id": "1790231891706",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 2200,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -1631,11 +1631,11 @@
     "adminEditSnapshot": {
       "changedAt": "2026-09-24T06:39:30.148Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "grounds",
           "after": "auditorium"
         },
-        "roomName": {
+        "facilityName": {
           "before": "Grounds",
           "after": "auditorium"
         }
@@ -1648,8 +1648,8 @@
   },
   {
     "id": "1790297213495",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 3800,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -1684,8 +1684,8 @@
   },
   {
     "id": "1790303747638",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1705,7 +1705,7 @@
     "adminEditSnapshot": {
       "changedAt": "2026-09-25T03:46:55.141Z",
       "changes": {
-        "roomName": {
+        "facilityName": {
           "before": "Auditorium",
           "after": "auditorium"
         }
@@ -1720,8 +1720,8 @@
   },
   {
     "id": "1790303678271",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1770,8 +1770,8 @@
   },
   {
     "id": "1790332461310",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1792,8 +1792,8 @@
   },
   {
     "id": "1790333200906",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1814,8 +1814,8 @@
   },
   {
     "id": "admin_1790331906532",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "name": "Party",
     "contact": "098654332234",
     "email": "theprettymarias@gmail.com",
@@ -1835,8 +1835,8 @@
   },
   {
     "id": "1790333289930",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1858,11 +1858,11 @@
     "adminEditSnapshot": {
       "changedAt": "2026-09-26T00:29:33.517Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "avr",
           "after": "auditorium"
         },
-        "roomName": {
+        "facilityName": {
           "before": "AVR",
           "after": "auditorium"
         }
@@ -1876,8 +1876,8 @@
   },
   {
     "id": "1790382484682",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1899,11 +1899,11 @@
     "userEditSnapshot": {
       "changedAt": "2026-09-26T00:34:20.551Z",
       "changes": {
-        "roomId": {
+        "facilityId": {
           "before": "gym",
           "after": "grounds"
         },
-        "roomName": {
+        "facilityName": {
           "before": "Gym",
           "after": "Grounds"
         },
@@ -1929,8 +1929,8 @@
   },
   {
     "id": "1790387952978",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -1968,8 +1968,8 @@
   },
   {
     "id": "1790317230739",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -2022,8 +2022,8 @@
   },
   {
     "id": "1790303601255",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -2058,8 +2058,8 @@
   },
   {
     "id": "seed_2025_02_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Lena Reyes",
     "email": "lena.reyes@bchs.edu",
     "contact": "09171110001",
@@ -2075,8 +2075,8 @@
   },
   {
     "id": "seed_2025_02_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Carlos Mabini",
     "email": "carlos.mabini@bchs.edu",
     "contact": "09181110002",
@@ -2092,8 +2092,8 @@
   },
   {
     "id": "seed_2025_02_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Marco Cruz",
     "email": "marco.cruz@bchs.edu",
     "contact": "09191110003",
@@ -2109,8 +2109,8 @@
   },
   {
     "id": "seed_2025_02_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Trish Navarro",
     "email": "trish.navarro@bchs.edu",
     "contact": "09201110004",
@@ -2126,8 +2126,8 @@
   },
   {
     "id": "seed_2025_02_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Arnold Tan",
     "email": "arnold.tan@bchs.edu",
     "contact": "09211110005",
@@ -2143,8 +2143,8 @@
   },
   {
     "id": "seed_2025_02_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Diane Santos",
     "email": "diane.santos@bchs.edu",
     "contact": "09171110006",
@@ -2160,8 +2160,8 @@
   },
   {
     "id": "seed_2025_02_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Nestor Bautista",
     "email": "nestor.bautista@bchs.edu",
     "contact": "09181110007",
@@ -2177,8 +2177,8 @@
   },
   {
     "id": "seed_2025_02_08",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Rosa Dela Cruz",
     "email": "rosa.delacruz@bchs.edu",
     "contact": "09191110008",
@@ -2194,8 +2194,8 @@
   },
   {
     "id": "seed_2025_03_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Gene Villanueva",
     "email": "gene.villanueva@bchs.edu",
     "contact": "09171110011",
@@ -2211,8 +2211,8 @@
   },
   {
     "id": "seed_2025_03_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Belle Ocampo",
     "email": "belle.ocampo@bchs.edu",
     "contact": "09181110012",
@@ -2228,8 +2228,8 @@
   },
   {
     "id": "seed_2025_03_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Carlo Pascual",
     "email": "carlo.pascual@bchs.edu",
     "contact": "09191110013",
@@ -2245,8 +2245,8 @@
   },
   {
     "id": "seed_2025_03_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Mariz Gonzales",
     "email": "mariz.gonzales@bchs.edu",
     "contact": "09201110014",
@@ -2262,8 +2262,8 @@
   },
   {
     "id": "seed_2025_03_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Jun Medina",
     "email": "jun.medina@bchs.edu",
     "contact": "09211110015",
@@ -2279,8 +2279,8 @@
   },
   {
     "id": "seed_2025_03_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Tina Fernandez",
     "email": "tina.fernandez@bchs.edu",
     "contact": "09171110016",
@@ -2296,8 +2296,8 @@
   },
   {
     "id": "seed_2025_03_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Vic Santos",
     "email": "vic.santos@bchs.edu",
     "contact": "09181110017",
@@ -2313,8 +2313,8 @@
   },
   {
     "id": "seed_2025_03_08",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Ana Dela Vega",
     "email": "ana.delavega@bchs.edu",
     "contact": "09191110018",
@@ -2330,8 +2330,8 @@
   },
   {
     "id": "seed_2025_04_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Rene Aquino",
     "email": "rene.aquino@bchs.edu",
     "contact": "09171110021",
@@ -2347,8 +2347,8 @@
   },
   {
     "id": "seed_2025_04_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Luz Buenaventura",
     "email": "luz.buenaventura@bchs.edu",
     "contact": "09181110022",
@@ -2364,8 +2364,8 @@
   },
   {
     "id": "seed_2025_04_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Boy Morales",
     "email": "boy.morales@bchs.edu",
     "contact": "09191110023",
@@ -2381,8 +2381,8 @@
   },
   {
     "id": "seed_2025_04_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Gina Soriano",
     "email": "gina.soriano@bchs.edu",
     "contact": "09201110024",
@@ -2398,8 +2398,8 @@
   },
   {
     "id": "seed_2025_04_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Eddie Reyes",
     "email": "eddie.reyes@bchs.edu",
     "contact": "09211110025",
@@ -2415,8 +2415,8 @@
   },
   {
     "id": "seed_2025_04_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Peachy Tan",
     "email": "peachy.tan@bchs.edu",
     "contact": "09171110026",
@@ -2432,8 +2432,8 @@
   },
   {
     "id": "seed_2025_04_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Noel Cabreros",
     "email": "noel.cabreros@bchs.edu",
     "contact": "09181110027",
@@ -2449,8 +2449,8 @@
   },
   {
     "id": "seed_2025_04_08",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Shirley Magtoto",
     "email": "shirley.magtoto@bchs.edu",
     "contact": "09201110028",
@@ -2466,8 +2466,8 @@
   },
   {
     "id": "seed_2025_05_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Anton Rivera",
     "email": "anton.rivera@bchs.edu",
     "contact": "09171110031",
@@ -2483,8 +2483,8 @@
   },
   {
     "id": "seed_2025_05_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Cora Villaluz",
     "email": "cora.villaluz@bchs.edu",
     "contact": "09181110032",
@@ -2500,8 +2500,8 @@
   },
   {
     "id": "seed_2025_05_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Lito Valdez",
     "email": "lito.valdez@bchs.edu",
     "contact": "09191110033",
@@ -2517,8 +2517,8 @@
   },
   {
     "id": "seed_2025_05_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Tessie Ignacio",
     "email": "tessie.ignacio@bchs.edu",
     "contact": "09201110034",
@@ -2534,8 +2534,8 @@
   },
   {
     "id": "seed_2025_05_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Bong Manalo",
     "email": "bong.manalo@bchs.edu",
     "contact": "09211110035",
@@ -2551,8 +2551,8 @@
   },
   {
     "id": "seed_2025_05_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Mely Santos",
     "email": "mely.santos@bchs.edu",
     "contact": "09171110036",
@@ -2568,8 +2568,8 @@
   },
   {
     "id": "seed_2025_05_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Danny Cruz",
     "email": "danny.cruz@bchs.edu",
     "contact": "09181110037",
@@ -2585,8 +2585,8 @@
   },
   {
     "id": "seed_2025_05_08",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Flor Esperanza",
     "email": "flor.esperanza@bchs.edu",
     "contact": "09191110038",
@@ -2602,8 +2602,8 @@
   },
   {
     "id": "seed_2025_06_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Edna Pascual",
     "email": "edna.pascual@bchs.edu",
     "contact": "09171110041",
@@ -2619,8 +2619,8 @@
   },
   {
     "id": "seed_2025_06_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Milo Herrera",
     "email": "milo.herrera@bchs.edu",
     "contact": "09181110042",
@@ -2636,8 +2636,8 @@
   },
   {
     "id": "seed_2025_06_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Elsa Mendez",
     "email": "elsa.mendez@bchs.edu",
     "contact": "09191110043",
@@ -2653,8 +2653,8 @@
   },
   {
     "id": "seed_2025_06_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Rodrigo Mata",
     "email": "rodrigo.mata@bchs.edu",
     "contact": "09201110044",
@@ -2670,8 +2670,8 @@
   },
   {
     "id": "seed_2025_06_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Norma Castillo",
     "email": "norma.castillo@bchs.edu",
     "contact": "09211110045",
@@ -2687,8 +2687,8 @@
   },
   {
     "id": "seed_2025_06_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Renato Flores",
     "email": "renato.flores@bchs.edu",
     "contact": "09171110046",
@@ -2704,8 +2704,8 @@
   },
   {
     "id": "seed_2025_06_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Irma Labrador",
     "email": "irma.labrador@bchs.edu",
     "contact": "09181110047",
@@ -2721,8 +2721,8 @@
   },
   {
     "id": "seed_2025_06_08",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Emilio Delos Santos",
     "email": "emilio.delossantos@bchs.edu",
     "contact": "09201110048",
@@ -2738,8 +2738,8 @@
   },
   {
     "id": "seed_2025_07_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Herminia Salazar",
     "email": "herminia.salazar@bchs.edu",
     "contact": "09171110051",
@@ -2755,8 +2755,8 @@
   },
   {
     "id": "seed_2025_07_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Virgilio Santos",
     "email": "virgilio.santos@bchs.edu",
     "contact": "09181110052",
@@ -2772,8 +2772,8 @@
   },
   {
     "id": "seed_2025_07_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Conrad Tan",
     "email": "conrad.tan@bchs.edu",
     "contact": "09191110053",
@@ -2789,8 +2789,8 @@
   },
   {
     "id": "seed_2025_07_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Charito Luzon",
     "email": "charito.luzon@bchs.edu",
     "contact": "09201110054",
@@ -2806,8 +2806,8 @@
   },
   {
     "id": "seed_2025_07_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Domeng Ruiz",
     "email": "domeng.ruiz@bchs.edu",
     "contact": "09211110055",
@@ -2823,8 +2823,8 @@
   },
   {
     "id": "seed_2025_07_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Tessie Quiambao",
     "email": "tessie.quiambao@bchs.edu",
     "contact": "09171110056",
@@ -2840,8 +2840,8 @@
   },
   {
     "id": "seed_2025_07_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Maricel Bautista",
     "email": "maricel.bautista@bchs.edu",
     "contact": "09181110057",
@@ -2857,8 +2857,8 @@
   },
   {
     "id": "seed_2025_07_08",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Manny Ocampo",
     "email": "manny.ocampo@bchs.edu",
     "contact": "09191110058",
@@ -2874,8 +2874,8 @@
   },
   {
     "id": "seed_2025_08_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Pita Macapagal",
     "email": "pita.macapagal@bchs.edu",
     "contact": "09171110061",
@@ -2891,8 +2891,8 @@
   },
   {
     "id": "seed_2025_08_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Tino Reyes",
     "email": "tino.reyes@bchs.edu",
     "contact": "09181110062",
@@ -2908,8 +2908,8 @@
   },
   {
     "id": "seed_2025_08_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Cely Torres",
     "email": "cely.torres@bchs.edu",
     "contact": "09191110063",
@@ -2925,8 +2925,8 @@
   },
   {
     "id": "seed_2025_08_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Ruby Lim",
     "email": "ruby.lim@bchs.edu",
     "contact": "09201110064",
@@ -2942,8 +2942,8 @@
   },
   {
     "id": "seed_2025_08_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Fred Espiritu",
     "email": "fred.espiritu@bchs.edu",
     "contact": "09211110065",
@@ -2959,8 +2959,8 @@
   },
   {
     "id": "seed_2025_08_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Nena Dela Rosa",
     "email": "nena.delarosa@bchs.edu",
     "contact": "09171110066",
@@ -2976,8 +2976,8 @@
   },
   {
     "id": "seed_2025_08_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Tony Revillame",
     "email": "tony.revillame@bchs.edu",
     "contact": "09181110067",
@@ -2993,8 +2993,8 @@
   },
   {
     "id": "seed_2025_08_08",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Rhea Constantino",
     "email": "rhea.constantino@bchs.edu",
     "contact": "09201110068",
@@ -3002,7 +3002,7 @@
     "startTime": "13:00",
     "endTime": "15:00",
     "attendees": 47,
-    "purpose": "Classroom observation recording review",
+    "purpose": "Classfacility observation recording review",
     "status": "approved",
     "paymentStatus": "paid",
     "totalAmount": 1000,
@@ -3010,8 +3010,8 @@
   },
   {
     "id": "seed_2025_09_01",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Isko Salcedo",
     "email": "isko.salcedo@bchs.edu",
     "contact": "09171110071",
@@ -3027,8 +3027,8 @@
   },
   {
     "id": "seed_2025_09_02",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Fely Domingo",
     "email": "fely.domingo@bchs.edu",
     "contact": "09181110072",
@@ -3044,8 +3044,8 @@
   },
   {
     "id": "seed_2025_09_03",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Eddie Gutierrez",
     "email": "eddie.gutierrez@bchs.edu",
     "contact": "09191110073",
@@ -3061,8 +3061,8 @@
   },
   {
     "id": "seed_2025_09_04",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Sol Aguilar",
     "email": "sol.aguilar@bchs.edu",
     "contact": "09201110074",
@@ -3078,8 +3078,8 @@
   },
   {
     "id": "seed_2025_09_05",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "name": "Peping Tiangco",
     "email": "peping.tiangco@bchs.edu",
     "contact": "09211110075",
@@ -3095,8 +3095,8 @@
   },
   {
     "id": "seed_2025_09_06",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "name": "Mila Bulaong",
     "email": "mila.bulaong@bchs.edu",
     "contact": "09171110076",
@@ -3112,8 +3112,8 @@
   },
   {
     "id": "seed_2025_09_07",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "name": "Carding Manrique",
     "email": "carding.manrique@bchs.edu",
     "contact": "09181110077",
@@ -3129,8 +3129,8 @@
   },
   {
     "id": "seed_2025_09_08",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Aling Nena",
     "email": "nena.garcia@bchs.edu",
     "contact": "09191110078",
@@ -3146,8 +3146,8 @@
   },
   {
     "id": "seed_2025_10_avr_01",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Lucio Hernandez",
     "email": "lucio.hernandez@bchs.edu",
     "contact": "09201110081",
@@ -3163,8 +3163,8 @@
   },
   {
     "id": "seed_2025_10_avr_02",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Agnes Tupaz",
     "email": "agnes.tupaz@bchs.edu",
     "contact": "09201110082",
@@ -3180,8 +3180,8 @@
   },
   {
     "id": "seed_2025_10_gym_01",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Ricky Martin",
     "email": "ricky.martin@bchs.edu",
     "contact": "09191110083",
@@ -3197,8 +3197,8 @@
   },
   {
     "id": "seed_2025_10_gym_02",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Gina Reyes",
     "email": "gina.reyes@bchs.edu",
     "contact": "09191110084",
@@ -3214,8 +3214,8 @@
   },
   {
     "id": "seed_2025_11_avr_01",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Fidel Castro",
     "email": "fidel.castro@bchs.edu",
     "contact": "09201110085",
@@ -3231,8 +3231,8 @@
   },
   {
     "id": "seed_2025_11_avr_02",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Celia Cruz",
     "email": "celia.cruz@bchs.edu",
     "contact": "09201110086",
@@ -3248,8 +3248,8 @@
   },
   {
     "id": "seed_2025_11_gym_01",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Lolit Solis",
     "email": "lolit.solis@bchs.edu",
     "contact": "09191110087",
@@ -3265,8 +3265,8 @@
   },
   {
     "id": "seed_2025_11_gym_02",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Boy Abunda",
     "email": "boy.abunda@bchs.edu",
     "contact": "09191110088",
@@ -3282,8 +3282,8 @@
   },
   {
     "id": "seed_2025_12_avr_01",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Edu Manzano",
     "email": "edu.manzano@bchs.edu",
     "contact": "09201110089",
@@ -3299,8 +3299,8 @@
   },
   {
     "id": "seed_2025_12_avr_02",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "name": "Nora Aunor",
     "email": "nora.aunor@bchs.edu",
     "contact": "09201110090",
@@ -3316,8 +3316,8 @@
   },
   {
     "id": "seed_2025_12_gym_01",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Vilma Santos",
     "email": "vilma.santos@bchs.edu",
     "contact": "09191110091",
@@ -3333,8 +3333,8 @@
   },
   {
     "id": "seed_2025_12_gym_02",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "name": "Dolphy Jr",
     "email": "dolphy.jr@bchs.edu",
     "contact": "09191110092",
@@ -3350,8 +3350,8 @@
   },
   {
     "id": "1790297329207",
-    "roomId": "avr",
-    "roomName": "avr",
+    "facilityId": "avr",
+    "facilityName": "avr",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3384,8 +3384,8 @@
   },
   {
     "id": "1790384120108",
-    "roomId": "gym",
-    "roomName": "gym",
+    "facilityId": "gym",
+    "facilityName": "gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3426,7 +3426,7 @@
     "adminEditSnapshot": {
       "changedAt": "2026-09-26T01:05:35.293Z",
       "changes": {
-        "roomName": {
+        "facilityName": {
           "before": "Gym",
           "after": "gym"
         }
@@ -3437,8 +3437,8 @@
   },
   {
     "id": "2026_01_01_1000000000000",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 1400,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -3460,8 +3460,8 @@
   },
   {
     "id": "2026_01_02_1000000000001",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3483,8 +3483,8 @@
   },
   {
     "id": "2026_01_03_1000000000002",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 500,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3506,8 +3506,8 @@
   },
   {
     "id": "2026_01_04_1000000000003",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3526,8 +3526,8 @@
   },
   {
     "id": "2026_01_05_1000000000004",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3549,8 +3549,8 @@
   },
   {
     "id": "2026_01_06_1000000000005",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3572,8 +3572,8 @@
   },
   {
     "id": "2026_01_07_1000000000006",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3595,8 +3595,8 @@
   },
   {
     "id": "2026_01_08_1000000000007",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3618,8 +3618,8 @@
   },
   {
     "id": "2026_01_09_1000000000008",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 500,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -3641,8 +3641,8 @@
   },
   {
     "id": "2026_01_10_1000000000009",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 1000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3664,8 +3664,8 @@
   },
   {
     "id": "2026_01_11_1000000000010",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 2000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3687,8 +3687,8 @@
   },
   {
     "id": "2026_02_01_1000000000011",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -3710,8 +3710,8 @@
   },
   {
     "id": "2026_02_02_1000000000012",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -3732,8 +3732,8 @@
   },
   {
     "id": "2026_02_03_1000000000013",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 7200,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -3754,8 +3754,8 @@
   },
   {
     "id": "2026_02_04_1000000000014",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 7200,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -3777,8 +3777,8 @@
   },
   {
     "id": "2026_02_05_1000000000015",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 2100,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3800,8 +3800,8 @@
   },
   {
     "id": "2026_02_06_1000000000016",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1500,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3823,8 +3823,8 @@
   },
   {
     "id": "2026_02_07_1000000000017",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3846,8 +3846,8 @@
   },
   {
     "id": "2026_02_08_1000000000018",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 1000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3869,8 +3869,8 @@
   },
   {
     "id": "2026_02_09_1000000000019",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3892,8 +3892,8 @@
   },
   {
     "id": "2026_02_10_1000000000020",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3915,8 +3915,8 @@
   },
   {
     "id": "2026_02_11_1000000000021",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3938,8 +3938,8 @@
   },
   {
     "id": "2026_03_01_1000000000022",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -3961,8 +3961,8 @@
   },
   {
     "id": "2026_03_02_1000000000023",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -3984,8 +3984,8 @@
   },
   {
     "id": "2026_03_03_1000000000024",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4004,8 +4004,8 @@
   },
   {
     "id": "2026_03_04_1000000000025",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 1400,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4027,8 +4027,8 @@
   },
   {
     "id": "2026_03_05_1000000000026",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1500,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4050,8 +4050,8 @@
   },
   {
     "id": "2026_03_06_1000000000027",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4073,8 +4073,8 @@
   },
   {
     "id": "2026_03_07_1000000000028",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 1800,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4096,8 +4096,8 @@
   },
   {
     "id": "2026_03_08_1000000000029",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 7200,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4119,8 +4119,8 @@
   },
   {
     "id": "2026_03_09_1000000000030",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4142,8 +4142,8 @@
   },
   {
     "id": "2026_03_10_1000000000031",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -4165,8 +4165,8 @@
   },
   {
     "id": "2026_03_11_1000000000032",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 1400,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4188,8 +4188,8 @@
   },
   {
     "id": "2026_04_01_1000000000033",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 3000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4210,8 +4210,8 @@
   },
   {
     "id": "2026_04_02_1000000000034",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4230,8 +4230,8 @@
   },
   {
     "id": "2026_04_03_1000000000035",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4253,8 +4253,8 @@
   },
   {
     "id": "2026_04_04_1000000000036",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4276,8 +4276,8 @@
   },
   {
     "id": "2026_04_05_1000000000037",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4299,8 +4299,8 @@
   },
   {
     "id": "2026_04_06_1000000000038",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 4000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4322,8 +4322,8 @@
   },
   {
     "id": "2026_04_07_1000000000039",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 2000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4342,8 +4342,8 @@
   },
   {
     "id": "2026_04_08_1000000000040",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 2000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4362,8 +4362,8 @@
   },
   {
     "id": "2026_04_09_1000000000041",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 1800,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4384,8 +4384,8 @@
   },
   {
     "id": "2026_04_10_1000000000042",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4404,8 +4404,8 @@
   },
   {
     "id": "2026_04_11_1000000000043",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 5400,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4426,8 +4426,8 @@
   },
   {
     "id": "2026_05_01_1000000000044",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 5400,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4446,8 +4446,8 @@
   },
   {
     "id": "2026_05_02_1000000000045",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 500,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4469,8 +4469,8 @@
   },
   {
     "id": "2026_05_03_1000000000046",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4491,8 +4491,8 @@
   },
   {
     "id": "2026_05_04_1000000000047",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 5400,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4511,8 +4511,8 @@
   },
   {
     "id": "2026_05_05_1000000000048",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4534,8 +4534,8 @@
   },
   {
     "id": "2026_05_06_1000000000049",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 7200,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4557,8 +4557,8 @@
   },
   {
     "id": "2026_05_07_1000000000050",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 2000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4580,8 +4580,8 @@
   },
   {
     "id": "2026_05_08_1000000000051",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4603,8 +4603,8 @@
   },
   {
     "id": "2026_05_09_1000000000052",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4626,8 +4626,8 @@
   },
   {
     "id": "2026_05_10_1000000000053",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 2000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4649,8 +4649,8 @@
   },
   {
     "id": "2026_05_11_1000000000054",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 1000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4672,8 +4672,8 @@
   },
   {
     "id": "2026_06_01_1000000000055",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4692,8 +4692,8 @@
   },
   {
     "id": "2026_06_02_1000000000056",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 3000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4715,8 +4715,8 @@
   },
   {
     "id": "2026_06_03_1000000000057",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4738,8 +4738,8 @@
   },
   {
     "id": "2026_06_04_1000000000058",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4760,8 +4760,8 @@
   },
   {
     "id": "2026_06_05_1000000000059",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 2000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -4783,8 +4783,8 @@
   },
   {
     "id": "2026_06_06_1000000000060",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4803,8 +4803,8 @@
   },
   {
     "id": "2026_06_07_1000000000061",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4826,8 +4826,8 @@
   },
   {
     "id": "2026_06_08_1000000000062",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 2000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4846,8 +4846,8 @@
   },
   {
     "id": "2026_06_09_1000000000063",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 2800,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -4869,8 +4869,8 @@
   },
   {
     "id": "2026_06_10_1000000000064",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4891,8 +4891,8 @@
   },
   {
     "id": "2026_06_11_1000000000065",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4914,8 +4914,8 @@
   },
   {
     "id": "2026_07_01_1000000000066",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1500,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -4934,8 +4934,8 @@
   },
   {
     "id": "2026_07_02_1000000000067",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4957,8 +4957,8 @@
   },
   {
     "id": "2026_07_03_1000000000068",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -4980,8 +4980,8 @@
   },
   {
     "id": "2026_07_04_1000000000069",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5003,8 +5003,8 @@
   },
   {
     "id": "2026_07_05_1000000000070",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5025,8 +5025,8 @@
   },
   {
     "id": "2026_07_06_1000000000071",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 1800,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -5048,8 +5048,8 @@
   },
   {
     "id": "2026_07_07_1000000000072",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 500,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5071,8 +5071,8 @@
   },
   {
     "id": "2026_07_08_1000000000073",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5094,8 +5094,8 @@
   },
   {
     "id": "2026_07_09_1000000000074",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 3600,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -5117,8 +5117,8 @@
   },
   {
     "id": "2026_07_10_1000000000075",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5137,8 +5137,8 @@
   },
   {
     "id": "2026_07_11_1000000000076",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5160,8 +5160,8 @@
   },
   {
     "id": "2026_08_01_1000000000077",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 500,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5183,8 +5183,8 @@
   },
   {
     "id": "2026_08_02_1000000000078",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5206,8 +5206,8 @@
   },
   {
     "id": "2026_08_03_1000000000079",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 4000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5228,8 +5228,8 @@
   },
   {
     "id": "2026_08_04_1000000000080",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5248,8 +5248,8 @@
   },
   {
     "id": "2026_08_05_1000000000081",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 4000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5270,8 +5270,8 @@
   },
   {
     "id": "2026_08_06_1000000000082",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5293,8 +5293,8 @@
   },
   {
     "id": "2026_08_07_1000000000083",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 4000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5315,8 +5315,8 @@
   },
   {
     "id": "2026_08_08_1000000000084",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5338,8 +5338,8 @@
   },
   {
     "id": "2026_08_09_1000000000085",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5361,8 +5361,8 @@
   },
   {
     "id": "2026_08_10_1000000000086",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5384,8 +5384,8 @@
   },
   {
     "id": "2026_08_11_1000000000087",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5407,8 +5407,8 @@
   },
   {
     "id": "2026_09_01_1000000000088",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 1000,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -5430,8 +5430,8 @@
   },
   {
     "id": "2026_09_02_1000000000089",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 3000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5450,8 +5450,8 @@
   },
   {
     "id": "2026_09_03_1000000000090",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 5400,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -5473,8 +5473,8 @@
   },
   {
     "id": "2026_09_04_1000000000091",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 1800,
     "paymentStatus": "confirmed",
     "isStaff": false,
@@ -5496,8 +5496,8 @@
   },
   {
     "id": "2026_09_05_1000000000092",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5519,8 +5519,8 @@
   },
   {
     "id": "2026_09_06_1000000000093",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 2000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -5542,8 +5542,8 @@
   },
   {
     "id": "2026_09_07_1000000000094",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 2000,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -5565,8 +5565,8 @@
   },
   {
     "id": "2026_09_08_1000000000095",
-    "roomId": "auditorium",
-    "roomName": "Auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "Auditorium",
     "totalAmount": 1800,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5585,8 +5585,8 @@
   },
   {
     "id": "2026_09_09_1000000000096",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5608,8 +5608,8 @@
   },
   {
     "id": "2026_09_10_1000000000097",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5631,8 +5631,8 @@
   },
   {
     "id": "2026_09_11_1000000000098",
-    "roomId": "avr",
-    "roomName": "AVR",
+    "facilityId": "avr",
+    "facilityName": "AVR",
     "totalAmount": 1000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5651,8 +5651,8 @@
   },
   {
     "id": "2026_09_12_1000000000099",
-    "roomId": "grounds",
-    "roomName": "Grounds",
+    "facilityId": "grounds",
+    "facilityName": "Grounds",
     "totalAmount": 0,
     "paymentStatus": "paid",
     "isStaff": true,
@@ -5671,8 +5671,8 @@
   },
   {
     "id": "1791340834363",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 4800,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5694,8 +5694,8 @@
   },
   {
     "id": "1791340866543",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 2000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5717,8 +5717,8 @@
   },
   {
     "id": "1791340900499",
-    "roomId": "gym",
-    "roomName": "Gym",
+    "facilityId": "gym",
+    "facilityName": "Gym",
     "totalAmount": 3000,
     "paymentStatus": "pending",
     "isStaff": false,
@@ -5740,8 +5740,8 @@
   },
   {
     "id": "1790846843310",
-    "roomId": "library",
-    "roomName": "Library",
+    "facilityId": "library",
+    "facilityName": "Library",
     "totalAmount": 1800,
     "paymentStatus": "paid",
     "isStaff": false,
@@ -5776,8 +5776,8 @@
   },
   {
     "id": "admin_1790561836763",
-    "roomId": "auditorium",
-    "roomName": "auditorium",
+    "facilityId": "auditorium",
+    "facilityName": "auditorium",
     "name": "battle of the bands",
     "contact": "0981726598",
     "email": "dvance@gmail.com",

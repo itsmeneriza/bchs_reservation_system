@@ -10,10 +10,10 @@
       "peakHours": "1:00 PM - 9:00 AM",
       "averageAttendees": 153
     },
-    "roomAnalytics": [
+    "facilityAnalytics": [
       {
-        "roomId": "auditorium",
-        "roomName": "Auditorium",
+        "facilityId": "auditorium",
+        "facilityName": "Auditorium",
         "totalreservations": 95,
         "averageAttendees": 174,
         "utilizationRate": "7%",
@@ -27,8 +27,8 @@
         "predictionMethod": "seasonal-baseline"
       },
       {
-        "roomId": "library",
-        "roomName": "Library",
+        "facilityId": "library",
+        "facilityName": "Library",
         "totalreservations": 71,
         "averageAttendees": 70,
         "utilizationRate": "6%",
@@ -42,8 +42,8 @@
         "predictionMethod": "weighted-moving-average"
       },
       {
-        "roomId": "grounds",
-        "roomName": "Grounds",
+        "facilityId": "grounds",
+        "facilityName": "Grounds",
         "totalreservations": 35,
         "averageAttendees": 399,
         "utilizationRate": "6%",
@@ -57,8 +57,8 @@
         "predictionMethod": "weighted-moving-average"
       },
       {
-        "roomId": "avr",
-        "roomName": "AVR",
+        "facilityId": "avr",
+        "facilityName": "AVR",
         "totalreservations": 43,
         "averageAttendees": 98,
         "utilizationRate": "5%",
@@ -72,8 +72,8 @@
         "predictionMethod": "seasonal-baseline"
       },
       {
-        "roomId": "gym",
-        "roomName": "Gym",
+        "facilityId": "gym",
+        "facilityName": "Gym",
         "totalreservations": 42,
         "averageAttendees": 114,
         "utilizationRate": "6%",

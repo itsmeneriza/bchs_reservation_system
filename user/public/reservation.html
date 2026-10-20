@@ -1,748 +1,1740 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BCHS Reservation System</title>
 
     <!-- DNS prefetch for external resources -->
-    <link rel="dns-prefetch" href="https://upload.wikimedia.org">
+    <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
 
     <!-- Preload critical CSS -->
-    <link rel="preload" href="/src/styles/common.css" as="style">
-    <link rel="preload" href="/src/styles/reservation.css" as="style">
+    <link rel="preload" href="/src/styles/common.css" as="style" />
+    <link rel="preload" href="/src/styles/reservation.css" as="style" />
 
     <!-- Preload critical JS modules -->
-    <link rel="modulepreload" href="/src/app.js">
-    <link rel="modulepreload" href="/src/core/state.js">
-    <link rel="modulepreload" href="/src/services/reservationService.js">
-    <link rel="modulepreload" href="/src/services/dataService.js">
-    <link rel="modulepreload" href="/src/services/requestService.js">
-    <link rel="modulepreload" href="/src/components/RoomListComponent.js">
-    <link rel="modulepreload" href="/src/components/CalendarComponent.js">
-    <link rel="modulepreload" href="/src/components/TimeSlotsComponent.js">
-    <link rel="modulepreload" href="/src/components/ReservationModalComponent.js">
-    <link rel="modulepreload" href="/src/components/LoginComponent.js">
-    <link rel="modulepreload" href="/src/components/MyRequestsComponent.js">
-    <link rel="modulepreload" href="/src/utils/dateUtils.js">
+    <link rel="modulepreload" href="/src/app.js" />
+    <link rel="modulepreload" href="/src/core/state.js" />
+    <link rel="modulepreload" href="/src/services/reservationService.js" />
+    <link rel="modulepreload" href="/src/services/dataService.js" />
+    <link rel="modulepreload" href="/src/services/requestService.js" />
+    <link rel="modulepreload" href="/src/components/RoomListComponent.js" />
+    <link rel="modulepreload" href="/src/components/CalendarComponent.js" />
+    <link rel="modulepreload" href="/src/components/TimeSlotsComponent.js" />
+    <link
+      rel="modulepreload"
+      href="/src/components/ReservationModalComponent.js"
+    />
+    <link rel="modulepreload" href="/src/components/LoginComponent.js" />
+    <link rel="modulepreload" href="/src/components/MyRequestsComponent.js" />
+    <link rel="modulepreload" href="/src/utils/dateUtils.js" />
 
-    <link rel="stylesheet" href="/src/styles/common.css">
-    <link rel="stylesheet" href="/src/styles/reservation.css">
-    <link rel="stylesheet" href="/src/styles/forecast.css">
-    <style>
-        
-    </style>
-</head>
-<body>
+    <link rel="stylesheet" href="/src/styles/common.css" />
+    <link rel="stylesheet" href="/src/styles/reservation.css" />
+    <link rel="stylesheet" href="/src/styles/forecast.css" />
+    <style></style>
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-container">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background-color: white;">
-                    <img src="../src/styles/BCHS_logo.jpg" 
-                         alt="BCHS Logo" 
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <h1 class="header-title">BCHS Facility Reservation</h1>
-            </div>
-            
-            <div class="auth-nav-container">
-                <!-- Hamburger (mobile only) -->
-                <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">
-                    <span></span><span></span><span></span>
-                </button>
-
-                <nav class="header-tabs" id="header-tabs">
-                    <a href="index.html" class="tab-btn" style="display: flex; align-items: center; text-decoration: none;" title="Back to Home">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
-                    </a>
-                    <button class="tab-btn active" data-tab="calendar">Reservation Calendar</button>
-                    <button class="tab-btn" data-tab="my-requests">My Requests <span id="my-requests-badge" style="display:none; background:white; color:var(--primary-color); border-radius:999px; font-size:0.7rem; font-weight:700; padding:1px 7px; margin-left:5px; vertical-align:middle;"></span></button>
-                    <button class="tab-btn" data-tab="forecast"> Booking Forecast</button>
-                    <button class="tab-btn" data-tab="policy">Policy</button>
-                </nav>
-                <div id="auth-unlogged">
-                    <button class="btn btn-secondary" id="open-login-btn" style="background: white; border: none; color: var(--primary-color);">
-                        Login
-                    </button>
-                </div>
-                <div id="auth-logged" style="display: none;">
-                    <div id="user-profile-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span id="nav-user-name">User</span>
-                    </div>
-                </div>
-            </div>
+      <div class="header-container">
+        <div style="display: flex; align-items: center; gap: 0.75rem">
+          <div
+            style="
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              overflow: hidden;
+              background-color: white;
+            "
+          >
+            <img
+              src="../src/styles/BCHS_logo.jpg"
+              alt="BCHS Logo"
+              style="width: 100%; height: 100%; object-fit: cover"
+            />
+          </div>
+          <h1 class="header-title">BCHS Facility Reservation</h1>
         </div>
+
+        <div class="auth-nav-container">
+          <!-- Hamburger (mobile only) -->
+          <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
+
+          <nav class="header-tabs" id="header-tabs">
+            <a
+              href="index.html"
+              class="tab-btn"
+              style="display: flex; align-items: center; text-decoration: none"
+              title="Back to Home"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </a>
+            <button class="tab-btn active" data-tab="calendar">
+              Reservation Calendar
+            </button>
+            <button class="tab-btn" data-tab="my-requests">
+              My Requests
+              <span
+                id="my-requests-badge"
+                style="
+                  display: none;
+                  background: white;
+                  color: var(--primary-color);
+                  border-radius: 999px;
+                  font-size: 0.7rem;
+                  font-weight: 700;
+                  padding: 1px 7px;
+                  margin-left: 5px;
+                  vertical-align: middle;
+                "
+              ></span>
+            </button>
+            <button class="tab-btn" data-tab="forecast">
+              Booking Forecast
+            </button>
+            <button class="tab-btn" data-tab="policy">Policy</button>
+          </nav>
+          <div id="auth-unlogged">
+            <button
+              class="btn btn-secondary"
+              id="open-login-btn"
+              style="
+                background: white;
+                border: none;
+                color: var(--primary-color);
+              "
+            >
+              Login
+            </button>
+          </div>
+          <div id="auth-logged" style="display: none">
+            <div id="user-profile-btn">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span id="nav-user-name">User</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <!-- Calendar Header (outside main content box) -->
     <div id="calendar-header-outer" class="calendar-header-outer">
-        <div class="calendar-header">
-            <h2 id="calendar-room-title" class="section-title">Calendar</h2>
-            <div id="calendar-legend" class="calendar-legend"></div>
-        </div>
+      <div class="calendar-header">
+        <h2 id="calendar-facility-title" class="section-title">Calendar</h2>
+        <div id="calendar-legend" class="calendar-legend"></div>
+      </div>
     </div>
 
     <!-- Main Container -->
     <div class="main-container">
-        <div class="content-wrapper">
-            <!-- Left Sidebar -->
-            <div class="sidebar">
-                <!-- Room List -->
-                <div class="room-section">
-                    <h2 class="section-title">Rooms:</h2>
-                    <div id="room-list" class="room-list"></div>
-                </div>
+      <div class="content-wrapper">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+          <!-- Room List -->
+          <div class="facility-section">
+            <h2 class="section-title">Rooms:</h2>
+            <div id="facility-list" class="facility-list"></div>
+          </div>
 
-                <!-- View Facility button — mobile only -->
-                <button id="view-facility-btn" class="view-facility-btn" onclick="window._viewFacilityMobile()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                    View Facility
-                </button>
+          <!-- View Facility button — mobile only -->
+          <button
+            id="view-facility-btn"
+            class="view-facility-btn"
+            onclick="window._viewFacilityMobile()"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            View Facility
+          </button>
 
-                <!-- Legend below rooms — mobile only -->
-                <div id="calendar-legend-mobile" class="calendar-legend calendar-legend-mobile"></div>
+          <!-- Legend below facilitys — mobile only -->
+          <div
+            id="calendar-legend-mobile"
+            class="calendar-legend calendar-legend-mobile"
+          ></div>
 
-                <!-- Facility Preview -->
-                <div id="facility-preview-wrapper" class="facility-preview-container">
-                    <!-- Image will be injected by TimeSlotsComponent -->
-                </div>
-
-            </div>
-
-            <!-- Main Content Area -->
-            <div class="main-content">
-                <!-- Calendar Tab -->
-                <div id="calendar-tab" class="tab-content active">
-                    <div class="calendar-section">
-                        <p style="font-size: 1rem; color: #16a34a; text-align: center; margin-bottom: 0.75rem; font-style: italic; font-weight: 600; position: sticky; top: 0; z-index: 10; background: var(--bg-primary, #fff); padding: 0.5rem 0;">
-                            <span class="hint-desktop">Double-click a date to open the reservation request form</span>
-                            <span class="hint-mobile">Tap a date to open the reservation request form</span>
-                        </p>
-                        <!-- Mobile-only calendar controls (cloned via CSS display, rendered here for DOM order) -->
-                        <div class="calendar-controls calendar-controls-mobile" style="margin-bottom: 0.5rem;">
-                            <button class="month-nav-btn" onclick="document.getElementById('prev-month').click()">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="15 18 9 12 15 6"></polyline>
-                                </svg>
-                            </button>
-                            <span id="calendar-month-year-mobile" class="month-year"></span>
-                            <button class="month-nav-btn" onclick="document.getElementById('next-month').click()">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                        <div id="calendar-grid" class="calendar-grid"></div>
-                        <div id="grounds-note" class="grounds-note" style="display: none;">
-                            Note: Grounds are closed on weekends (Sat & Sun)
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Forecast Tab -->
-                <div id="forecast-tab" class="tab-content">
-                    <div id="forecast-container" class="forecast-container"></div>
-                </div>
-
-                <!-- Policy Tab -->
-                <div id="policy-tab" class="tab-content">
-                    <div id="policy-container">
-                        <div class="policy-hero">
-                            <div class="policy-hero-icon"></div>
-                            <h2>Facility Usage Policy</h2>
-                            <p>Please read and understand all guidelines before submitting a reservation request.</p>
-                        </div>
-
-                        <div class="policy-columns">
-                            <!-- Left column -->
-                            <div class="policy-col">
-                                <div class="policy-card">
-                                    <div class="policy-card-header">
-                                        <span class="policy-card-icon"></span>
-                                        <h3>General Policies</h3>
-                                    </div>
-                                    <ul class="policy-list">
-                                        <li><strong>Priority:</strong> Students, school, and government activities have priority.</li>
-                                        <li><strong>Responsibility:</strong> Leave the facility clean and in proper condition after use.</li>
-                                        <li><strong>Equipment:</strong> Damage to school property will be billed at replacement cost.</li>
-                                        <li><strong>Schedule:</strong> Time extensions must be requested at least 24 hours in advance.</li>
-                                        <li><strong>Food & Drinks:</strong> Strictly prohibited in the Auditorium and Library.</li>
-                                        <li><strong>Requirements:</strong> Valid ID and complete contact info required for all reservations.</li>
-                                    </ul>
-                                </div>
-
-                                <div class="policy-card">
-                                    <div class="policy-card-header">
-                                        <span class="policy-card-icon"></span>
-                                        <h3>Equipment & Parking</h3>
-                                    </div>
-                                    <ul class="policy-list">
-                                        <li><strong>Sound Systems:</strong> Not provided. Renters must arrange their own audio equipment.</li>
-                                        <li><strong>Additional Equipment:</strong> Tables and chairs may be available upon request with additional fees.</li>
-                                        <li><strong>Parking:</strong> Managed by the city government; not included in the rental fee.</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Right column -->
-                            <div class="policy-col">
-                                <div class="policy-card">
-                                    <div class="policy-card-header">
-                                        <h3>Payment & Fees</h3>
-                                    </div>
-                                    <div class="policy-highlight policy-highlight--red">
-                                        <div class="policy-highlight-label">Reservation Fee</div>
-                                        A non-refundable down payment is required to secure your reservation. The amount depends on your reservation and will be confirmed after approval.
-                                    </div>
-                                    <div class="policy-highlight policy-highlight--amber">
-                                        <div class="policy-highlight-label">Payment Deadline</div>
-                                        Final settlement must be completed at least <strong>3 working days before the event</strong>.
-                                    </div>
-                                    <ul class="policy-list">
-                                        <li><strong>Payment Location:</strong> Administration Office, 8:00 AM – 5:00 PM, Monday to Friday.</li>
-                                    </ul>
-                                </div>
-
-                                <div class="policy-card">
-                                    <div class="policy-card-header">
-                                        <h3>Cancellation Policy</h3>
-                                    </div>
-                                    <ul class="policy-list">
-                                        <li><strong>Notice:</strong> We recommend at least 2 weeks notice for any cancellation.</li>
-                                    </ul>
-                                    <div class="policy-highlight policy-highlight--amber">
-                                        <div class="policy-highlight-label">Important</div>
-                                        Cancellations will <strong>NOT be accepted within 2 weeks</strong> of the event. The down payment is non-refundable.
-                                    </div>
-                                </div>
-
-                                <div class="policy-acknowledgement">
-                                     By submitting a request, you confirm that you have read and understood all BCHS facility guidelines.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- My Requests Tab -->
-                <div id="my-requests-tab" class="tab-content">
-                    <div id="my-requests-container" style="padding: 1.5rem;">
-                        <div style="text-align: center; padding: 3rem; color: #64748b;">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem;">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
-                            </svg>
-                            <p style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Please log in to view your requests</p>
-                            <p style="font-size: 0.875rem;">Click the Login button in the top-right corner to access your reservation history.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Sidebar - Time Slots -->
-            <div class="timeslots-sidebar">
-                <div class="calendar-controls" style="margin-bottom: 1rem;">
-                    <button id="prev-month" class="month-nav-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                    <span id="calendar-month-year" class="month-year"></span>
-                    <button id="next-month" class="month-nav-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-                <h2 class="section-title instant-view-header">
-                    <span id="selected-date-text"></span>
-                    <small>Selected Date View</small>
-                </h2>
-                <div id="timeslots-container"></div>
-            </div>
+          <!-- Facility Preview -->
+          <div id="facility-preview-wrapper" class="facility-preview-container">
+            <!-- Image will be injected by TimeSlotsComponent -->
+          </div>
         </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+          <!-- Calendar Tab -->
+          <div id="calendar-tab" class="tab-content active">
+            <div class="calendar-section">
+              <p
+                style="
+                  font-size: 1rem;
+                  color: #16a34a;
+                  text-align: center;
+                  margin-bottom: 0.75rem;
+                  font-style: italic;
+                  font-weight: 600;
+                  position: sticky;
+                  top: 0;
+                  z-index: 10;
+                  background: var(--bg-primary, #fff);
+                  padding: 0.5rem 0;
+                "
+              >
+                <span class="hint-desktop"
+                  >Double-click a date to open the reservation request
+                  form</span
+                >
+                <span class="hint-mobile"
+                  >Tap a date to open the reservation request form</span
+                >
+              </p>
+              <!-- Mobile-only calendar controls (cloned via CSS display, rendered here for DOM order) -->
+              <div
+                class="calendar-controls calendar-controls-mobile"
+                style="margin-bottom: 0.5rem"
+              >
+                <button
+                  class="month-nav-btn"
+                  onclick="document.getElementById('prev-month').click()"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <span id="calendar-month-year-mobile" class="month-year"></span>
+                <button
+                  class="month-nav-btn"
+                  onclick="document.getElementById('next-month').click()"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+              <div id="calendar-grid" class="calendar-grid"></div>
+              <div id="grounds-note" class="grounds-note" style="display: none">
+                Note: Grounds are closed on weekends (Sat & Sun)
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast Tab -->
+          <div id="forecast-tab" class="tab-content">
+            <div id="forecast-container" class="forecast-container"></div>
+          </div>
+
+          <!-- Policy Tab -->
+          <div id="policy-tab" class="tab-content">
+            <div id="policy-container">
+              <div class="policy-hero">
+                <div class="policy-hero-icon"></div>
+                <h2>Facility Usage Policy</h2>
+                <p>
+                  Please read and understand all guidelines before submitting a
+                  reservation request.
+                </p>
+              </div>
+
+              <div class="policy-columns">
+                <!-- Left column -->
+                <div class="policy-col">
+                  <div class="policy-card">
+                    <div class="policy-card-header">
+                      <span class="policy-card-icon"></span>
+                      <h3>General Policies</h3>
+                    </div>
+                    <ul class="policy-list">
+                      <li>
+                        <strong>Priority:</strong> Students, school, and
+                        government activities have priority.
+                      </li>
+                      <li>
+                        <strong>Responsibility:</strong> Leave the facility
+                        clean and in proper condition after use.
+                      </li>
+                      <li>
+                        <strong>Equipment:</strong> Damage to school property
+                        will be billed at replacement cost.
+                      </li>
+                      <li>
+                        <strong>Schedule:</strong> Time extensions must be
+                        requested at least 24 hours in advance.
+                      </li>
+                      <li>
+                        <strong>Food & Drinks:</strong> Strictly prohibited in
+                        the Auditorium and Library.
+                      </li>
+                      <li>
+                        <strong>Requirements:</strong> Valid ID and complete
+                        contact info required for all reservations.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="policy-card">
+                    <div class="policy-card-header">
+                      <span class="policy-card-icon"></span>
+                      <h3>Equipment & Parking</h3>
+                    </div>
+                    <ul class="policy-list">
+                      <li>
+                        <strong>Sound Systems:</strong> Not provided. Renters
+                        must arrange their own audio equipment.
+                      </li>
+                      <li>
+                        <strong>Additional Equipment:</strong> Tables and chairs
+                        may be available upon request with additional fees.
+                      </li>
+                      <li>
+                        <strong>Parking:</strong> Managed by the city
+                        government; not included in the rental fee.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Right column -->
+                <div class="policy-col">
+                  <div class="policy-card">
+                    <div class="policy-card-header">
+                      <h3>Payment & Fees</h3>
+                    </div>
+                    <div class="policy-highlight policy-highlight--red">
+                      <div class="policy-highlight-label">Reservation Fee</div>
+                      A non-refundable down payment is required to secure your
+                      reservation. The amount depends on your reservation and
+                      will be confirmed after approval.
+                    </div>
+                    <div class="policy-highlight policy-highlight--amber">
+                      <div class="policy-highlight-label">Payment Deadline</div>
+                      Final settlement must be completed at least
+                      <strong>3 working days before the event</strong>.
+                    </div>
+                    <ul class="policy-list">
+                      <li>
+                        <strong>Payment Location:</strong> Administration
+                        Office, 8:00 AM – 5:00 PM, Monday to Friday.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="policy-card">
+                    <div class="policy-card-header">
+                      <h3>Cancellation Policy</h3>
+                    </div>
+                    <ul class="policy-list">
+                      <li>
+                        <strong>Notice:</strong> We recommend at least 2 weeks
+                        notice for any cancellation.
+                      </li>
+                    </ul>
+                    <div class="policy-highlight policy-highlight--amber">
+                      <div class="policy-highlight-label">Important</div>
+                      Cancellations will
+                      <strong>NOT be accepted within 2 weeks</strong> of the
+                      event. The down payment is non-refundable.
+                    </div>
+                  </div>
+
+                  <div class="policy-acknowledgement">
+                    By submitting a request, you confirm that you have read and
+                    understood all BCHS facility guidelines.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Requests Tab -->
+          <div id="my-requests-tab" class="tab-content">
+            <div id="my-requests-container" style="padding: 1.5rem">
+              <div style="text-align: center; padding: 3rem; color: #64748b">
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  style="margin: 0 auto 1rem"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path
+                    d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+                  ></path>
+                </svg>
+                <p
+                  style="
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                    margin-bottom: 0.5rem;
+                  "
+                >
+                  Please log in to view your requests
+                </p>
+                <p style="font-size: 0.875rem">
+                  Click the Login button in the top-right corner to access your
+                  reservation history.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Sidebar - Time Slots -->
+        <div class="timeslots-sidebar">
+          <div class="calendar-controls" style="margin-bottom: 1rem">
+            <button id="prev-month" class="month-nav-btn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <span id="calendar-month-year" class="month-year"></span>
+            <button id="next-month" class="month-nav-btn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <h2 class="section-title instant-view-header">
+            <span id="selected-date-text"></span>
+            <small>Selected Date View</small>
+          </h2>
+          <div id="timeslots-container"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Login Modal -->
     <div id="login-modal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>BCHS Portal Login</h2>
-                <button id="login-modal-close" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 1.5rem; font-size: 0.9rem; color: #64748b;">
-                    Please enter your credentials to manage your BCHS reservations.
-                </p>
-                
-                <form id="login-form">
-                    <div class="switch-container">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary-color);">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            <span style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">Staff member?</span>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="staff-toggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div id="phone-container" class="form-group" style="margin-bottom: 1.25rem;">
-                        <label for="login-phone">Phone Number *</label>
-                        <div style="display:flex;align-items:center;border:1px solid #cbd5e1;border-radius:0.5rem;overflow:hidden;background:white;">
-                            <span style="padding:0.65rem 0.75rem;background:#f1f5f9;color:#475569;font-size:0.9rem;font-weight:600;border-right:1px solid #cbd5e1;white-space:nowrap;">+63</span>
-                            <input type="tel" id="login-phone" placeholder="9171234567" pattern="9\d{9}" maxlength="10" required
-                                style="border:none;outline:none;padding:0.65rem 0.75rem;font-size:0.9rem;width:100%;background:transparent;">
-                        </div>
-                        <small style="color:#64748b;font-size:0.75rem;margin-top:0.25rem;display:block;">Enter your 10-digit number after +63 (e.g. 9171234567)</small>
-                    </div>
-
-                    <div id="staff-id-container" class="form-group" style="margin-bottom: 1.25rem; display: none;">
-                        <label for="login-staff-id">Staff ID Number *</label>
-                        <input type="text" id="login-staff-id" placeholder="Enter Staff ID">
-                        <small style="color: #64748b; font-size: 0.75rem; margin-top: 0.25rem;">For BCHS Employee verification.</small>
-                    </div>
-
-                    <div id="login-error" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; display: none; text-align: center;">
-                        Invalid credentials. Please try again.
-                    </div>
-
-                    <div class="modal-footer" style="padding: 0; border: none; margin-top: 1rem;">
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Continue to Portal</button>
-                    </div>
-                </form>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>BCHS Portal Login</h2>
+          <button id="login-modal-close" class="modal-close">&times;</button>
         </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 1.5rem; font-size: 0.9rem; color: #64748b">
+            Please enter your credentials to manage your BCHS reservations.
+          </p>
+
+          <form id="login-form">
+            <div class="switch-container">
+              <div style="display: flex; align-items: center; gap: 0.75rem">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  style="color: var(--primary-color)"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span
+                  style="font-weight: 600; font-size: 0.9rem; color: #1e293b"
+                  >Staff member?</span
+                >
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="staff-toggle" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div
+              id="phone-container"
+              class="form-group"
+              style="margin-bottom: 1.25rem"
+            >
+              <label for="login-phone">Phone Number *</label>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  border: 1px solid #cbd5e1;
+                  border-radius: 0.5rem;
+                  overflow: hidden;
+                  background: white;
+                "
+              >
+                <span
+                  style="
+                    padding: 0.65rem 0.75rem;
+                    background: #f1f5f9;
+                    color: #475569;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    border-right: 1px solid #cbd5e1;
+                    white-space: nowrap;
+                  "
+                  >+63</span
+                >
+                <input
+                  type="tel"
+                  id="login-phone"
+                  placeholder="9171234567"
+                  pattern="9\d{9}"
+                  maxlength="10"
+                  required
+                  style="
+                    border: none;
+                    outline: none;
+                    padding: 0.65rem 0.75rem;
+                    font-size: 0.9rem;
+                    width: 100%;
+                    background: transparent;
+                  "
+                />
+              </div>
+              <small
+                style="
+                  color: #64748b;
+                  font-size: 0.75rem;
+                  margin-top: 0.25rem;
+                  display: block;
+                "
+                >Enter your 10-digit number after +63 (e.g. 9171234567)</small
+              >
+            </div>
+
+            <div
+              id="staff-id-container"
+              class="form-group"
+              style="margin-bottom: 1.25rem; display: none"
+            >
+              <label for="login-staff-id">Staff ID Number *</label>
+              <input
+                type="text"
+                id="login-staff-id"
+                placeholder="Enter Staff ID"
+              />
+              <small
+                style="color: #64748b; font-size: 0.75rem; margin-top: 0.25rem"
+                >For BCHS Employee verification.</small
+              >
+            </div>
+
+            <div
+              id="login-error"
+              style="
+                color: #ef4444;
+                font-size: 0.85rem;
+                margin-bottom: 1rem;
+                display: none;
+                text-align: center;
+              "
+            >
+              Invalid credentials. Please try again.
+            </div>
+
+            <div
+              class="modal-footer"
+              style="padding: 0; border: none; margin-top: 1rem"
+            >
+              <button type="submit" class="btn btn-primary" style="width: 100%">
+                Continue to Portal
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
     <!-- User Menu Modal -->
     <div id="user-menu-modal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>User Profile</h2>
-                <button id="user-menu-close" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.25rem;">
-                        <span id="user-initial">U</span>
-                    </div>
-                    <div>
-                        <div id="profile-name" style="font-weight: 700; font-size: 1.1rem;">User</div>
-                        <div id="profile-type" style="font-size: 0.85rem; color: #64748b;">Community Member</div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <button id="logout-btn" class="btn btn-destructive" style="width: 100%;">Logout</button>
-                </div>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>User Profile</h2>
+          <button id="user-menu-close" class="modal-close">&times;</button>
         </div>
+        <div class="modal-body">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+              margin-bottom: 1.5rem;
+            "
+          >
+            <div
+              style="
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: var(--primary-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 700;
+                font-size: 1.25rem;
+              "
+            >
+              <span id="user-initial">U</span>
+            </div>
+            <div>
+              <div
+                id="profile-name"
+                style="font-weight: 700; font-size: 1.1rem"
+              >
+                User
+              </div>
+              <div id="profile-type" style="font-size: 0.85rem; color: #64748b">
+                Community Member
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem">
+            <button
+              id="logout-btn"
+              class="btn btn-destructive"
+              style="width: 100%"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- reservation Modal -->
     <div id="request-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Reservation Request</h2>
-                <button id="modal-close" class="modal-close">&times;</button>
-            </div>
-            <form id="request-form" class="modal-body">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="req-name">Full Name *</label>
-                    <input type="text" id="req-name" required placeholder="Enter your full name">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="req-email">Email Address *</label>
-                        <input type="email" id="req-email" required placeholder="your.email@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="req-contact">Contact Number *</label>
-                        <input type="tel" id="req-contact" required placeholder="e.g., 09123456789">
-                    </div>
-                </div>
-
-                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 1rem 0;">
-                <p style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 0.75rem;">Reservation Details</p>
-
-                <div class="form-group" id="req-date-group" style="display:none;">
-                    <label for="req-date-input">Event Date *</label>
-                    <input type="date" id="req-date-input" style="width:100%;padding:0.65rem 0.85rem;border:1px solid #cbd5e1;border-radius:0.5rem;font-size:0.9rem;">
-                </div>
-
-                <div class="form-group">
-                    <label for="req-purpose-select">Purpose of Reservation *</label>
-                    <select id="req-purpose-select" style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.9rem; background: white;">
-                        <option value="">-- Select a purpose --</option>
-                        <optgroup label="Academic Activities">
-                            <option value="Seminar/Workshop">Seminar/Workshop</option>
-                            <option value="Training Session">Training Session</option>
-                            <option value="Conference">Conference</option>
-                            <option value="Lecture/Presentation">Lecture/Presentation</option>
-                            <option value="Study Group">Study Group</option>
-                            <option value="Research Activity">Research Activity</option>
-                            <option value="Examination">Examination</option>
-                        </optgroup>
-                        <optgroup label="Sports & Recreation">
-                            <option value="Basketball Practice">Basketball Practice</option>
-                            <option value="Volleyball Practice">Volleyball Practice</option>
-                            <option value="Sports Tournament">Sports Tournament</option>
-                            <option value="Physical Education">Physical Education</option>
-                            <option value="Team Building">Team Building</option>
-                            <option value="Outdoor Activity">Outdoor Activity</option>
-                        </optgroup>
-                        <optgroup label="Events & Ceremonies">
-                            <option value="Graduation Ceremony">Graduation Ceremony</option>
-                            <option value="Awards Ceremony">Awards Ceremony</option>
-                            <option value="Cultural Event">Cultural Event</option>
-                            <option value="Performance/Concert">Performance/Concert</option>
-                            <option value="Film Screening">Film Screening</option>
-                            <option value="Exhibition">Exhibition</option>
-                        </optgroup>
-                        <optgroup label="Meetings & Organizations">
-                            <option value="Club Meeting">Club Meeting</option>
-                            <option value="Organization Meeting">Organization Meeting</option>
-                            <option value="Committee Meeting">Committee Meeting</option>
-                            <option value="Parent-Teacher Meeting">Parent-Teacher Meeting</option>
-                            <option value="Board Meeting">Board Meeting</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                            <option value="other">Other (Please specify)</option>
-                        </optgroup>
-                    </select>
-                </div>
-
-                <div class="form-group" id="custom-purpose-group" style="display: none;">
-                    <label for="req-purpose-custom">Please specify your purpose *</label>
-                    <textarea id="req-purpose-custom" rows="3" placeholder="Please describe the purpose of your reservation..." style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.9rem;"></textarea>
-                </div>
-
-                <div class="form-row" id="pax-row" style="display: none;">
-                    <div class="form-group">
-                        <label for="req-attendees">Number of Pax *</label>
-                        <input type="number" id="req-attendees" min="1" required placeholder="Approximate count">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="req-start-time">Start Time *</label>
-                        <select id="req-start-time" required>
-                            <option value="">Select time</option>
-                            <option value="07:00">7:00 AM</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="req-end-time">End Time *</label>
-                        <select id="req-end-time" required>
-                            <option value="">Select time</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                            <option value="18:00">6:00 PM</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="duration-info" class="duration-info"></div>
-                <div id="conflict-warning" class="conflict-warning"></div>
-
-                <!-- Pricing Summary -->
-                <div id="pricing-summary" style="display: none; margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 0.5rem;">
-                    <h3 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                        Pricing Summary
-                    </h3>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #64748b;">Facility Rate:</span>
-                            <span id="price-facility-rate" style="font-weight: 600; color: #1e293b;">₱0.00</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #64748b;">Duration:</span>
-                            <span id="price-duration" style="font-weight: 600; color: #1e293b;">0 hours</span>
-                        </div>
-                        <div id="utilities-requested-fee-row" style="display: none; justify-content: space-between; align-items: center;">
-                            <span style="color: #64748b;">Utilities Requested:</span>
-                            <span style="font-weight: 600; color: #1e293b;">₱800.00</span>
-                        </div>
-                        <div id="utility-fee-row" style="display: none; justify-content: space-between; align-items: center;">
-                            <span style="color: #64748b;">Utilities Fee (8+ hrs):</span>
-                            <span style="font-weight: 600; color: #1e293b;">₱800.00</span>
-                        </div>
-                        <div style="height: 1px; background: #cbd5e1; margin: 0.5rem 0;"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 700; color: #1e293b; font-size: 1rem;">Total Amount:</span>
-                            <span id="price-total" style="font-weight: 700; color: #800020; font-size: 1.25rem;">₱0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label>Equipment Needed (Optional)</label>
-                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem 1.25rem;margin-top:0.4rem;">
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" name="equipment" value="Tables"> Tables
-                        </label>
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" name="equipment" value="Chairs"> Chairs
-                        </label>
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" name="equipment" value="Whiteboard"> Whiteboard
-                        </label>
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" name="equipment" value="Net"> Net
-                        </label>
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" name="equipment" value="Mat"> Mat
-                        </label>
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" name="equipment" value="Podium"> Podium
-                        </label>
-                        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" id="equipment-others-check" name="equipment" value="Others" onchange="document.getElementById('req-notes').style.display=this.checked?'block':'none'"> Others
-                        </label>
-                    </div>
-                    <input type="text" id="req-notes" placeholder="Please specify..." style="display:none;margin-top:0.5rem;width:100%;padding:0.5rem 0.75rem;border:1px solid #cbd5e1;border-radius:0.5rem;font-size:0.875rem;">
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
-                </div>
-            </form>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Reservation Request</h2>
+          <button id="modal-close" class="modal-close">&times;</button>
         </div>
+        <form id="request-form" class="modal-body">
+          <div class="form-group" style="margin-bottom: 1.5rem">
+            <label for="req-name">Full Name *</label>
+            <input
+              type="text"
+              id="req-name"
+              required
+              placeholder="Enter your full name"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="req-email">Email Address *</label>
+              <input
+                type="email"
+                id="req-email"
+                required
+                placeholder="your.email@example.com"
+              />
+            </div>
+            <div class="form-group">
+              <label for="req-contact">Contact Number *</label>
+              <input
+                type="tel"
+                id="req-contact"
+                required
+                placeholder="e.g., 09123456789"
+              />
+            </div>
+          </div>
+
+          <hr
+            style="border: none; border-top: 1px solid #e2e8f0; margin: 1rem 0"
+          />
+          <p
+            style="
+              font-size: 0.72rem;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
+              color: #94a3b8;
+              margin-bottom: 0.75rem;
+            "
+          >
+            Reservation Details
+          </p>
+
+          <div class="form-group" id="req-date-group" style="display: none">
+            <label for="req-date-input">Event Date *</label>
+            <input
+              type="date"
+              id="req-date-input"
+              style="
+                width: 100%;
+                padding: 0.65rem 0.85rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 0.5rem;
+                font-size: 0.9rem;
+              "
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="req-purpose-select">Purpose of Reservation *</label>
+            <select
+              id="req-purpose-select"
+              style="
+                width: 100%;
+                padding: 0.65rem 0.85rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 0.5rem;
+                font-size: 0.9rem;
+                background: white;
+              "
+            >
+              <option value="">-- Select a purpose --</option>
+              <optgroup label="Academic Activities">
+                <option value="Seminar/Workshop">Seminar/Workshop</option>
+                <option value="Training Session">Training Session</option>
+                <option value="Conference">Conference</option>
+                <option value="Lecture/Presentation">
+                  Lecture/Presentation
+                </option>
+                <option value="Study Group">Study Group</option>
+                <option value="Research Activity">Research Activity</option>
+                <option value="Examination">Examination</option>
+              </optgroup>
+              <optgroup label="Sports & Recreation">
+                <option value="Basketball Practice">Basketball Practice</option>
+                <option value="Volleyball Practice">Volleyball Practice</option>
+                <option value="Sports Tournament">Sports Tournament</option>
+                <option value="Physical Education">Physical Education</option>
+                <option value="Team Building">Team Building</option>
+                <option value="Outdoor Activity">Outdoor Activity</option>
+              </optgroup>
+              <optgroup label="Events & Ceremonies">
+                <option value="Graduation Ceremony">Graduation Ceremony</option>
+                <option value="Awards Ceremony">Awards Ceremony</option>
+                <option value="Cultural Event">Cultural Event</option>
+                <option value="Performance/Concert">Performance/Concert</option>
+                <option value="Film Screening">Film Screening</option>
+                <option value="Exhibition">Exhibition</option>
+              </optgroup>
+              <optgroup label="Meetings & Organizations">
+                <option value="Club Meeting">Club Meeting</option>
+                <option value="Organization Meeting">
+                  Organization Meeting
+                </option>
+                <option value="Committee Meeting">Committee Meeting</option>
+                <option value="Parent-Teacher Meeting">
+                  Parent-Teacher Meeting
+                </option>
+                <option value="Board Meeting">Board Meeting</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option value="other">Other (Please specify)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div
+            class="form-group"
+            id="custom-purpose-group"
+            style="display: none"
+          >
+            <label for="req-purpose-custom"
+              >Please specify your purpose *</label
+            >
+            <textarea
+              id="req-purpose-custom"
+              rows="3"
+              placeholder="Please describe the purpose of your reservation..."
+              style="
+                width: 100%;
+                padding: 0.65rem 0.85rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 0.5rem;
+                font-size: 0.9rem;
+              "
+            ></textarea>
+          </div>
+
+          <div class="form-row" id="pax-row" style="display: none">
+            <div class="form-group">
+              <label for="req-attendees">Number of Pax *</label>
+              <input
+                type="number"
+                id="req-attendees"
+                min="1"
+                required
+                placeholder="Approximate count"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="req-start-time">Start Time *</label>
+              <select id="req-start-time" required>
+                <option value="">Select time</option>
+                <option value="07:00">7:00 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="17:00">5:00 PM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="req-end-time">End Time *</label>
+              <select id="req-end-time" required>
+                <option value="">Select time</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="18:00">6:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="duration-info" class="duration-info"></div>
+          <div id="conflict-warning" class="conflict-warning"></div>
+
+          <!-- Pricing Summary -->
+          <div
+            id="pricing-summary"
+            style="
+              display: none;
+              margin-top: 1.5rem;
+              padding: 1rem;
+              background: #f8fafc;
+              border: 2px solid #e2e8f0;
+              border-radius: 0.5rem;
+            "
+          >
+            <h3
+              style="
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+              "
+            >
+              Pricing Summary
+            </h3>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                font-size: 0.875rem;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #64748b">Facility Rate:</span>
+                <span
+                  id="price-facility-rate"
+                  style="font-weight: 600; color: #1e293b"
+                  >₱0.00</span
+                >
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #64748b">Duration:</span>
+                <span
+                  id="price-duration"
+                  style="font-weight: 600; color: #1e293b"
+                  >0 hours</span
+                >
+              </div>
+              <div
+                id="utilities-requested-fee-row"
+                style="
+                  display: none;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #64748b">Utilities Requested:</span>
+                <span style="font-weight: 600; color: #1e293b">₱800.00</span>
+              </div>
+              <div
+                id="utility-fee-row"
+                style="
+                  display: none;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #64748b">Utilities Fee (8+ hrs):</span>
+                <span style="font-weight: 600; color: #1e293b">₱800.00</span>
+              </div>
+              <div
+                style="height: 1px; background: #cbd5e1; margin: 0.5rem 0"
+              ></div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="font-weight: 700; color: #1e293b; font-size: 1rem"
+                  >Total Amount:</span
+                >
+                <span
+                  id="price-total"
+                  style="font-weight: 700; color: #800020; font-size: 1.25rem"
+                  >₱0.00</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem">
+            <label>Equipment Needed (Optional)</label>
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem 1.25rem;
+                margin-top: 0.4rem;
+              "
+            >
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input type="checkbox" name="equipment" value="Tables" /> Tables
+              </label>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input type="checkbox" name="equipment" value="Chairs" /> Chairs
+              </label>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input type="checkbox" name="equipment" value="Whiteboard" />
+                Whiteboard
+              </label>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input type="checkbox" name="equipment" value="Net" /> Net
+              </label>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input type="checkbox" name="equipment" value="Mat" /> Mat
+              </label>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input type="checkbox" name="equipment" value="Podium" /> Podium
+              </label>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  cursor: pointer;
+                "
+              >
+                <input
+                  type="checkbox"
+                  id="equipment-others-check"
+                  name="equipment"
+                  value="Others"
+                  onchange="
+                    document.getElementById('req-notes').style.display = this
+                      .checked
+                      ? 'block'
+                      : 'none'
+                  "
+                />
+                Others
+              </label>
+            </div>
+            <input
+              type="text"
+              id="req-notes"
+              placeholder="Please specify..."
+              style="
+                display: none;
+                margin-top: 0.5rem;
+                width: 100%;
+                padding: 0.5rem 0.75rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 0.5rem;
+                font-size: 0.875rem;
+              "
+            />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="cancel-btn" class="btn btn-secondary">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Submit Request
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Image Preview Modal -->
     <div id="image-viewer-modal" class="modal">
-        <div class="modal-content" style="background: transparent; border-radius: 0; box-shadow: none; max-width: 1000px; width: 95%;">
-            <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div id="viewer-image-counter" style="background: rgba(0,0,0,0.6); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;"></div>
-                    <button id="viewer-close" class="modal-close" style="background: rgba(255,255,255,0.2); color: white;">&times;</button>
-                </div>
-                <div style="position: relative; width: 100%;">
-                    <img id="viewer-image" src="" alt="Facility View" style="width: 100%; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-                    <button id="viewer-prev-btn" class="viewer-nav-btn viewer-prev" style="display: none;">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                    <button id="viewer-next-btn" class="viewer-nav-btn viewer-next" style="display: none;">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-                <div id="viewer-caption" style="color: white; text-align: center; padding: 1rem; font-size: 1.25rem; font-weight: 600;"></div>
-            </div>
+      <div
+        class="modal-content"
+        style="
+          background: transparent;
+          border-radius: 0;
+          box-shadow: none;
+          max-width: 1000px;
+          width: 95%;
+        "
+      >
+        <div
+          style="
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          "
+        >
+          <div
+            style="
+              width: 100%;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 10px;
+            "
+          >
+            <div
+              id="viewer-image-counter"
+              style="
+                background: rgba(0, 0, 0, 0.6);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 600;
+              "
+            ></div>
+            <button
+              id="viewer-close"
+              class="modal-close"
+              style="background: rgba(255, 255, 255, 0.2); color: white"
+            >
+              &times;
+            </button>
+          </div>
+          <div style="position: relative; width: 100%">
+            <img
+              id="viewer-image"
+              src=""
+              alt="Facility View"
+              style="
+                width: 100%;
+                border-radius: 12px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+              "
+            />
+            <button
+              id="viewer-prev-btn"
+              class="viewer-nav-btn viewer-prev"
+              style="display: none"
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+              >
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button
+              id="viewer-next-btn"
+              class="viewer-nav-btn viewer-next"
+              style="display: none"
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+              >
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div
+            id="viewer-caption"
+            style="
+              color: white;
+              text-align: center;
+              padding: 1rem;
+              font-size: 1.25rem;
+              font-weight: 600;
+            "
+          ></div>
         </div>
+      </div>
     </div>
 
     <!-- Cancellation Verification Modal -->
     <div id="cancel-verification-modal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Cancel Reservation</h2>
-                <button id="cancel-modal-close" class="modal-close">&times;</button>
-            </div>
-            
-            <!-- Step 1: Confirmation -->
-            <div id="cancel-step-confirm" class="modal-body">
-                <p style="margin-bottom: 1rem;">Are you sure you want to cancel this reservation?</p>
-                <div id="cancel-reservation-details" style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb;">
-                    <!-- Details injected here -->
-                </div>
-                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1.5rem;">A verification code will be sent to the booker's email.</p>
-                <div class="modal-footer">
-                    <button type="button" id="cancel-flow-abort" class="btn btn-secondary">Keep reservation</button>
-                    <button type="button" id="cancel-flow-send-code" class="btn btn-destructive">Send Code & Proceed</button>
-                </div>
-            </div>
-
-            <!-- Step 2: Verification -->
-            <div id="cancel-step-verify" class="modal-body" style="display: none;">
-                <p style="margin-bottom: 1.5rem; text-align: center;">We've sent a 6-digit verification code to <strong id="cancel-target-email"></strong>.</p>
-                <div class="form-group">
-                    <label style="text-align: center; display: block; margin-bottom: 0.5rem;">Enter Verification Code</label>
-                    <input type="text" id="cancel-otp-input" class="verification-code-input" maxlength="6" placeholder="000000">
-                </div>
-                <p id="cancel-otp-error" style="color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 0.5rem; display: none;">Invalid code. Please try again.</p>
-                <div class="modal-footer" style="margin-top: 2rem;">
-                    <button type="button" id="cancel-flow-back" class="btn btn-secondary">Back</button>
-                    <button type="button" id="cancel-flow-finalize" class="btn btn-primary">Verify & Proceed</button>
-                </div>
-            </div>
-
-            <!-- Step 3: Cancellation Reason -->
-            <div id="cancel-step-reason" class="modal-body" style="display: none;">
-                <p style="margin-bottom: 1rem;">Verification successful. Please provide a reason for cancellation.</p>
-                <div class="form-group">
-                    <label for="cancel-reason-input">Cancellation Reason *</label>
-                    <textarea id="cancel-reason-input" rows="4" placeholder="Briefly explain why you're cancelling..." required></textarea>
-                </div>
-                <div class="modal-footer" style="margin-top: 1.5rem;">
-                    <button type="button" id="cancel-flow-submit-reason" class="btn btn-destructive">Confirm Cancellation</button>
-                </div>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Cancel Reservation</h2>
+          <button id="cancel-modal-close" class="modal-close">&times;</button>
         </div>
+
+        <!-- Step 1: Confirmation -->
+        <div id="cancel-step-confirm" class="modal-body">
+          <p style="margin-bottom: 1rem">
+            Are you sure you want to cancel this reservation?
+          </p>
+          <div
+            id="cancel-reservation-details"
+            style="
+              background: #f9fafb;
+              padding: 1rem;
+              border-radius: 0.5rem;
+              margin-bottom: 1.5rem;
+              border: 1px solid #e5e7eb;
+            "
+          >
+            <!-- Details injected here -->
+          </div>
+          <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1.5rem">
+            A verification code will be sent to the booker's email.
+          </p>
+          <div class="modal-footer">
+            <button
+              type="button"
+              id="cancel-flow-abort"
+              class="btn btn-secondary"
+            >
+              Keep reservation
+            </button>
+            <button
+              type="button"
+              id="cancel-flow-send-code"
+              class="btn btn-destructive"
+            >
+              Send Code & Proceed
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Verification -->
+        <div id="cancel-step-verify" class="modal-body" style="display: none">
+          <p style="margin-bottom: 1.5rem; text-align: center">
+            We've sent a 6-digit verification code to
+            <strong id="cancel-target-email"></strong>.
+          </p>
+          <div class="form-group">
+            <label
+              style="text-align: center; display: block; margin-bottom: 0.5rem"
+              >Enter Verification Code</label
+            >
+            <input
+              type="text"
+              id="cancel-otp-input"
+              class="verification-code-input"
+              maxlength="6"
+              placeholder="000000"
+            />
+          </div>
+          <p
+            id="cancel-otp-error"
+            style="
+              color: #ef4444;
+              font-size: 0.85rem;
+              text-align: center;
+              margin-top: 0.5rem;
+              display: none;
+            "
+          >
+            Invalid code. Please try again.
+          </p>
+          <div class="modal-footer" style="margin-top: 2rem">
+            <button
+              type="button"
+              id="cancel-flow-back"
+              class="btn btn-secondary"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              id="cancel-flow-finalize"
+              class="btn btn-primary"
+            >
+              Verify & Proceed
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Cancellation Reason -->
+        <div id="cancel-step-reason" class="modal-body" style="display: none">
+          <p style="margin-bottom: 1rem">
+            Verification successful. Please provide a reason for cancellation.
+          </p>
+          <div class="form-group">
+            <label for="cancel-reason-input">Cancellation Reason *</label>
+            <textarea
+              id="cancel-reason-input"
+              rows="4"
+              placeholder="Briefly explain why you're cancelling..."
+              required
+            ></textarea>
+          </div>
+          <div class="modal-footer" style="margin-top: 1.5rem">
+            <button
+              type="button"
+              id="cancel-flow-submit-reason"
+              class="btn btn-destructive"
+            >
+              Confirm Cancellation
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Policy Modal -->
     <div id="policy-modal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Facility Usage Policy</h2>
-            </div>
-            <div class="modal-body" style="font-size: 0.875rem; line-height: 1.6;">
-                <p style="margin-bottom: 1.25rem; font-weight: 600; color: #1e293b;">By submitting this request, you agree to the following terms and conditions:</p>
-                
-                <!-- General Policies Section -->
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="color: #800020; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; border-bottom: 2px solid #800020; padding-bottom: 0.35rem;">General Policies</h3>
-                    <ul style="list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.65rem;">
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Priority:</strong> Students and school activities, as well as government activities, have priority in facility usage.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Responsibility:</strong> The user is responsible for ensuring the facility is clean and in proper condition after use.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Equipment:</strong> Any damage to school property will be billed to the applicant at replacement cost.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Schedule:</strong> Time extensions must be requested at least 24 hours in advance and are subject to availability.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Food & Drinks:</strong> Strictly prohibited in the Auditorium and Library. Other facilities may allow with proper cleanup.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Requirements:</strong> Valid ID and complete contact information must be provided for all reservations.
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Payment & Fees Section -->
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="color: #800020; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; border-bottom: 2px solid #800020; padding-bottom: 0.35rem;">Payment & Fees</h3>
-                    <ul style="list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.65rem;">
-                        <li style="border-left: 3px solid #800020; padding-left: 0.75rem; background: #fff5f7; padding-top: 0.5rem; padding-bottom: 0.5rem;">
-                            <strong>Reservation Fee:</strong> A non-refundable down payment is required to secure your reservation. The amount depends on the reservation total and will be confirmed after approval.
-                        </li>
-                        <li style="border-left: 3px solid #ef4444; padding-left: 0.75rem; background: #fff1f2; padding-top: 0.5rem; padding-bottom: 0.5rem;">
-                            <strong>Payment Deadline:</strong> Final settlement must be completed at least <strong>3 working days before the event</strong>. Unpaid reservations risk immediate cancellation if priority activities arise.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Payment Location:</strong> All payments must be made at the Administration Office during office hours (8:00 AM - 5:00 PM, Monday to Friday).
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Cancellation Policy Section -->
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="color: #800020; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; border-bottom: 2px solid #800020; padding-bottom: 0.35rem;">Cancellation Policy</h3>
-                    <ul style="list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.65rem;">
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Notice Suggestion:</strong> We recommend providing at least 2 weeks notice for any cancellation to allow proper rescheduling.
-                        </li>
-                        <li style="border-left: 3px solid #f59e0b; padding-left: 0.75rem; background: #fef3c7; padding-top: 0.5rem; padding-bottom: 0.5rem;">
-                            <strong>Restriction:</strong> Cancellations will <strong>NOT be accepted within 2 weeks</strong> of the planned event date. The down payment is non-refundable under all circumstances.
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Equipment & Parking Section -->
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="color: #800020; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; border-bottom: 2px solid #800020; padding-bottom: 0.35rem;">Equipment & Parking</h3>
-                    <ul style="list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.65rem;">
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Sound Systems:</strong> Not provided by the school. Renters must arrange their own audio equipment if needed.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Additional Equipment:</strong> Tables, chairs, and other equipment may be available upon request with additional fees.
-                        </li>
-                        <li style="padding-left: 1rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #800020; font-weight: bold;">•</span>
-                            <strong>Parking:</strong> Parking facilities are managed by the city government and are not included in the rental fee. Separate arrangements must be made.
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Acknowledgment -->
-                <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; color: #475569; font-weight: 500;">
-                    I have read and understood all BCHS facility guidelines, including general policies, payment requirements, cancellation restrictions, and equipment/parking information.
-                </div>
-
-                <!-- Edit-reason section (shown instead of policy when user is editing a request) -->
-                <div id="policy-edit-reason-section" style="display:none; padding: 0 0 0.5rem 0;">
-                    <p style="font-size: 0.875rem; color: #475569; margin-bottom: 1.25rem; line-height: 1.6;">
-                        Please explain why you are making changes to this reservation request. Your reason will be visible to the admin when reviewing the update.
-                    </p>
-                    <div style="margin-bottom: 0.25rem;">
-                        <label for="policy-edit-reason-input" style="display:block; font-size:0.875rem; font-weight:600; color:#374151; margin-bottom:0.5rem;">
-                            Reason for changes <span style="color:#dc2626;">*</span>
-                        </label>
-                        <textarea
-                            id="policy-edit-reason-input"
-                            rows="5"
-                            placeholder="e.g. I need to change the date because of a scheduling conflict..."
-                            style="width:100%; padding:0.75rem; border:2px solid #e2e8f0; border-radius:0.5rem; font-size:0.875rem; resize:vertical; font-family:inherit; box-sizing:border-box; transition: border-color 0.15s;"
-                            oninput="document.getElementById('policy-edit-reason-error').style.display='none'; this.style.borderColor=this.value.trim()?'#800020':'#e2e8f0';"
-                        ></textarea>
-                        <p id="policy-edit-reason-error" style="display:none; font-size:0.78rem; color:#dc2626; font-weight:600; margin-top:0.35rem;">Please explain why you are making these changes before submitting.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" id="policy-decline" class="btn btn-secondary">Decline</button>
-                <button type="button" id="policy-accept" class="btn btn-primary">I Accept & Submit</button>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Facility Usage Policy</h2>
         </div>
+        <div class="modal-body" style="font-size: 0.875rem; line-height: 1.6">
+          <p style="margin-bottom: 1.25rem; font-weight: 600; color: #1e293b">
+            By submitting this request, you agree to the following terms and
+            conditions:
+          </p>
+
+          <!-- General Policies Section -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              style="
+                color: #800020;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.75rem;
+                border-bottom: 2px solid #800020;
+                padding-bottom: 0.35rem;
+              "
+            >
+              General Policies
+            </h3>
+            <ul
+              style="
+                list-style-type: none;
+                padding-left: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.65rem;
+              "
+            >
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Priority:</strong> Students and school activities, as
+                well as government activities, have priority in facility usage.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Responsibility:</strong> The user is responsible for
+                ensuring the facility is clean and in proper condition after
+                use.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Equipment:</strong> Any damage to school property will
+                be billed to the applicant at replacement cost.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Schedule:</strong> Time extensions must be requested at
+                least 24 hours in advance and are subject to availability.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Food & Drinks:</strong> Strictly prohibited in the
+                Auditorium and Library. Other facilities may allow with proper
+                cleanup.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Requirements:</strong> Valid ID and complete contact
+                information must be provided for all reservations.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Payment & Fees Section -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              style="
+                color: #800020;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.75rem;
+                border-bottom: 2px solid #800020;
+                padding-bottom: 0.35rem;
+              "
+            >
+              Payment & Fees
+            </h3>
+            <ul
+              style="
+                list-style-type: none;
+                padding-left: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.65rem;
+              "
+            >
+              <li
+                style="
+                  border-left: 3px solid #800020;
+                  padding-left: 0.75rem;
+                  background: #fff5f7;
+                  padding-top: 0.5rem;
+                  padding-bottom: 0.5rem;
+                "
+              >
+                <strong>Reservation Fee:</strong> A non-refundable down payment
+                is required to secure your reservation. The amount depends on
+                the reservation total and will be confirmed after approval.
+              </li>
+              <li
+                style="
+                  border-left: 3px solid #ef4444;
+                  padding-left: 0.75rem;
+                  background: #fff1f2;
+                  padding-top: 0.5rem;
+                  padding-bottom: 0.5rem;
+                "
+              >
+                <strong>Payment Deadline:</strong> Final settlement must be
+                completed at least
+                <strong>3 working days before the event</strong>. Unpaid
+                reservations risk immediate cancellation if priority activities
+                arise.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Payment Location:</strong> All payments must be made at
+                the Administration Office during office hours (8:00 AM - 5:00
+                PM, Monday to Friday).
+              </li>
+            </ul>
+          </div>
+
+          <!-- Cancellation Policy Section -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              style="
+                color: #800020;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.75rem;
+                border-bottom: 2px solid #800020;
+                padding-bottom: 0.35rem;
+              "
+            >
+              Cancellation Policy
+            </h3>
+            <ul
+              style="
+                list-style-type: none;
+                padding-left: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.65rem;
+              "
+            >
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Notice Suggestion:</strong> We recommend providing at
+                least 2 weeks notice for any cancellation to allow proper
+                rescheduling.
+              </li>
+              <li
+                style="
+                  border-left: 3px solid #f59e0b;
+                  padding-left: 0.75rem;
+                  background: #fef3c7;
+                  padding-top: 0.5rem;
+                  padding-bottom: 0.5rem;
+                "
+              >
+                <strong>Restriction:</strong> Cancellations will
+                <strong>NOT be accepted within 2 weeks</strong> of the planned
+                event date. The down payment is non-refundable under all
+                circumstances.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Equipment & Parking Section -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              style="
+                color: #800020;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.75rem;
+                border-bottom: 2px solid #800020;
+                padding-bottom: 0.35rem;
+              "
+            >
+              Equipment & Parking
+            </h3>
+            <ul
+              style="
+                list-style-type: none;
+                padding-left: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.65rem;
+              "
+            >
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Sound Systems:</strong> Not provided by the school.
+                Renters must arrange their own audio equipment if needed.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Additional Equipment:</strong> Tables, chairs, and other
+                equipment may be available upon request with additional fees.
+              </li>
+              <li style="padding-left: 1rem; position: relative">
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    color: #800020;
+                    font-weight: bold;
+                  "
+                  >•</span
+                >
+                <strong>Parking:</strong> Parking facilities are managed by the
+                city government and are not included in the rental fee. Separate
+                arrangements must be made.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Acknowledgment -->
+          <div
+            style="
+              background: #f8fafc;
+              padding: 1rem;
+              border-radius: 0.5rem;
+              border: 1px solid #e2e8f0;
+              color: #475569;
+              font-weight: 500;
+            "
+          >
+            I have read and understood all BCHS facility guidelines, including
+            general policies, payment requirements, cancellation restrictions,
+            and equipment/parking information.
+          </div>
+
+          <!-- Edit-reason section (shown instead of policy when user is editing a request) -->
+          <div
+            id="policy-edit-reason-section"
+            style="display: none; padding: 0 0 0.5rem 0"
+          >
+            <p
+              style="
+                font-size: 0.875rem;
+                color: #475569;
+                margin-bottom: 1.25rem;
+                line-height: 1.6;
+              "
+            >
+              Please explain why you are making changes to this reservation
+              request. Your reason will be visible to the admin when reviewing
+              the update.
+            </p>
+            <div style="margin-bottom: 0.25rem">
+              <label
+                for="policy-edit-reason-input"
+                style="
+                  display: block;
+                  font-size: 0.875rem;
+                  font-weight: 600;
+                  color: #374151;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                Reason for changes <span style="color: #dc2626">*</span>
+              </label>
+              <textarea
+                id="policy-edit-reason-input"
+                rows="5"
+                placeholder="e.g. I need to change the date because of a scheduling conflict..."
+                style="
+                  width: 100%;
+                  padding: 0.75rem;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 0.5rem;
+                  font-size: 0.875rem;
+                  resize: vertical;
+                  font-family: inherit;
+                  box-sizing: border-box;
+                  transition: border-color 0.15s;
+                "
+                oninput="
+                  document.getElementById(
+                    'policy-edit-reason-error',
+                  ).style.display = 'none';
+                  this.style.borderColor = this.value.trim()
+                    ? '#800020'
+                    : '#e2e8f0';
+                "
+              ></textarea>
+              <p
+                id="policy-edit-reason-error"
+                style="
+                  display: none;
+                  font-size: 0.78rem;
+                  color: #dc2626;
+                  font-weight: 600;
+                  margin-top: 0.35rem;
+                "
+              >
+                Please explain why you are making these changes before
+                submitting.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="policy-decline" class="btn btn-secondary">
+            Decline
+          </button>
+          <button type="button" id="policy-accept" class="btn btn-primary">
+            I Accept & Submit
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Toast Container -->
@@ -750,34 +1742,64 @@
 
     <!-- Floating Chat Widget -->
     <div id="chat-widget">
-        <div id="chat-popup" class="chat-popup">
-            <div class="chat-popup-header">
-                <div class="chat-header-left">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <span>AI Assistant</span>
-                </div>
-                <button id="chat-close-btn" class="chat-popup-close">&times;</button>
-            </div>
-            <div id="chat-messages" class="chat-messages"></div>
-            <div class="chat-input-container">
-                <input type="text" id="chat-input" class="chat-input" placeholder="Ask about reservations...">
-                <button id="chat-send" class="chat-send-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <button id="chat-fab" class="chat-fab" title="AI Assistant">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      <div id="chat-popup" class="chat-popup">
+        <div class="chat-popup-header">
+          <div class="chat-header-left">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
             </svg>
-        </button>
+            <span>AI Assistant</span>
+          </div>
+          <button id="chat-close-btn" class="chat-popup-close">&times;</button>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-container">
+          <input
+            type="text"
+            id="chat-input"
+            class="chat-input"
+            placeholder="Ask about reservations..."
+          />
+          <button id="chat-send" class="chat-send-btn">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <button id="chat-fab" class="chat-fab" title="AI Assistant">
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+          ></path>
+        </svg>
+      </button>
     </div>
 
     <script type="module" src="/src/app.js"></script>
-</body>
+  </body>
 </html>

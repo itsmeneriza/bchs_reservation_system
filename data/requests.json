@@ -2,8 +2,8 @@
   "requests": [
     {
       "id": "1790297213496",
-      "roomId": "gym",
-      "roomName": "gym",
+      "facilityId": "gym",
+      "facilityName": "gym",
       "totalAmount": 3800,
       "paymentStatus": "paid",
       "isStaff": false,
@@ -23,7 +23,7 @@
       "adminEditSnapshot": {
         "changedAt": "2026-09-25T10:32:33.527Z",
         "changes": {
-          "roomName": {
+          "facilityName": {
             "before": "Gym",
             "after": "gym"
           }
@@ -36,8 +36,8 @@
     },
     {
       "id": "1790388279179",
-      "roomId": "auditorium",
-      "roomName": "Auditorium",
+      "facilityId": "auditorium",
+      "facilityName": "Auditorium",
       "totalAmount": 0,
       "paymentStatus": "paid",
       "isStaff": true,
@@ -95,8 +95,8 @@
     },
     {
       "id": "1790562064714",
-      "roomId": "auditorium",
-      "roomName": "auditorium",
+      "facilityId": "auditorium",
+      "facilityName": "auditorium",
       "totalAmount": 1800,
       "paymentStatus": "paid",
       "isStaff": false,
@@ -159,8 +159,8 @@
     },
     {
       "id": "event_1790570633448",
-      "roomId": "auditorium",
-      "roomName": "Auditorium",
+      "facilityId": "auditorium",
+      "facilityName": "Auditorium",
       "name": "Shooting Drill",
       "contact": "School Event",
       "email": "admin@bchs.edu",
@@ -179,8 +179,8 @@
     },
     {
       "id": "1792120554150",
-      "roomId": "grounds",
-      "roomName": "Grounds",
+      "facilityId": "grounds",
+      "facilityName": "Grounds",
       "totalAmount": 0,
       "paymentStatus": "paid",
       "isStaff": true,
@@ -217,8 +217,8 @@
     },
     {
       "id": "1792138729402",
-      "roomId": "avr",
-      "roomName": "AVR",
+      "facilityId": "avr",
+      "facilityName": "AVR",
       "totalAmount": 0,
       "paymentStatus": "paid",
       "isStaff": true,
@@ -256,8 +256,8 @@
     },
     {
       "id": "1792138997335",
-      "roomId": "grounds",
-      "roomName": "Grounds",
+      "facilityId": "grounds",
+      "facilityName": "Grounds",
       "totalAmount": 0,
       "paymentStatus": "paid",
       "isStaff": true,
@@ -295,8 +295,8 @@
     },
     {
       "id": "1792139286427",
-      "roomId": "avr",
-      "roomName": "AVR",
+      "facilityId": "avr",
+      "facilityName": "AVR",
       "totalAmount": 1300,
       "paymentStatus": "pending",
       "isStaff": false,
