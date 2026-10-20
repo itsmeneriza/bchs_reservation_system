@@ -76,7 +76,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
       };
     }
 
-    const facilitys = ["auditorium", "library", "grounds", "avr", "gym"];
+    const facilities = ["auditorium", "library", "grounds", "avr", "gym"];
     const facilityNames = {
       auditorium: "Auditorium",
       library: "Library",
@@ -87,7 +87,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
 
     const summary = computeSummary(allData, facilityNames);
 
-    const facilityAnalytics = facilitys
+    const facilityAnalytics = facilities
       .map((facilityId) =>
         computeRoomAnalytics(
           allData.filter((r) => r.facilityId === facilityId),
@@ -119,7 +119,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
           r.date.startsWith(`${lastYear}-${monthStr}`),
         );
         const byRoom = {};
-        facilitys.forEach((id) => {
+        facilities.forEach((id) => {
           byRoom[id] = monthData.filter((r) => r.facilityId === id).length;
         });
         return {
@@ -297,11 +297,11 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
       const monthlyAvg = {};
       all.forEach((r) => {
         const m = new Date(r.date).getMonth();
-        if (!monthlyAvg[m]) monthlyAvg[m] = { total: 0, facilitys: {} };
+        if (!monthlyAvg[m]) monthlyAvg[m] = { total: 0, facilities: {} };
         monthlyAvg[m].total++;
         facilityIds.forEach((rid) => {
-          if (!monthlyAvg[m].facilitys[rid]) monthlyAvg[m].facilitys[rid] = 0;
-          if (r.facilityId === rid) monthlyAvg[m].facilitys[rid]++;
+          if (!monthlyAvg[m].facilities[rid]) monthlyAvg[m].facilities[rid] = 0;
+          if (r.facilityId === rid) monthlyAvg[m].facilities[rid]++;
         });
       });
 
@@ -344,7 +344,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
         const facilityPredictions = {};
         facilityIds.forEach((rid) => {
           facilityPredictions[rid] = avg
-            ? Math.round((avg.facilitys[rid] || 0) / yearsOfData)
+            ? Math.round((avg.facilities[rid] || 0) / yearsOfData)
             : 0;
         });
         predictedTrends.push({

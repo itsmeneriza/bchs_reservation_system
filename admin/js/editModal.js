@@ -891,7 +891,7 @@ function recalcEditPrice() {
   if (!facilityId || !start || !end || start >= end) return;
   const req = requests.find((x) => x.id === selectedRequestToEdit);
   const isStaff = req ? isStaffRequest(req) : false;
-  const facility = facilitys.find((r) => r.id === facilityId);
+  const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour =
     facility?.pricePerHour ?? _getRoomPriceFallback(facilityId);
   const { total } = computeBookingTotal(pricePerHour, start, end, isStaff);

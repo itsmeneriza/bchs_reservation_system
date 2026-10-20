@@ -13,7 +13,7 @@ export async function loadData() {
     const success = await dataService.loadAllData();
 
     if (success) {
-      state.facilitys = dataService.getRooms();
+      state.facilities = dataService.getRooms();
       state.reservations = dataService.getReservations();
     }
 
@@ -51,7 +51,7 @@ export async function saveReservationRequest(request) {
 
 /**
  * Get all active reservations for a specific date and facility.
- * Includes manual 'global' blocks that close all facilitys.
+ * Includes manual 'global' blocks that close all facilities.
  */
 export function getReservationsForDate(facilityId, dateStr) {
   return state.reservations.filter((b) => {

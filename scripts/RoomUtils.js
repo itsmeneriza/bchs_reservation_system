@@ -1,17 +1,17 @@
 /**
  * RoomUtils — single source of truth for facility fallback data and facility helpers.
  *
- * facilitys.json is the live source of truth.  These fallback constants are used
- * only when the API call to /data/facilitys.json fails.  All capacities, prices,
- * and minPax values must match facilitys.json exactly.
+ * facilities.json is the live source of truth.  These fallback constants are used
+ * only when the API call to /data/facilities.json fails.  All capacities, prices,
+ * and minPax values must match facilities.json exactly.
  *
  * Export style: CommonJS + browser globals (same pattern as DateUtils.js).
  */
 
 "use strict";
 
-// ─── Fallback facility list (mirrors data/facilitys.json) ─────────────────────────────
-// Update both here AND in facilitys.json when facility data changes.
+// ─── Fallback facility list (mirrors data/facilities.json) ─────────────────────────────
+// Update both here AND in facilities.json when facility data changes.
 
 const ROOMS_FALLBACK = [
   {
@@ -40,7 +40,7 @@ const ROOMS_FALLBACK = [
 ];
 
 // Convenience maps derived from the fallback list —
-// these are also used when the live facilitys array is available (same shape).
+// these are also used when the live facilities array is available (same shape).
 
 /** @type {{ [facilityId: string]: number }} */
 const ROOM_PRICE_FALLBACK = Object.fromEntries(
@@ -61,7 +61,7 @@ const ROOM_NAMES = Object.fromEntries(
 
 /**
  * Returns the display name for a facility id.
- * Accepts a live facilitys array as optional second argument; falls back to
+ * Accepts a live facilities array as optional second argument; falls back to
  * ROOMS_FALLBACK if the array is empty or not provided.
  *
  * @param {string}   id
@@ -77,7 +77,7 @@ function getRoomName(id, liveRooms) {
 
 /**
  * Returns the price-per-hour for a facility.
- * Uses the live facilitys array when available, falls back to ROOM_PRICE_FALLBACK.
+ * Uses the live facilities array when available, falls back to ROOM_PRICE_FALLBACK.
  *
  * @param {string}   facilityId
  * @param {object[]} [liveRooms]
@@ -92,8 +92,8 @@ function getRoomPrice(facilityId, liveRooms) {
 }
 
 /**
- * Returns the minimum pax for a facility, reading from the live facilitys array first
- * (where facilitys.json has a minPax field), then ROOM_MIN_PAX, then 0.
+ * Returns the minimum pax for a facility, reading from the live facilities array first
+ * (where facilities.json has a minPax field), then ROOM_MIN_PAX, then 0.
  *
  * @param {string}   facilityId
  * @param {object[]} [liveRooms]

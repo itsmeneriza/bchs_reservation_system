@@ -37,8 +37,8 @@ class ReservationApp {
         );
       }
 
-      if (state.facilitys.length > 0) {
-        setSelectedRoom(state.facilitys[0]);
+      if (state.facilities.length > 0) {
+        setSelectedRoom(state.facilities[0]);
       }
 
       // Render critical visible components first

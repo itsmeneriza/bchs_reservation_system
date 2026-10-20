@@ -1,6 +1,6 @@
 /**
  * Admin Data Loader
- * Fetches facilitys, staff, requests, and events from the server API.
+ * Fetches facilities, staff, requests, and events from the server API.
  * Shared logic: RoomUtils (fallback data), DateUtils (parseEventTime)
  * loaded via <script src="/scripts/RoomUtils.js"> and <script src="/scripts/DateUtils.js">
  * before this file in admin.html — available as window.RoomUtils and window.DateUtils.
@@ -22,13 +22,13 @@ async function loadData() {
 
 async function loadRooms() {
   try {
-    const response = await fetch("/api/facilitys");
+    const response = await fetch("/api/facilities");
     if (response.ok) {
       const data = await response.json();
-      facilitys = data.facilitys || [];
+      facilities = data.facilities || [];
     }
   } catch (e) {
-    facilitys = RoomUtils.ROOMS_FALLBACK;
+    facilities = RoomUtils.ROOMS_FALLBACK;
   }
   populateRoomSelects();
   if (

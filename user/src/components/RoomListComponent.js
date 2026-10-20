@@ -1,6 +1,6 @@
 /**
  * Room List Component
- * Displays available facilitys with pagination (3 per page)
+ * Displays available facilities with pagination (3 per page)
  * Updated: Navigation buttons now flank the facility cards.
  */
 
@@ -17,7 +17,7 @@ export class RoomList {
     if (!this.container) return;
     this.container.innerHTML = "";
 
-    state.facilitys.forEach((facility) => {
+    state.facilities.forEach((facility) => {
       const tooSmall = filterPax > 0 && facility.capacity < filterPax;
       const facilityCard = document.createElement("button");
       facilityCard.className = "facility-card-mini";

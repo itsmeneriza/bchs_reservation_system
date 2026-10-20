@@ -47,7 +47,7 @@ const getOfflineReply = (question) => {
     "reserve",
     "reservation",
     "facility",
-    "facilitys",
+    "facilities",
     "availability",
     "available",
     "price",
@@ -79,8 +79,8 @@ const getOfflineReply = (question) => {
     return OUT_OF_SCOPE_REPLY;
   }
 
-  const facilitys = state.facilitys || [];
-  const mentionedRoom = facilitys.find((facility) => {
+  const facilities = state.facilities || [];
+  const mentionedRoom = facilities.find((facility) => {
     const name = facility.name.toLowerCase();
     return (
       normalized.includes(name) ||
@@ -110,7 +110,7 @@ const getOfflineReply = (question) => {
   }
 
   if (asksPrice || asksCapacity || mentionedRoom) {
-    const relevantRooms = mentionedRoom ? [mentionedRoom] : facilitys;
+    const relevantRooms = mentionedRoom ? [mentionedRoom] : facilities;
     const details = relevantRooms.map((facility) => {
       const facts = [];
       if (asksCapacity || mentionedRoom)

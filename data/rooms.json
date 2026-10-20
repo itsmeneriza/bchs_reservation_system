@@ -1,5 +1,5 @@
 {
-  "facilitys": [
+  "facilities": [
     {"id":"auditorium","name":"Auditorium","capacity":700,"pricePerHour":1800,"minPax":100},
     {"id":"library","name":"Library","capacity":100,"pricePerHour":1000,"minPax":40},
     {"id":"grounds","name":"Grounds","capacity":180,"pricePerHour":700,"minPax":50},

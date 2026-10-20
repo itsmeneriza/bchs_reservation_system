@@ -584,7 +584,7 @@ export class MyRequests {
       if (!req || !window._openReservationModal) return;
 
       // Set facility and date in state synchronously BEFORE opening the modal
-      const facility = state.facilitys.find((r) => r.id === req.facilityId);
+      const facility = state.facilities.find((r) => r.id === req.facilityId);
       if (facility) setSelectedRoom(facility);
       setSelectedDate(new Date(req.date + "T00:00:00"));
 

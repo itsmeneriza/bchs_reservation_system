@@ -46,7 +46,7 @@ module.exports = function createChatRouter() {
   - Recommend giving at least 2 weeks notice
   
   == GENERAL RULES ==
-  - Keep facilitys clean after use; report any damage immediately
+  - Keep facilities clean after use; report any damage immediately
   - Arrive on time
   - No smoking anywhere on campus
   - No unauthorized equipment modifications

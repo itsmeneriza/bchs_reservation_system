@@ -3,7 +3,7 @@
  */
 
 export const state = {
-  facilitys: [],
+  facilities: [],
   selectedRoom: null,
   selectedDate: new Date(),
   currentMonth: new Date().getMonth(),

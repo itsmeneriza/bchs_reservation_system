@@ -24,7 +24,7 @@ async function openQuickBlock(dateStr) {
     cb.disabled = false;
   });
 
-  // Show / disable already-blocked facilitys
+  // Show / disable already-blocked facilities
   const dayBlocks = requests.filter(
     (r) =>
       r.status === "blocked" && r.date === dateStr && r.isFullDayBlock === true,
@@ -47,7 +47,7 @@ async function openQuickBlock(dateStr) {
       )
       .join("");
 
-    // Disable checkboxes for already-blocked facilitys
+    // Disable checkboxes for already-blocked facilities
     dayBlocks.forEach((b) => {
       const cb = document.querySelector(
         `input[name="facilityBlock"][value="${getRoomName(b.facilityId)}"]`,

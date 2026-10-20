@@ -1191,7 +1191,7 @@ export class Forecast {
   }
 
   /**
-   * Sorts facilitys by a composite score: utilization (40%) + reservations (40%) + avg attendees (20%)
+   * Sorts facilities by a composite score: utilization (40%) + reservations (40%) + avg attendees (20%)
    */
   rankRooms(facilityAnalytics) {
     if (!facilityAnalytics || facilityAnalytics.length === 0) return [];

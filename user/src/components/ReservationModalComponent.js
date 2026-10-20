@@ -91,9 +91,9 @@ export class ReservationModal {
 
   renderFacilityPicker(filterPax = 0) {
     const row = document.getElementById("modal-facility-row");
-    if (!row || !state.facilitys.length) return;
+    if (!row || !state.facilities.length) return;
     row.innerHTML = "";
-    state.facilitys.forEach((facility) => {
+    state.facilities.forEach((facility) => {
       const tooSmall = filterPax > 0 && facility.capacity < filterPax;
       const isSelected =
         state.selectedRoom && state.selectedRoom.id === facility.id;
@@ -359,7 +359,7 @@ export class ReservationModal {
 
     // 1. HARD CONSTRAINT: Over Pax Limit
     if (attendees > currentRoom.capacity) {
-      const fits = state.facilitys
+      const fits = state.facilities
         .filter((r) => r.capacity >= attendees)
         .sort((a, b) => a.capacity - b.capacity);
       if (fits.length > 0) {
@@ -452,7 +452,7 @@ export class ReservationModal {
         m.keywords.some((k) => purpose.includes(k)),
       );
       if (bestMapping && currentRoom.id !== bestMapping.id) {
-        const targetRoom = state.facilitys.find((r) => r.id === bestMapping.id);
+        const targetRoom = state.facilities.find((r) => r.id === bestMapping.id);
         if (targetRoom && targetRoom.capacity >= attendees) {
           switchOptions = [targetRoom];
           recommendation = `<strong>Suggestion:</strong> Based on your purpose, the <strong>${targetRoom.name}</strong> is better suited (${bestMapping.reason}). Switch?`;
@@ -466,7 +466,7 @@ export class ReservationModal {
       attendees > 0 &&
       attendees < currentRoom.capacity * 0.2
     ) {
-      const smaller = state.facilitys
+      const smaller = state.facilities
         .filter(
           (r) => r.capacity >= attendees && r.capacity < currentRoom.capacity,
         )
@@ -498,7 +498,7 @@ export class ReservationModal {
 
     // Expose switch handler
     window._switchRoom = (facilityId) => {
-      const facility = state.facilitys.find((r) => r.id === facilityId);
+      const facility = state.facilities.find((r) => r.id === facilityId);
       if (!facility) return;
       const prevStart = this.inputs.startTime.value;
       const prevEnd = this.inputs.endTime.value;
@@ -529,16 +529,16 @@ export class ReservationModal {
     };
   }
 
-  // MIN_PAX is now read from facilitys.json via state.selectedRoom.minPax.
+  // MIN_PAX is now read from facilities.json via state.selectedRoom.minPax.
   // This getter keeps backward-compat for any call using ReservationModal.MIN_PAX[id].
   static get MIN_PAX() {
     const map = {};
-    if (state.facilitys && state.facilitys.length > 0) {
-      state.facilitys.forEach((r) => {
+    if (state.facilities && state.facilities.length > 0) {
+      state.facilities.forEach((r) => {
         if (r.minPax != null) map[r.id] = r.minPax;
       });
     }
-    // Fallback values in case facilitys haven't loaded yet
+    // Fallback values in case facilities haven't loaded yet
     const fallback = {
       auditorium: 100,
       grounds: 50,

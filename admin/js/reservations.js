@@ -5,11 +5,11 @@
  */
 
 // ─── Room Helpers ─────────────────────────────────────────────────────────────
-// Use the live facilitys array when populated, fall back to RoomUtils.ROOMS_FALLBACK.
+// Use the live facilities array when populated, fall back to RoomUtils.ROOMS_FALLBACK.
 
 function _getAdminRooms() {
-  return facilitys && facilitys.length > 0
-    ? facilitys
+  return facilities && facilities.length > 0
+    ? facilities
     : RoomUtils.ROOMS_FALLBACK;
 }
 
@@ -98,7 +98,7 @@ window.selectAdminFacility = function (facilityId) {
 function openAddReservationModal() {
   const modal = document.getElementById("addReservationModal");
   const defaultRoom =
-    facilitys && facilitys.length > 0 ? facilitys[0].id : "auditorium";
+    facilities && facilities.length > 0 ? facilities[0].id : "auditorium";
   const hiddenRoom = document.getElementById("manualRoom");
   if (hiddenRoom && !hiddenRoom.value) hiddenRoom.value = defaultRoom;
 
@@ -192,7 +192,7 @@ function updateManualPricing() {
     return;
   }
 
-  const facility = facilitys.find((r) => r.id === facilityId);
+  const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour = isStaff
     ? 0
     : (facility?.pricePerHour ?? _getRoomPriceFallback(facilityId));
@@ -245,14 +245,14 @@ window.updateAdminRoomSuggestion = function () {
     return;
   }
 
-  const currentRoom = facilitys.find((r) => r.id === facilitySelect.value);
+  const currentRoom = facilities.find((r) => r.id === facilitySelect.value);
   if (!currentRoom) {
     suggestionBox.style.display = "none";
     return;
   }
 
   if (attendees > currentRoom.capacity) {
-    const fits = facilitys
+    const fits = facilities
       .filter((r) => r.capacity >= attendees)
       .sort((a, b) => a.capacity - b.capacity);
     suggestionText.innerHTML =
@@ -263,7 +263,7 @@ window.updateAdminRoomSuggestion = function () {
     return;
   }
   if (attendees < currentRoom.capacity * 0.2) {
-    const smaller = facilitys
+    const smaller = facilities
       .filter(
         (r) => r.capacity >= attendees && r.capacity < currentRoom.capacity,
       )
@@ -356,7 +356,7 @@ async function saveManualReservation() {
     return;
   }
 
-  const facility = facilitys.find((r) => r.id === facilityId);
+  const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour = isStaff
     ? 0
     : (facility?.pricePerHour ?? _getRoomPriceFallback(facilityId));

@@ -148,21 +148,21 @@ module.exports = function createRequestsRouter({
     }
   });
 
-  // API endpoint to serve facilitys data
-  router.get("/api/facilitys", (_req, res) => {
+  // API endpoint to serve facilities data
+  router.get("/api/facilities", (_req, res) => {
     try {
-      const facilitysPath = path.join(repoDataDir, "facilitys.json");
-      if (!fs.existsSync(facilitysPath))
-        return res.status(200).json({ facilitys: [] });
-      const data = JSON.parse(fs.readFileSync(facilitysPath, "utf8"));
+      const facilitiesPath = path.join(repoDataDir, "facilities.json");
+      if (!fs.existsSync(facilitiesPath))
+        return res.status(200).json({ facilities: [] });
+      const data = JSON.parse(fs.readFileSync(facilitiesPath, "utf8"));
       res.status(200).json(data);
     } catch (error) {
-      console.error("? Error reading facilitys:", error);
+      console.error("? Error reading facilities:", error);
       res
         .status(500)
         .json({
           success: false,
-          message: "Failed to read facilitys",
+          message: "Failed to read facilities",
           error: error.message,
         });
     }

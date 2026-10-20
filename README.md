@@ -85,7 +85,7 @@ Then open in your browser:
 
 `server.js` configures Express, serves the static frontends, mounts the API routers, starts scheduled jobs, and listens for requests. API handlers are grouped by feature in `routes/`:
 
-- `requests.js` handles reservations, facilitys, events, and accepted reservations.
+- `requests.js` handles reservations, facilities, events, and accepted reservations.
 - `history.js` handles archived reservations and periodic archiving.
 - `forecast.js` handles forecast calculation, caching, and refresh.
 - `notifications.js` handles email notifications, reminders, and cancellation OTPs.
@@ -156,14 +156,14 @@ The shared email transport is configured in `services/mailer.js`; existing date,
 
 All data is stored as JSON files in the `data/` folder:
 
-| File             | Description                             |
-| ---------------- | --------------------------------------- |
-| `requests.json`  | Pending and active reservation requests |
-| `accepted.json`  | Approved reservations                   |
-| `history.json`   | Archived past reservations              |
-| `events.json`    | Scheduled events                        |
-| `facilitys.json` | Facility/facility definitions           |
-| `staff.json`     | Staff accounts                          |
-| `forecast.json`  | Cached usage forecast                   |
+| File              | Description                             |
+| ----------------- | --------------------------------------- |
+| `requests.json`   | Pending and active reservation requests |
+| `accepted.json`   | Approved reservations                   |
+| `history.json`    | Archived past reservations              |
+| `events.json`     | Scheduled events                        |
+| `facilities.json` | Facility/facility definitions           |
+| `staff.json`      | Staff accounts                          |
+| `forecast.json`   | Cached usage forecast                   |
 
 > When hosting on platforms like Railway or Render, note that the file system is **ephemeral** - data resets on redeploy. For persistent storage, consider migrating to a database like MongoDB Atlas or PostgreSQL.

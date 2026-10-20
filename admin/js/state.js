@@ -5,7 +5,7 @@
 
 var requests = [];
 var staff = [];
-var facilitys = [];
+var facilities = [];
 var adminEvents = [];
 
 var currentCalendarDate = new Date();

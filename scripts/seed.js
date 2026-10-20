@@ -39,13 +39,13 @@ async function seed() {
   }
 
   // Rooms (static reference data)
-  const { facilitys } = JSON.parse(
-    readFileSync(join(dataDir, "facilitys.json"), "utf8"),
+  const { facilities } = JSON.parse(
+    readFileSync(join(dataDir, "facilities.json"), "utf8"),
   );
-  if (facilitys.length) {
-    await db.collection("facilitys").deleteMany({});
-    await db.collection("facilitys").insertMany(facilitys);
-    console.log(`Seeded ${facilitys.length} facilitys`);
+  if (facilities.length) {
+    await db.collection("facilities").deleteMany({});
+    await db.collection("facilities").insertMany(facilities);
+    console.log(`Seeded ${facilities.length} facilities`);
   }
 
   // Staff

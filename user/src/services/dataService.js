@@ -7,7 +7,7 @@ import { parseEventTime } from "../utils/dateUtils.js";
 
 export class DataService {
   constructor() {
-    this.facilitys = [];
+    this.facilities = [];
     this.reservations = [];
     this.forecast = null;
 
@@ -36,7 +36,7 @@ export class DataService {
 
   async loadAllData() {
     try {
-      // Load facilitys, reservations in parallel — skip forecast (deferred)
+      // Load facilities, reservations in parallel — skip forecast (deferred)
       await Promise.all([this.loadRooms(), this.loadReservations()]);
       return true;
     } catch {
@@ -50,17 +50,17 @@ export class DataService {
 
   async loadRooms() {
     try {
-      const response = await fetch("/api/facilitys");
+      const response = await fetch("/api/facilities");
       const data = await response.json();
-      this.facilitys = data.facilitys.map((r) => ({
+      this.facilities = data.facilities.map((r) => ({
         ...r,
         pricePerHour: r.pricePerHour ?? 0,
       }));
     } catch (e) {
-      // Fallback mirrors data/facilitys.json — sourced from scripts/RoomUtils.js browser global
+      // Fallback mirrors data/facilities.json — sourced from scripts/RoomUtils.js browser global
       // If RoomUtils is available (loaded via <script> in reservation.html), use it.
-      // Otherwise use the inline fallback which must stay in sync with facilitys.json.
-      this.facilitys =
+      // Otherwise use the inline fallback which must stay in sync with facilities.json.
+      this.facilities =
         typeof RoomUtils !== "undefined"
           ? RoomUtils.ROOMS_FALLBACK
           : [
@@ -188,7 +188,7 @@ export class DataService {
   }
 
   getRooms() {
-    return this.facilitys;
+    return this.facilities;
   }
   getReservations() {
     return this.reservations;
