@@ -349,13 +349,13 @@ export class Forecast {
             averageAttendees: summary.averageAttendees || 0,
             mostPopularRoom: summary.mostPopularRoom || 'N/A'
         };
-
-        this.container.innerHTML = `
+        const isAdminView = this.container?.id === 'admin-forecast-content';
+        const facilityOverviewMarkup = isAdminView ? `
             <!-- Hero Stats Section -->
             <div class="forecast-hero">
                 <div class="hero-header">
                     <div>
-                        <h2 class="hero-title">Facility Analytics Dashboard</h2>
+                        <h2 class="hero-title">Facility Overview</h2>
                         <p class="hero-subtitle">Real-time insights and predictions for BCHS facilities</p>
                         <p class="forecast-baseline">Forecast baseline: historical data from ${baselineYears.join(' and ')}</p>
                     </div>
@@ -401,6 +401,10 @@ export class Forecast {
                     </div>
                 </div>
             </div>
+        ` : '';
+
+        this.container.innerHTML = `
+            ${facilityOverviewMarkup}
 
             <!-- Year Comparison - Prominent Position -->
             ${lastYearStats ? this.renderYearComparison(lastYearStats, currentSummary, forecast.analyzedYear, this.currentYearData) : ''}
@@ -711,7 +715,7 @@ export class Forecast {
                 <div class="section-header">
                     <h3 class="section-title">
                         <span class="title-icon"></span>
-                        Year-over-Year Activity
+                        Activity Overview
                     </h3>
                     <div class="comparison-summary ${totalDiff >= 0 ? 'positive' : 'negative'}">
                         <span class="summary-icon">${totalDiff >= 0 ? '+' : '-'}</span>
