@@ -1,6 +1,6 @@
 /**
  * Facility List Component
- * Displays available facilities with pagination (3 per page)
+ * Displays available facilities with pagination (3 per page).
  * Updated: Navigation buttons now flank the facility cards.
  */
 
