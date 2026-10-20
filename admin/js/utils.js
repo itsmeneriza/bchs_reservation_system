@@ -8,7 +8,7 @@
 function getFacilityName(id) {
   if (id === "global") return "ALL FACILITIES";
   const r = (
-    facilities && facilities.length > 0 ? facilities : FacilityUtils.ROOMS_FALLBACK
+    facilities && facilities.length > 0 ? facilities : FacilityUtils.FACILITIES_FALLBACK
   ).find((x) => x.id === id);
   return r ? r.name : FacilityUtils.ROOM_NAMES[id] || id;
 }

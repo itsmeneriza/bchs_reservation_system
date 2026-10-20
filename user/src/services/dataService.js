@@ -62,7 +62,7 @@ export class DataService {
       // Otherwise use the inline fallback which must stay in sync with facilities.json.
       this.facilities =
         typeof FacilityUtils !== "undefined"
-          ? FacilityUtils.ROOMS_FALLBACK
+          ? FacilityUtils.FACILITIES_FALLBACK
           : [
               {
                 id: "auditorium",

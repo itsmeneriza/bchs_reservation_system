@@ -13,7 +13,7 @@
 // ─── Fallback facility list (mirrors data/facilities.json) ─────────────────────────────
 // Update both here AND in facilities.json when facility data changes.
 
-const ROOMS_FALLBACK = [
+const FACILITIES_FALLBACK = [
   {
     id: "auditorium",
     name: "Auditorium",
@@ -44,17 +44,17 @@ const ROOMS_FALLBACK = [
 
 /** @type {{ [facilityId: string]: number }} */
 const ROOM_PRICE_FALLBACK = Object.fromEntries(
-  ROOMS_FALLBACK.map((r) => [r.id, r.pricePerHour]),
+  FACILITIES_FALLBACK.map((r) => [r.id, r.pricePerHour]),
 );
 
 /** @type {{ [facilityId: string]: number }} */
 const ROOM_MIN_PAX = Object.fromEntries(
-  ROOMS_FALLBACK.map((r) => [r.id, r.minPax]),
+  FACILITIES_FALLBACK.map((r) => [r.id, r.minPax]),
 );
 
 /** @type {{ [facilityId: string]: string }} */
 const ROOM_NAMES = Object.fromEntries(
-  ROOMS_FALLBACK.map((r) => [r.id, r.name]),
+  FACILITIES_FALLBACK.map((r) => [r.id, r.name]),
 );
 
 // ─── Facility helpers ─────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ const ROOM_NAMES = Object.fromEntries(
 /**
  * Returns the display name for a facility id.
  * Accepts a live facilities array as optional second argument; falls back to
- * ROOMS_FALLBACK if the array is empty or not provided.
+ * FACILITIES_FALLBACK if the array is empty or not provided.
  *
  * @param {string}   id
  * @param {object[]} [liveFacilities]
@@ -70,7 +70,7 @@ const ROOM_NAMES = Object.fromEntries(
  */
 function getFacilityName(id, liveFacilities) {
   if (id === "global") return "ALL FACILITIES";
-  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
+  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : FACILITIES_FALLBACK;
   const r = source.find((x) => x.id === id);
   return r ? r.name : ROOM_NAMES[id] || id;
 }
@@ -84,7 +84,7 @@ function getFacilityName(id, liveFacilities) {
  * @returns {number}
  */
 function getFacilityPrice(facilityId, liveFacilities) {
-  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
+  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : FACILITIES_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   return facility
     ? facility.pricePerHour
@@ -100,27 +100,27 @@ function getFacilityPrice(facilityId, liveFacilities) {
  * @returns {number}
  */
 function getFacilityMinPax(facilityId, liveFacilities) {
-  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
+  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : FACILITIES_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   if (facility && facility.minPax != null) return facility.minPax;
   return ROOM_MIN_PAX[facilityId] ?? 0;
 }
 
 /**
- * Returns the effective facility list: liveFacilities if non-empty, otherwise ROOMS_FALLBACK.
+ * Returns the effective facility list: liveFacilities if non-empty, otherwise FACILITIES_FALLBACK.
  *
  * @param {object[]} [liveFacilities]
  * @returns {object[]}
  */
 function getFacilities(liveFacilities) {
-  return liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
+  return liveFacilities && liveFacilities.length > 0 ? liveFacilities : FACILITIES_FALLBACK;
 }
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
-    ROOMS_FALLBACK,
+    FACILITIES_FALLBACK,
     ROOM_PRICE_FALLBACK,
     ROOM_MIN_PAX,
     ROOM_NAMES,
@@ -133,7 +133,7 @@ if (typeof module !== "undefined" && module.exports) {
 
 if (typeof window !== "undefined") {
   window.FacilityUtils = {
-    ROOMS_FALLBACK,
+    FACILITIES_FALLBACK,
     ROOM_PRICE_FALLBACK,
     ROOM_MIN_PAX,
     ROOM_NAMES,

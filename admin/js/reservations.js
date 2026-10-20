@@ -5,12 +5,12 @@
  */
 
 // ─── Facility Helpers ─────────────────────────────────────────────────────────────
-// Use the live facilities array when populated, fall back to FacilityUtils.ROOMS_FALLBACK.
+// Use the live facilities array when populated, fall back to FacilityUtils.FACILITIES_FALLBACK.
 
 function _getAdminFacilities() {
   return facilities && facilities.length > 0
     ? facilities
-    : FacilityUtils.ROOMS_FALLBACK;
+    : FacilityUtils.FACILITIES_FALLBACK;
 }
 
 function _getAdminMinPax(facilityId) {

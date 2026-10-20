@@ -28,7 +28,7 @@ async function loadFacilities() {
       facilities = data.facilities || [];
     }
   } catch (e) {
-    facilities = FacilityUtils.ROOMS_FALLBACK;
+    facilities = FacilityUtils.FACILITIES_FALLBACK;
   }
   populateFacilitySelects();
   if (
