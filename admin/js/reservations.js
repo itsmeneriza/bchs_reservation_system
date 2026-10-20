@@ -7,14 +7,14 @@
 // ─── Room Helpers ─────────────────────────────────────────────────────────────
 // Use the live facilities array when populated, fall back to RoomUtils.ROOMS_FALLBACK.
 
-function _getAdminRooms() {
+function _getAdminFacilities() {
   return facilities && facilities.length > 0
     ? facilities
     : RoomUtils.ROOMS_FALLBACK;
 }
 
 function _getAdminMinPax(facilityId) {
-  const facility = _getAdminRooms().find((r) => r.id === facilityId);
+  const facility = _getAdminFacilities().find((r) => r.id === facilityId);
   return facility && facility.minPax != null
     ? facility.minPax
     : RoomUtils.ROOM_MIN_PAX[facilityId] || 0;
@@ -40,7 +40,7 @@ function renderAll() {
 // ─── Room Selects / Facility Picker ──────────────────────────────────────────
 
 function populateRoomSelects() {
-  const source = _getAdminRooms();
+  const source = _getAdminFacilities();
 
   const editEl = document.getElementById("editRoomId");
   if (editEl)
@@ -60,7 +60,7 @@ function populateRoomSelects() {
 window.renderAdminFacilityPicker = function (filterPax) {
   const row = document.getElementById("admin-facility-row");
   if (!row) return;
-  const source = _getAdminRooms();
+  const source = _getAdminFacilities();
   if (filterPax === undefined)
     filterPax =
       parseInt(document.getElementById("manualAttendees")?.value) || 0;

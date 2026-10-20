@@ -13,7 +13,7 @@ export async function loadData() {
     const success = await dataService.loadAllData();
 
     if (success) {
-      state.facilities = dataService.getRooms();
+      state.facilities = dataService.getFacilities();
       state.reservations = dataService.getReservations();
     }
 

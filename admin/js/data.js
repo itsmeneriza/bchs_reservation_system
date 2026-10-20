@@ -10,7 +10,7 @@
 
 async function loadData() {
   try {
-    await Promise.all([loadRooms(), loadRequests(), loadStaff(), loadEvents()]);
+    await Promise.all([loadFacilities(), loadRequests(), loadStaff(), loadEvents()]);
     renderAll();
     renderAdminEvents();
   } catch (error) {
@@ -18,9 +18,9 @@ async function loadData() {
   }
 }
 
-// ─── Rooms ────────────────────────────────────────────────────────────────────
+// ─── Facilities ────────────────────────────────────────────────────────────────────
 
-async function loadRooms() {
+async function loadFacilities() {
   try {
     const response = await fetch("/api/facilities");
     if (response.ok) {

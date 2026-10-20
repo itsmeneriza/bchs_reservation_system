@@ -109,13 +109,13 @@ async function confirmQuickBlock() {
     return;
   }
 
-  const selectedRooms = Array.from(
+  const selectedFacilities = Array.from(
     document.querySelectorAll(
       'input[name="facilityBlock"]:checked:not(:disabled)',
     ),
   ).map((cb) => cb.value);
 
-  if (selectedRooms.length === 0) {
+  if (selectedFacilities.length === 0) {
     alert("Please select at least one facility to block.");
     return;
   }
@@ -130,7 +130,7 @@ async function confirmQuickBlock() {
   }
 
   const isFullDay = startTime === "07:00" && endTime === "18:00";
-  const newBlocks = selectedRooms.map((facilityName) => ({
+  const newBlocks = selectedFacilities.map((facilityName) => ({
     id: "block_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
     facilityId: facilityName === "all" ? "global" : facilityName.toLowerCase(),
     facilityName: facilityName === "all" ? "ALL FACILITIES" : facilityName,

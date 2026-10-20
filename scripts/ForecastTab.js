@@ -507,7 +507,7 @@ export class Forecast {
 
                 ${this.renderPerformanceRanking(facilityAnalytics)}
                 <div class="facility-analytics-grid">
-                    ${this.rankRooms(facilityAnalytics)
+                    ${this.rankFacilities(facilityAnalytics)
                       .map((facility, idx) =>
                         this.renderRoomAnalytics(facility, comparison, idx),
                       )
@@ -1193,7 +1193,7 @@ export class Forecast {
   /**
    * Sorts facilities by a composite score: utilization (40%) + reservations (40%) + avg attendees (20%)
    */
-  rankRooms(facilityAnalytics) {
+  rankFacilities(facilityAnalytics) {
     if (!facilityAnalytics || facilityAnalytics.length === 0) return [];
     const maxRes = Math.max(
       ...facilityAnalytics.map((r) => r.totalreservations),
@@ -1216,7 +1216,7 @@ export class Forecast {
 
   renderPerformanceRanking(facilityAnalytics) {
     if (!facilityAnalytics || facilityAnalytics.length === 0) return "";
-    const ranked = this.rankRooms(facilityAnalytics);
+    const ranked = this.rankFacilities(facilityAnalytics);
     const top = ranked[0];
     const medals = ["1st", "2nd", "3rd", "4th", "5th"];
     const maxRes = Math.max(...ranked.map((r) => r.totalreservations), 1);

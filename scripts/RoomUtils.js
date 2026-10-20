@@ -65,12 +65,12 @@ const ROOM_NAMES = Object.fromEntries(
  * ROOMS_FALLBACK if the array is empty or not provided.
  *
  * @param {string}   id
- * @param {object[]} [liveRooms]
+ * @param {object[]} [liveFacilities]
  * @returns {string}
  */
-function getRoomName(id, liveRooms) {
+function getRoomName(id, liveFacilities) {
   if (id === "global") return "ALL FACILITIES";
-  const source = liveRooms && liveRooms.length > 0 ? liveRooms : ROOMS_FALLBACK;
+  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
   const r = source.find((x) => x.id === id);
   return r ? r.name : ROOM_NAMES[id] || id;
 }
@@ -80,11 +80,11 @@ function getRoomName(id, liveRooms) {
  * Uses the live facilities array when available, falls back to ROOM_PRICE_FALLBACK.
  *
  * @param {string}   facilityId
- * @param {object[]} [liveRooms]
+ * @param {object[]} [liveFacilities]
  * @returns {number}
  */
-function getRoomPrice(facilityId, liveRooms) {
-  const source = liveRooms && liveRooms.length > 0 ? liveRooms : ROOMS_FALLBACK;
+function getRoomPrice(facilityId, liveFacilities) {
+  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   return facility
     ? facility.pricePerHour
@@ -96,24 +96,24 @@ function getRoomPrice(facilityId, liveRooms) {
  * (where facilities.json has a minPax field), then ROOM_MIN_PAX, then 0.
  *
  * @param {string}   facilityId
- * @param {object[]} [liveRooms]
+ * @param {object[]} [liveFacilities]
  * @returns {number}
  */
-function getRoomMinPax(facilityId, liveRooms) {
-  const source = liveRooms && liveRooms.length > 0 ? liveRooms : ROOMS_FALLBACK;
+function getRoomMinPax(facilityId, liveFacilities) {
+  const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   if (facility && facility.minPax != null) return facility.minPax;
   return ROOM_MIN_PAX[facilityId] ?? 0;
 }
 
 /**
- * Returns the effective facility list: liveRooms if non-empty, otherwise ROOMS_FALLBACK.
+ * Returns the effective facility list: liveFacilities if non-empty, otherwise ROOMS_FALLBACK.
  *
- * @param {object[]} [liveRooms]
+ * @param {object[]} [liveFacilities]
  * @returns {object[]}
  */
-function getRooms(liveRooms) {
-  return liveRooms && liveRooms.length > 0 ? liveRooms : ROOMS_FALLBACK;
+function getFacilities(liveFacilities) {
+  return liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
 }
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ if (typeof module !== "undefined" && module.exports) {
     getRoomName,
     getRoomPrice,
     getRoomMinPax,
-    getRooms,
+    getFacilities,
   };
 }
 
@@ -140,6 +140,6 @@ if (typeof window !== "undefined") {
     getRoomName,
     getRoomPrice,
     getRoomMinPax,
-    getRooms,
+    getFacilities,
   };
 }

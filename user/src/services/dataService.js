@@ -37,7 +37,7 @@ export class DataService {
   async loadAllData() {
     try {
       // Load facilities, reservations in parallel — skip forecast (deferred)
-      await Promise.all([this.loadRooms(), this.loadReservations()]);
+      await Promise.all([this.loadFacilities(), this.loadReservations()]);
       return true;
     } catch {
       return false;
@@ -48,7 +48,7 @@ export class DataService {
     await this.loadForecast();
   }
 
-  async loadRooms() {
+  async loadFacilities() {
     try {
       const response = await fetch("/api/facilities");
       const data = await response.json();
@@ -187,7 +187,7 @@ export class DataService {
     }
   }
 
-  getRooms() {
+  getFacilities() {
     return this.facilities;
   }
   getReservations() {

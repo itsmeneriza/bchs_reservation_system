@@ -1534,7 +1534,7 @@ input:checked + .slider:before {
     overflow: visible !important;
   }
 
-  /* ── Rooms ── */
+  /* ── Facilities ── */
   .sidebar {
     display: block !important;
     width: 100% !important;

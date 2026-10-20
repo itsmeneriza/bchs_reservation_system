@@ -110,8 +110,8 @@ const getOfflineReply = (question) => {
   }
 
   if (asksPrice || asksCapacity || mentionedRoom) {
-    const relevantRooms = mentionedRoom ? [mentionedRoom] : facilities;
-    const details = relevantRooms.map((facility) => {
+    const relevantFacilities = mentionedRoom ? [mentionedRoom] : facilities;
+    const details = relevantFacilities.map((facility) => {
       const facts = [];
       if (asksCapacity || mentionedRoom)
         facts.push(`capacity: ${facility.capacity} people`);

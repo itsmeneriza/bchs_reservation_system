@@ -38,7 +38,7 @@ async function seed() {
     console.log(`Seeded ${events.length} events`);
   }
 
-  // Rooms (static reference data)
+  // Facilities (static reference data)
   const { facilities } = JSON.parse(
     readFileSync(join(dataDir, "facilities.json"), "utf8"),
   );
