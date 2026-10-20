@@ -137,9 +137,18 @@
       "additionalNotes": "",
       "status": "pending",
       "submittedAt": "2026-10-16T03:15:55.643Z",
-      "visitOptions": [],
-      "appointmentDate": "2026-10-20",
-      "appointmentTime": "9:00 AM – 10:00 AM",
+      "visitOptions": [
+        {
+          "date": "2026-10-21",
+          "time": "10:00 AM – 11:00 AM"
+        },
+        {
+          "date": "2026-10-22",
+          "time": "10:00 AM – 11:00 AM"
+        }
+      ],
+      "appointmentDate": "",
+      "appointmentTime": "",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
       "userEditSnapshot": {
@@ -157,14 +166,14 @@
       },
       "adminRevisionReason": "",
       "adminEditSnapshot": {
-        "changedAt": "2026-10-19T03:12:37.314Z",
+        "changedAt": "2026-10-20T02:30:52.369Z",
         "changes": {
           "appointmentDate": {
-            "before": "2026-10-17",
+            "before": "2026-10-20",
             "after": ""
           },
           "appointmentTime": {
-            "before": "11:00 AM – 12:00 PM",
+            "before": "9:00 AM – 10:00 AM",
             "after": ""
           }
         }
@@ -172,8 +181,8 @@
     },
     {
       "id": "1792138729402",
-      "roomId": "avr",
-      "roomName": "AVR",
+      "roomId": "auditorium",
+      "roomName": "Auditorium",
       "totalAmount": 0,
       "paymentStatus": "paid",
       "isStaff": true,
@@ -182,19 +191,19 @@
       "email": "elena.garcia@bchs.edu.ph",
       "contact": "09181234568",
       "date": "2026-10-23",
-      "startTime": "08:00",
-      "endTime": "10:00",
+      "startTime": "09:00",
+      "endTime": "11:00",
       "attendees": 60,
       "purpose": "Performance/Concert",
       "additionalNotes": "Chairs, Podium",
-      "status": "pending",
+      "status": "approved",
       "submittedAt": "2026-10-16T08:18:58.412Z",
       "visitOptions": [],
       "appointmentDate": "2026-10-20",
       "appointmentTime": "11:00 AM – 12:00 PM",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
-      "adminRevisionReason": "",
+      "adminRevisionReason": "AVR is being used at 8 am of students",
       "userEditSnapshot": {
         "changedAt": "2026-10-19T03:20:14.209Z",
         "changes": {
@@ -209,18 +218,28 @@
         }
       },
       "adminEditSnapshot": {
-        "changedAt": "2026-10-19T03:12:44.034Z",
+        "changedAt": "2026-10-20T03:01:47.366Z",
         "changes": {
-          "appointmentDate": {
-            "before": "2026-10-17",
-            "after": ""
+          "roomId": {
+            "before": "avr",
+            "after": "auditorium"
           },
-          "appointmentTime": {
-            "before": "9:00 AM – 10:00 AM",
-            "after": ""
+          "roomName": {
+            "before": "AVR",
+            "after": "Auditorium"
+          },
+          "startTime": {
+            "before": "08:00",
+            "after": "09:00"
+          },
+          "endTime": {
+            "before": "10:00",
+            "after": "11:00"
           }
         }
-      }
+      },
+      "downPaymentPaid": false,
+      "remainingBalancePaid": false
     },
     {
       "id": "1792138997335",
@@ -239,7 +258,7 @@
       "attendees": 90,
       "purpose": "Training Session",
       "additionalNotes": "",
-      "status": "pending",
+      "status": "approved",
       "submittedAt": "2026-10-16T08:23:19.553Z",
       "visitOptions": [],
       "appointmentDate": "2026-10-20",
@@ -272,7 +291,9 @@
             "after": ""
           }
         }
-      }
+      },
+      "downPaymentPaid": false,
+      "remainingBalancePaid": false
     },
     {
       "id": "1792139286427",
@@ -293,9 +314,14 @@
       "additionalNotes": "Podium",
       "status": "pending",
       "submittedAt": "2026-10-16T08:28:08.199Z",
-      "visitOptions": [],
-      "appointmentDate": "2026-10-20",
-      "appointmentTime": "9:00 AM – 10:00 AM",
+      "visitOptions": [
+        {
+          "date": "2026-10-22",
+          "time": "9:00 AM – 10:00 AM"
+        }
+      ],
+      "appointmentDate": "",
+      "appointmentTime": "",
       "blockReschedulePending": false,
       "blockRescheduleReason": null,
       "adminRevisionReason": "",
@@ -313,14 +339,14 @@
         }
       },
       "adminEditSnapshot": {
-        "changedAt": "2026-10-19T03:13:04.749Z",
+        "changedAt": "2026-10-20T02:31:02.858Z",
         "changes": {
           "appointmentDate": {
-            "before": "2026-10-17",
+            "before": "2026-10-20",
             "after": ""
           },
           "appointmentTime": {
-            "before": "1:00 PM – 2:00 PM",
+            "before": "9:00 AM – 10:00 AM",
             "after": ""
           }
         }

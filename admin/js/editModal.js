@@ -476,6 +476,12 @@ window.openEditModal = (id, mode = 'FULL_EDIT') => {
             singleSlot.style.display  = '';
         }
     }
+    if (isConfirmedEditMode) {
+        if (visitSectionTitle) visitSectionTitle.style.display = 'none';
+        if (singleSlot) singleSlot.style.display = 'none';
+    } else {
+        if (visitSectionTitle) visitSectionTitle.style.display = '';
+    }
     const apptDateEl = document.getElementById('editAppointmentDate');
     if (apptDateEl) apptDateEl.min = _getEarliestVisitDate();
 
@@ -830,8 +836,10 @@ async function savereservationChanges() {
             date:      document.getElementById('editDate').value,
             startTime: document.getElementById('editStartTime').value,
             endTime:   document.getElementById('editEndTime').value,
-            appointmentDate: document.getElementById('editAppointmentDate').value,
-            appointmentTime: document.getElementById('editAppointmentTime').value,
+            ...(currentModalMode === 'CONFIRMED_EDIT' ? {} : {
+                appointmentDate: document.getElementById('editAppointmentDate').value,
+                appointmentTime: document.getElementById('editAppointmentTime').value
+            }),
             totalAmount:         isStaff ? (requests[idx].totalAmount || 0) : (parseFloat(document.getElementById('editAmount').value) || 0),
             paymentStatus:       isStaff ? 'paid' : document.getElementById('editPaymentStatus').value,
             downPaymentPaid:     isStaff ? false  : document.getElementById('downPaymentPaid').checked,

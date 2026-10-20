@@ -58,7 +58,16 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
         lastUpdated: new Date().toISOString(),
         analyzedYear: lastYear,
         yearsIncluded,
-        summary: { totalreservations: 0, mostPopularRoom: 'N/A', peakHours: 'N/A', averageAttendees: 0 },
+        summary: {
+          totalreservations: 0,
+          mostPopularRoom: 'N/A',
+          peakHours: 'N/A',
+          averageAttendees: 0,
+          totalRevenue: 0,
+          averageRevenuePerReservation: 0,
+          staffRevenue: 0,
+          projectedRevenue: 0
+        },
         roomAnalytics: [],
         weeklyTrends: [],
         recommendations: []
@@ -73,7 +82,9 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
     const roomAnalytics = rooms
       .map(roomId => computeRoomAnalytics(allData.filter(r => r.roomId === roomId), roomId, roomNames))
       .filter(Boolean);
-  
+    const projectedRevenue = roomAnalytics.reduce((sum, room) => sum + (Number(room.projectedRevenue) || 0), 0);
+    summary.projectedRevenue = projectedRevenue;
+
     // Monthly trends (last completed year, all months with data)
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const weeklyTrends = monthNames.map((monthLabel, idx) => {
@@ -205,6 +216,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
       const roomAnalytics = roomIds
         .map(roomId => computeRoomAnalytics(all.filter(r => r.roomId === roomId), roomId, roomNames))
         .filter(Boolean);
+      summary.projectedRevenue = roomAnalytics.reduce((sum, room) => sum + (Number(room.projectedRevenue) || 0), 0);
   
       // Monthly historical trends (last 6 months)
       const historicalTrends = computeMonthlyTrends(all, roomIds, 6);
@@ -262,7 +274,6 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
   
       const weeklyTrends = [...historicalTrends, ...predictedTrends];
       const recommendations = computeRecommendations(roomAnalytics);
-  
       const forecast = {
         lastUpdated: new Date().toISOString(),
         analyzedYear: lastYear,

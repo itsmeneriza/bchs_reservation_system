@@ -97,6 +97,122 @@
       "adminRescheduleNote": "jkhgvbnm,",
       "rescheduleOptions": [],
       "rescheduleFinalizedAt": "2026-10-13T06:49:47.888Z"
+    },
+    {
+      "id": "1792138729402",
+      "roomId": "auditorium",
+      "roomName": "Auditorium",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "userId": "09181234568",
+      "name": "Ms. Elena Garcia",
+      "email": "elena.garcia@bchs.edu.ph",
+      "contact": "09181234568",
+      "date": "2026-10-23",
+      "startTime": "09:00",
+      "endTime": "11:00",
+      "attendees": 60,
+      "purpose": "Performance/Concert",
+      "additionalNotes": "Chairs, Podium",
+      "status": "approved",
+      "submittedAt": "2026-10-16T08:18:58.412Z",
+      "visitOptions": [],
+      "appointmentDate": "2026-10-20",
+      "appointmentTime": "11:00 AM – 12:00 PM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "adminRevisionReason": "AVR is being used at 8 am of students",
+      "userEditSnapshot": {
+        "changedAt": "2026-10-19T03:20:14.209Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-20"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "11:00 AM – 12:00 PM"
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-20T03:01:47.366Z",
+        "changes": {
+          "roomId": {
+            "before": "avr",
+            "after": "auditorium"
+          },
+          "roomName": {
+            "before": "AVR",
+            "after": "Auditorium"
+          },
+          "startTime": {
+            "before": "08:00",
+            "after": "09:00"
+          },
+          "endTime": {
+            "before": "10:00",
+            "after": "11:00"
+          }
+        }
+      },
+      "downPaymentPaid": false,
+      "remainingBalancePaid": false
+    },
+    {
+      "id": "1792138997335",
+      "roomId": "grounds",
+      "roomName": "Grounds",
+      "totalAmount": 0,
+      "paymentStatus": "paid",
+      "isStaff": true,
+      "userId": "09181234568",
+      "name": "Ms. Elena Garcia",
+      "email": "elena.garcia@bchs.edu.ph",
+      "contact": "09181234568",
+      "date": "2026-10-21",
+      "startTime": "14:00",
+      "endTime": "16:00",
+      "attendees": 90,
+      "purpose": "Training Session",
+      "additionalNotes": "",
+      "status": "approved",
+      "submittedAt": "2026-10-16T08:23:19.553Z",
+      "visitOptions": [],
+      "appointmentDate": "2026-10-20",
+      "appointmentTime": "11:00 AM – 12:00 PM",
+      "blockReschedulePending": false,
+      "blockRescheduleReason": null,
+      "adminRevisionReason": "",
+      "userEditSnapshot": {
+        "changedAt": "2026-10-19T03:20:17.205Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "",
+            "after": "2026-10-20"
+          },
+          "appointmentTime": {
+            "before": "",
+            "after": "11:00 AM – 12:00 PM"
+          }
+        }
+      },
+      "adminEditSnapshot": {
+        "changedAt": "2026-10-19T03:12:55.810Z",
+        "changes": {
+          "appointmentDate": {
+            "before": "2026-10-17",
+            "after": ""
+          },
+          "appointmentTime": {
+            "before": "10:00 AM – 11:00 AM",
+            "after": ""
+          }
+        }
+      },
+      "downPaymentPaid": false,
+      "remainingBalancePaid": false
     }
   ]
 }

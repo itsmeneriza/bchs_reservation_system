@@ -1,21 +1,29 @@
 {
   "forecast": {
-    "lastUpdated": "2026-10-19T03:58:11.764Z",
+    "lastUpdated": "2026-10-20T03:02:06.981Z",
     "analyzedYear": 2025,
     "schemaVersion": 5,
-    "totalAnalyzed": 292,
+    "totalAnalyzed": 294,
     "summary": {
-      "totalreservations": 292,
+      "totalreservations": 294,
       "mostPopularRoom": "Auditorium",
       "peakHours": "1:00 PM - 9:00 AM",
-      "averageAttendees": 152
+      "averageAttendees": 152,
+      "totalRevenue": 592590,
+      "averageRevenuePerReservation": 2016,
+      "staffRevenue": 0,
+      "projectedRevenue": 12550
     },
     "roomAnalytics": [
       {
         "roomId": "auditorium",
         "roomName": "Auditorium",
-        "totalreservations": 95,
-        "averageAttendees": 174,
+        "totalreservations": 96,
+        "averageAttendees": 173,
+        "averageRevenuePerReservation": 2667,
+        "totalRevenue": 256050,
+        "staffRevenue": 0,
+        "projectedRevenue": 8001,
         "utilizationRate": "7%",
         "trend": "increasing",
         "peakDays": [
@@ -31,6 +39,10 @@
         "roomName": "Library",
         "totalreservations": 71,
         "averageAttendees": 70,
+        "averageRevenuePerReservation": 1868,
+        "totalRevenue": 132600,
+        "staffRevenue": 0,
+        "projectedRevenue": 1868,
         "utilizationRate": "6%",
         "trend": "decreasing",
         "peakDays": [
@@ -44,13 +56,17 @@
       {
         "roomId": "grounds",
         "roomName": "Grounds",
-        "totalreservations": 36,
-        "averageAttendees": 388,
+        "totalreservations": 37,
+        "averageAttendees": 380,
+        "averageRevenuePerReservation": 1501,
+        "totalRevenue": 55540,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
         "utilizationRate": "6%",
         "trend": "increasing",
         "peakDays": [
-          "Fri",
-          "Sat"
+          "Wed",
+          "Fri"
         ],
         "predictedNextWeek": 0,
         "predictionConfidence": "low",
@@ -61,6 +77,10 @@
         "roomName": "AVR",
         "totalreservations": 43,
         "averageAttendees": 98,
+        "averageRevenuePerReservation": 833,
+        "totalRevenue": 35800,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
         "utilizationRate": "5%",
         "trend": "increasing",
         "peakDays": [
@@ -76,6 +96,10 @@
         "roomName": "Gym",
         "totalreservations": 42,
         "averageAttendees": 114,
+        "averageRevenuePerReservation": 2681,
+        "totalRevenue": 112600,
+        "staffRevenue": 0,
+        "projectedRevenue": 2681,
         "utilizationRate": "6%",
         "trend": "increasing",
         "peakDays": [
@@ -135,16 +159,16 @@
       },
       {
         "week": "Oct 2026",
-        "totalreservations": 12,
-        "auditorium": 6,
+        "totalreservations": 14,
+        "auditorium": 7,
         "library": 2,
-        "grounds": 1,
+        "grounds": 2,
         "avr": 0,
         "gym": 3
       },
       {
         "week": "Predicted: Nov 2026",
-        "totalreservations": 18,
+        "totalreservations": 19,
         "auditorium": 4,
         "library": 4,
         "grounds": 2,
@@ -173,7 +197,7 @@
     "aheadPredictions": [
       {
         "week": "Predicted: Nov 2026",
-        "totalreservations": 18,
+        "totalreservations": 19,
         "auditorium": 4,
         "library": 4,
         "grounds": 2,

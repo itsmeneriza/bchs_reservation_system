@@ -823,7 +823,12 @@ export class MyRequests {
                     ${req.adminRescheduleNote ? `
                     <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:0.375rem;padding:0.45rem 0.6rem;margin-bottom:0.4rem;font-size:0.72rem;">
                         <div style="font-weight:700;color:#475569;margin-bottom:0.2rem;">Admin Note</div>
-                        <div style="color:#334155;white-space:pre-wrap;">${req.adminRescheduleNote}</div>
+                        <div style="color:#334155;white-space:pre-wrap;">${escapeHtml(req.adminRescheduleNote)}</div>
+                    </div>` : ''}
+                    ${req.adminRevisionReason ? `
+                    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:0.375rem;padding:0.45rem 0.6rem;margin-bottom:0.4rem;font-size:0.72rem;">
+                        <div style="font-weight:700;color:#6d28d9;margin-bottom:0.2rem;">Reason for Reservation Revision</div>
+                        <div style="color:#4c1d95;white-space:pre-wrap;">${escapeHtml(req.adminRevisionReason)}</div>
                     </div>` : ''}
                     ${req.adminEditSnapshot ? this.renderEditBanner(req.adminEditSnapshot) : ''}
                     ${req.userEditSnapshot  ? this.renderUserEditBanner(req.userEditSnapshot)  : ''}
