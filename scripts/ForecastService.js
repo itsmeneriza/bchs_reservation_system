@@ -1,28 +1,6 @@
 /**
  * ForecastService — shared forecast algorithm used by both forecast functions
  * in server.js.
- *
- * Methodology (v4):
- *
- *  UTILIZATION
- *    Fixed: measures total booked hours against available hours only during
- *    the weeks the room was actually active (instead of the full date span,
- *    which inflated the denominator and produced misleadingly low percentages).
- *
- *  PREDICTION — two methods
- *    Seasonal baseline – Average the reservation counts for the matching ISO
- *              week across available years, adjusted by a recent trend factor.
- *              The seasonal/trend weights are 0.6/0.4.
- *    4-week Weighted Moving Average – Used when there is no same-week history.
- *              Weights: [0.4, 0.3, 0.2, 0.1] most-recent-first.
- *
- *  CONFIDENCE
- *    high   — seasonal baseline with at least 2 years of same-week data
- *    medium — seasonal baseline with 1 year of same-week data
- *    low    — WMA fallback used (no same-week history)
- *
- * CommonJS only — server-side.
- *
  * Usage:
  *   const { computeRoomAnalytics, computeSummary, computeRecommendations,
  *           computeMonthlyTrends }
