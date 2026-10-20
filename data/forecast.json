@@ -1,150 +1,202 @@
 {
   "forecast": {
-    "lastUpdated": "2026-10-14T05:51:50.370Z",
+    "lastUpdated": "2026-10-20T04:09:58.174Z",
     "analyzedYear": 2025,
-    "schemaVersion": 5,
-    "totalAnalyzed": 291,
+    "yearsIncluded": [
+      2025
+    ],
     "summary": {
-      "totalreservations": 291,
-      "mostPopularRoom": "Auditorium",
-      "peakHours": "1:00 PM - 9:00 AM",
-      "averageAttendees": 153
+      "totalreservations": 126,
+      "mostPopularRoom": "Library",
+      "peakHours": "9:00 AM - 2:00 PM",
+      "averageAttendees": 169,
+      "totalRevenue": 334900,
+      "averageRevenuePerReservation": 2658,
+      "staffRevenue": 0,
+      "projectedRevenue": 0
     },
     "roomAnalytics": [
       {
         "roomId": "auditorium",
         "roomName": "Auditorium",
-        "totalreservations": 95,
-        "averageAttendees": 174,
-        "utilizationRate": "7%",
-        "trend": "increasing",
+        "totalreservations": 35,
+        "averageAttendees": 191,
+        "averageRevenuePerReservation": 3651,
+        "totalRevenue": 127800,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
+        "utilizationRate": "5%",
+        "trend": "decreasing",
         "peakDays": [
-          "Mon",
-          "Wed"
+          "Wed",
+          "Mon"
         ],
-        "predictedNextWeek": 3,
-        "predictionConfidence": "medium",
-        "predictionMethod": "seasonal-baseline"
+        "predictedNextWeek": 0,
+        "predictionConfidence": "low",
+        "predictionMethod": "weighted-moving-average"
       },
       {
         "roomId": "library",
         "roomName": "Library",
-        "totalreservations": 71,
-        "averageAttendees": 70,
-        "utilizationRate": "6%",
+        "totalreservations": 38,
+        "averageAttendees": 33,
+        "averageRevenuePerReservation": 2026,
+        "totalRevenue": 77000,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
+        "utilizationRate": "5%",
         "trend": "decreasing",
         "peakDays": [
-          "Sat",
-          "Mon"
+          "Thu",
+          "Sun"
         ],
-        "predictedNextWeek": 1,
+        "predictedNextWeek": 0,
         "predictionConfidence": "low",
         "predictionMethod": "weighted-moving-average"
       },
       {
         "roomId": "grounds",
         "roomName": "Grounds",
-        "totalreservations": 35,
-        "averageAttendees": 399,
-        "utilizationRate": "6%",
-        "trend": "increasing",
+        "totalreservations": 17,
+        "averageAttendees": 631,
+        "averageRevenuePerReservation": 2182,
+        "totalRevenue": 37100,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
+        "utilizationRate": "7%",
+        "trend": "decreasing",
         "peakDays": [
           "Sat",
           "Fri"
         ],
-        "predictedNextWeek": 1,
+        "predictedNextWeek": 0,
         "predictionConfidence": "low",
         "predictionMethod": "weighted-moving-average"
       },
       {
         "roomId": "avr",
         "roomName": "AVR",
-        "totalreservations": 43,
-        "averageAttendees": 98,
-        "utilizationRate": "5%",
-        "trend": "increasing",
+        "totalreservations": 17,
+        "averageAttendees": 45,
+        "averageRevenuePerReservation": 1000,
+        "totalRevenue": 17000,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
+        "utilizationRate": "4%",
+        "trend": "decreasing",
         "peakDays": [
           "Thu",
           "Mon"
         ],
-        "predictedNextWeek": 1,
-        "predictionConfidence": "medium",
-        "predictionMethod": "seasonal-baseline"
+        "predictedNextWeek": 0,
+        "predictionConfidence": "low",
+        "predictionMethod": "weighted-moving-average"
       },
       {
         "roomId": "gym",
         "roomName": "Gym",
-        "totalreservations": 42,
-        "averageAttendees": 114,
-        "utilizationRate": "6%",
-        "trend": "increasing",
+        "totalreservations": 19,
+        "averageAttendees": 100,
+        "averageRevenuePerReservation": 4000,
+        "totalRevenue": 76000,
+        "staffRevenue": 0,
+        "projectedRevenue": 0,
+        "utilizationRate": "7%",
+        "trend": "decreasing",
         "peakDays": [
           "Fri",
-          "Wed"
+          "Mon"
         ],
-        "predictedNextWeek": 1,
-        "predictionConfidence": "medium",
-        "predictionMethod": "seasonal-baseline"
+        "predictedNextWeek": 0,
+        "predictionConfidence": "low",
+        "predictionMethod": "weighted-moving-average"
       }
     ],
     "weeklyTrends": [
       {
-        "week": "May 2026",
-        "totalreservations": 15,
-        "auditorium": 5,
-        "library": 3,
-        "grounds": 0,
-        "avr": 3,
-        "gym": 4
-      },
-      {
-        "week": "Jun 2026",
-        "totalreservations": 19,
-        "auditorium": 6,
-        "library": 4,
-        "grounds": 3,
-        "avr": 3,
-        "gym": 2
-      },
-      {
-        "week": "Jul 2026",
-        "totalreservations": 17,
-        "auditorium": 7,
-        "library": 2,
+        "week": "Jan 2025",
+        "totalreservations": 10,
+        "auditorium": 3,
+        "library": 5,
         "grounds": 2,
-        "avr": 3,
-        "gym": 2
-      },
-      {
-        "week": "Aug 2026",
-        "totalreservations": 11,
-        "auditorium": 1,
-        "library": 3,
-        "grounds": 0,
-        "avr": 5,
-        "gym": 2
-      },
-      {
-        "week": "Sep 2026",
-        "totalreservations": 24,
-        "auditorium": 9,
-        "library": 6,
-        "grounds": 3,
-        "avr": 3,
-        "gym": 3
-      },
-      {
-        "week": "Oct 2026",
-        "totalreservations": 11,
-        "auditorium": 6,
-        "library": 2,
-        "grounds": 0,
         "avr": 0,
-        "gym": 3
+        "gym": 0
       },
       {
-        "week": "Predicted: Nov 2026",
-        "totalreservations": 18,
+        "week": "Feb 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 1,
+        "gym": 2
+      },
+      {
+        "week": "Mar 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 1,
+        "gym": 2
+      },
+      {
+        "week": "Apr 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 2,
+        "gym": 1
+      },
+      {
+        "week": "May 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 1,
+        "gym": 2
+      },
+      {
+        "week": "Jun 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 2,
+        "gym": 1
+      },
+      {
+        "week": "Jul 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 1,
+        "gym": 2
+      },
+      {
+        "week": "Aug 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 2,
+        "gym": 1
+      },
+      {
+        "week": "Sep 2025",
+        "totalreservations": 8,
+        "auditorium": 2,
+        "library": 2,
+        "grounds": 1,
+        "avr": 1,
+        "gym": 2
+      },
+      {
+        "week": "Oct 2025",
+        "totalreservations": 14,
         "auditorium": 4,
         "library": 4,
         "grounds": 2,
@@ -152,28 +204,8 @@
         "gym": 2
       },
       {
-        "week": "Predicted: Dec 2026",
-        "totalreservations": 31,
-        "auditorium": 8,
-        "library": 9,
-        "grounds": 3,
-        "avr": 2,
-        "gym": 2
-      },
-      {
-        "week": "Predicted: Jan 2027",
-        "totalreservations": 16,
-        "auditorium": 3,
-        "library": 5,
-        "grounds": 3,
-        "avr": 2,
-        "gym": 1
-      }
-    ],
-    "aheadPredictions": [
-      {
-        "week": "Predicted: Nov 2026",
-        "totalreservations": 18,
+        "week": "Nov 2025",
+        "totalreservations": 14,
         "auditorium": 4,
         "library": 4,
         "grounds": 2,
@@ -181,45 +213,37 @@
         "gym": 2
       },
       {
-        "week": "Predicted: Dec 2026",
-        "totalreservations": 31,
+        "week": "Dec 2025",
+        "totalreservations": 24,
         "auditorium": 8,
         "library": 9,
         "grounds": 3,
         "avr": 2,
         "gym": 2
-      },
-      {
-        "week": "Predicted: Jan 2027",
-        "totalreservations": 16,
-        "auditorium": 3,
-        "library": 5,
-        "grounds": 3,
-        "avr": 2,
-        "gym": 1
       }
     ],
     "recommendations": [
       {
         "priority": "low",
-        "message": "Auditorium utilization is low at 7%. Consider promotional campaigns to boost bookings."
+        "message": "Auditorium utilization is low at 5%. Consider promotional campaigns to boost bookings."
       },
       {
         "priority": "low",
-        "message": "Library utilization is low at 6%. Consider promotional campaigns to boost bookings."
+        "message": "Library utilization is low at 5%. Consider promotional campaigns to boost bookings."
       },
       {
         "priority": "low",
-        "message": "Grounds utilization is low at 6%. Consider promotional campaigns to boost bookings."
+        "message": "Grounds utilization is low at 7%. Consider promotional campaigns to boost bookings."
       },
       {
         "priority": "low",
-        "message": "AVR utilization is low at 5%. Consider promotional campaigns to boost bookings."
+        "message": "AVR utilization is low at 4%. Consider promotional campaigns to boost bookings."
       },
       {
         "priority": "low",
-        "message": "Gym utilization is low at 6%. Consider promotional campaigns to boost bookings."
+        "message": "Gym utilization is low at 7%. Consider promotional campaigns to boost bookings."
       }
-    ]
+    ],
+    "schemaVersion": 5
   }
 }
