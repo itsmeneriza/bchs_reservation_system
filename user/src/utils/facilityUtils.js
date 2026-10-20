@@ -26,7 +26,7 @@ export function openFacilityViewer() {
 
   // No preview card rendered yet — open viewer directly using the first facility
   const facility =
-    state.selectedRoom || (state.facilities && state.facilities[0]);
+    state.selectedFacility || (state.facilities && state.facilities[0]);
   if (!facility) return;
 
   const count = dataService.getFacilityImageCount(facility.id);

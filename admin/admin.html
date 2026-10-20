@@ -190,7 +190,7 @@
                   <tr>
                     <th>Submitted</th>
                     <th>Name</th>
-                    <th>Room</th>
+                    <th>Facility</th>
                     <th>Requested Date</th>
                     <th>Purpose</th>
                     <th>Payment</th>
@@ -254,7 +254,7 @@
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Room</th>
+                    <th>Facility</th>
                     <th>Event Date</th>
                     <th>Confirmation Date</th>
                     <th>Reservation Details</th>
@@ -441,7 +441,7 @@
                   <tr>
                     <th>Requested</th>
                     <th>Name</th>
-                    <th>Room</th>
+                    <th>Facility</th>
                     <th>Event Date</th>
                     <th>Cancellation Reason</th>
                     <th></th>
@@ -485,7 +485,7 @@
                 />
               </div>
               <select
-                id="historyRoomFilter"
+                id="historyFacilityFilter"
                 class="filter-select"
                 onchange="filterHistory()"
               >
@@ -522,7 +522,7 @@
                   <tr>
                     <th>Date</th>
                     <th>Name</th>
-                    <th>Room</th>
+                    <th>Facility</th>
                     <th>Status</th>
                     <th></th>
                   </tr>
@@ -1077,10 +1077,10 @@
             </div>
 
             <div class="form-group">
-              <label>Select Room *</label>
+              <label>Select Facility *</label>
               <div id="admin-facility-row" class="admin-facility-row"></div>
               <!-- hidden input keeps the selected value for JS reads -->
-              <input type="hidden" id="manualRoom" />
+              <input type="hidden" id="manualFacility" />
             </div>
             <div class="form-group">
               <label>Date *</label>
@@ -1165,7 +1165,7 @@
                 class="select"
                 id="manualPurpose"
                 onchange="
-                  updateAdminRoomSuggestion();
+                  updateAdminFacilitySuggestion();
                   document.getElementById('purposeOtherBox').style.display =
                     this.value === 'Other' ? 'block' : 'none';
                   document.getElementById('adminPaxRow').style.display = this
@@ -1242,7 +1242,7 @@
                 value="0"
                 min="0"
                 oninput="
-                  updateAdminRoomSuggestion();
+                  updateAdminFacilitySuggestion();
                   renderAdminFacilityPicker();
                   checkAdminMinPax();
                 "
@@ -1564,7 +1564,7 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Facility *</label>
-              <select class="select edit-field-locked" id="editRoomId">
+              <select class="select edit-field-locked" id="editFacilityId">
                 <!-- Populated by JS -->
               </select>
             </div>
@@ -2171,7 +2171,7 @@
     </div>
 
     <script src="/scripts/DateUtils.js"></script>
-    <script src="/scripts/RoomUtils.js"></script>
+    <script src="/scripts/FacilityUtils.js"></script>
     <script src="js/state.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/data.js"></script>

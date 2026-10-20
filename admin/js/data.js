@@ -1,9 +1,9 @@
 /**
  * Admin Data Loader
  * Fetches facilities, staff, requests, and events from the server API.
- * Shared logic: RoomUtils (fallback data), DateUtils (parseEventTime)
- * loaded via <script src="/scripts/RoomUtils.js"> and <script src="/scripts/DateUtils.js">
- * before this file in admin.html — available as window.RoomUtils and window.DateUtils.
+ * Shared logic: FacilityUtils (fallback data), DateUtils (parseEventTime)
+ * loaded via <script src="/scripts/FacilityUtils.js"> and <script src="/scripts/DateUtils.js">
+ * before this file in admin.html — available as window.FacilityUtils and window.DateUtils.
  */
 
 // ─── Load All ─────────────────────────────────────────────────────────────────
@@ -28,9 +28,9 @@ async function loadFacilities() {
       facilities = data.facilities || [];
     }
   } catch (e) {
-    facilities = RoomUtils.ROOMS_FALLBACK;
+    facilities = FacilityUtils.ROOMS_FALLBACK;
   }
-  populateRoomSelects();
+  populateFacilitySelects();
   if (
     document.getElementById("addReservationModal")?.classList.contains("active")
   ) {

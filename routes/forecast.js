@@ -2,7 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const {
-  computeRoomAnalytics,
+  computeFacilityAnalytics,
   computeSummary,
   computeRecommendations,
   computeMonthlyTrends,
@@ -66,7 +66,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
         yearsIncluded,
         summary: {
           totalreservations: 0,
-          mostPopularRoom: "N/A",
+          mostPopularFacility: "N/A",
           peakHours: "N/A",
           averageAttendees: 0,
         },
@@ -89,7 +89,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
 
     const facilityAnalytics = facilities
       .map((facilityId) =>
-        computeRoomAnalytics(
+        computeFacilityAnalytics(
           allData.filter((r) => r.facilityId === facilityId),
           facilityId,
           facilityNames,
@@ -118,14 +118,14 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
         const monthData = allData.filter((r) =>
           r.date.startsWith(`${lastYear}-${monthStr}`),
         );
-        const byRoom = {};
+        const byFacility = {};
         facilities.forEach((id) => {
-          byRoom[id] = monthData.filter((r) => r.facilityId === id).length;
+          byFacility[id] = monthData.filter((r) => r.facilityId === id).length;
         });
         return {
           week: `${monthLabel} ${lastYear}`,
           totalreservations: monthData.length,
-          ...byRoom,
+          ...byFacility,
         };
       })
       .filter((m) => m.totalreservations > 0);
@@ -282,7 +282,7 @@ module.exports = function createForecastRouter({ dataDir, readHistory }) {
 
       const facilityAnalytics = facilityIds
         .map((facilityId) =>
-          computeRoomAnalytics(
+          computeFacilityAnalytics(
             all.filter((r) => r.facilityId === facilityId),
             facilityId,
             facilityNames,

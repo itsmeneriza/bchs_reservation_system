@@ -534,8 +534,8 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     : "block";
 
   // Populate booking fields
-  populateRoomSelects();
-  document.getElementById("editRoomId").value = r.facilityId;
+  populateFacilitySelects();
+  document.getElementById("editFacilityId").value = r.facilityId;
   document.getElementById("editDate").value = r.date;
   document.getElementById("editStartTime").value = r.startTime;
   document.getElementById("editEndTime").value = r.endTime;
@@ -674,7 +674,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
 
   const canRecalc =
     (mode === "CONFIRMED_EDIT" || mode === "FULL_EDIT") && !isStaff;
-  document.getElementById("editRoomId").onchange = canRecalc
+  document.getElementById("editFacilityId").onchange = canRecalc
     ? recalcEditPrice
     : null;
   document.getElementById("editStartTime").onchange = canRecalc
@@ -885,7 +885,7 @@ function updatePaymentBreakdown() {
 }
 
 function recalcEditPrice() {
-  const facilityId = document.getElementById("editRoomId").value;
+  const facilityId = document.getElementById("editFacilityId").value;
   const start = document.getElementById("editStartTime").value;
   const end = document.getElementById("editEndTime").value;
   if (!facilityId || !start || !end || start >= end) return;
@@ -893,7 +893,7 @@ function recalcEditPrice() {
   const isStaff = req ? isStaffRequest(req) : false;
   const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour =
-    facility?.pricePerHour ?? _getRoomPriceFallback(facilityId);
+    facility?.pricePerHour ?? _getFacilityPriceFallback(facilityId);
   const { total } = computeBookingTotal(pricePerHour, start, end, isStaff);
   document.getElementById("editAmount").value = total;
   updatePaymentBreakdown();
@@ -964,7 +964,7 @@ window.confirmRejection = async () => {
       body: JSON.stringify({
         email: r.email,
         name: r.name,
-        facilityName: r.facilityName || getRoomName(r.facilityId),
+        facilityName: r.facilityName || getFacilityName(r.facilityId),
         date: r.date,
         reason,
       }),
@@ -1087,8 +1087,8 @@ async function savereservationChanges() {
   } else {
     const isStaff = isStaffRequest(requests[idx]);
     update = {
-      facilityId: document.getElementById("editRoomId").value,
-      facilityName: getRoomName(document.getElementById("editRoomId").value),
+      facilityId: document.getElementById("editFacilityId").value,
+      facilityName: getFacilityName(document.getElementById("editFacilityId").value),
       date: document.getElementById("editDate").value,
       startTime: document.getElementById("editStartTime").value,
       endTime: document.getElementById("editEndTime").value,
@@ -1219,7 +1219,7 @@ async function savereservationChanges() {
         body: JSON.stringify({
           email: r.email,
           name: r.name,
-          facilityName: r.facilityName || getRoomName(r.facilityId),
+          facilityName: r.facilityName || getFacilityName(r.facilityId),
           date: r.date,
           startTime: r.startTime,
           endTime: r.endTime,
@@ -1243,7 +1243,7 @@ async function savereservationChanges() {
         body: JSON.stringify({
           email: r.email,
           name: r.name,
-          facilityName: r.facilityName || getRoomName(r.facilityId),
+          facilityName: r.facilityName || getFacilityName(r.facilityId),
           date: r.date,
           startTime: r.startTime,
           endTime: r.endTime,

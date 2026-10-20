@@ -85,7 +85,7 @@
   align-items: center;
 }
 
-/* Room Multi-Select Grid */
+/* Facility Multi-Select Grid */
 .facility-checkbox-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

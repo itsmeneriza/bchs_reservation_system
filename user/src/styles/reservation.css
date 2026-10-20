@@ -313,7 +313,7 @@ input:checked + .slider:before {
   padding: 0 0.25rem;
 }
 
-/* Room Navigation Buttons Styles */
+/* Facility Navigation Buttons Styles */
 .side-nav-btn {
   background: #ffffff;
   border: 1.5px solid #e5e7eb;

@@ -96,7 +96,7 @@ export class ReservationModal {
     state.facilities.forEach((facility) => {
       const tooSmall = filterPax > 0 && facility.capacity < filterPax;
       const isSelected =
-        state.selectedRoom && state.selectedRoom.id === facility.id;
+        state.selectedFacility && state.selectedFacility.id === facility.id;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className =
@@ -110,8 +110,8 @@ export class ReservationModal {
       btn.innerHTML = `<span class="facility-pill-name">${facility.name}</span><span class="facility-pill-cap">${facility.capacity} pax</span>`;
       if (!tooSmall) {
         btn.addEventListener("click", () => {
-          import("./RoomListComponent.js").then(({ RoomList }) => {
-            new RoomList().selectRoom(facility);
+          import("./FacilityListComponent.js").then(({ FacilityList }) => {
+            new FacilityList().selectFacility(facility);
             this.renderFacilityPicker(filterPax);
             this.updateAvailableTimes();
             this.updateDurationInfo();
@@ -138,7 +138,7 @@ export class ReservationModal {
     // --- ADMIN BLOCK CHECK (skip when editing — user picks their own new date) ---
     if (!editingId) {
       const dayreservations = getReservationsForDate(
-        state.selectedRoom.id,
+        state.selectedFacility.id,
         selectedDateStr,
       );
       const isBlocked = dayreservations.some(
@@ -294,7 +294,7 @@ export class ReservationModal {
     if (!dateVal) return;
 
     const bookedTimeRanges = getBookedSlots(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       dateVal,
       excludeId,
     );
@@ -353,18 +353,18 @@ export class ReservationModal {
       return;
     }
 
-    const currentRoom = state.selectedRoom;
+    const currentFacility = state.selectedFacility;
     let recommendation = null;
     let switchOptions = [];
 
     // 1. HARD CONSTRAINT: Over Pax Limit
-    if (attendees > currentRoom.capacity) {
+    if (attendees > currentFacility.capacity) {
       const fits = state.facilities
         .filter((r) => r.capacity >= attendees)
         .sort((a, b) => a.capacity - b.capacity);
       if (fits.length > 0) {
         switchOptions = fits;
-        recommendation = `<strong>Over Pax Limit:</strong> ${currentRoom.name} fits ${currentRoom.capacity} pax. Switch to:`;
+        recommendation = `<strong>Over Pax Limit:</strong> ${currentFacility.name} fits ${currentFacility.capacity} pax. Switch to:`;
       } else {
         recommendation = `<strong>Extreme Pax Warning:</strong> ${attendees} pax exceeds our largest facility. Please contact Admin.`;
       }
@@ -451,11 +451,11 @@ export class ReservationModal {
       const bestMapping = mappings.find((m) =>
         m.keywords.some((k) => purpose.includes(k)),
       );
-      if (bestMapping && currentRoom.id !== bestMapping.id) {
-        const targetRoom = state.facilities.find((r) => r.id === bestMapping.id);
-        if (targetRoom && targetRoom.capacity >= attendees) {
-          switchOptions = [targetRoom];
-          recommendation = `<strong>Suggestion:</strong> Based on your purpose, the <strong>${targetRoom.name}</strong> is better suited (${bestMapping.reason}). Switch?`;
+      if (bestMapping && currentFacility.id !== bestMapping.id) {
+        const targetFacility = state.facilities.find((r) => r.id === bestMapping.id);
+        if (targetFacility && targetFacility.capacity >= attendees) {
+          switchOptions = [targetFacility];
+          recommendation = `<strong>Suggestion:</strong> Based on your purpose, the <strong>${targetFacility.name}</strong> is better suited (${bestMapping.reason}). Switch?`;
         }
       }
     }
@@ -464,11 +464,11 @@ export class ReservationModal {
     if (
       !recommendation &&
       attendees > 0 &&
-      attendees < currentRoom.capacity * 0.2
+      attendees < currentFacility.capacity * 0.2
     ) {
       const smaller = state.facilities
         .filter(
-          (r) => r.capacity >= attendees && r.capacity < currentRoom.capacity,
+          (r) => r.capacity >= attendees && r.capacity < currentFacility.capacity,
         )
         .sort((a, b) => a.capacity - b.capacity);
       if (smaller.length > 0) {
@@ -485,7 +485,7 @@ export class ReservationModal {
           switchOptions
             .map(
               (r) =>
-                `<button type="button" onclick="window._switchRoom('${r.id}')" style="background:#800020;color:white;border:none;border-radius:4px;padding:2px 10px;font-size:12px;cursor:pointer;font-weight:600;">${r.name} (${r.capacity} pax)</button>`,
+                `<button type="button" onclick="window._switchFacility('${r.id}')" style="background:#800020;color:white;border:none;border-radius:4px;padding:2px 10px;font-size:12px;cursor:pointer;font-weight:600;">${r.name} (${r.capacity} pax)</button>`,
             )
             .join("") +
           `</span>`;
@@ -497,15 +497,15 @@ export class ReservationModal {
     }
 
     // Expose switch handler
-    window._switchRoom = (facilityId) => {
+    window._switchFacility = (facilityId) => {
       const facility = state.facilities.find((r) => r.id === facilityId);
       if (!facility) return;
       const prevStart = this.inputs.startTime.value;
       const prevEnd = this.inputs.endTime.value;
       const pax = parseInt(this.inputs.attendees.value) || 0;
-      import("./RoomListComponent.js").then(({ RoomList }) => {
-        const rl = new RoomList();
-        rl.selectRoom(facility);
+      import("./FacilityListComponent.js").then(({ FacilityList }) => {
+        const rl = new FacilityList();
+        rl.selectFacility(facility);
         this.updateAvailableTimes();
         if (
           prevStart &&
@@ -529,7 +529,7 @@ export class ReservationModal {
     };
   }
 
-  // MIN_PAX is now read from facilities.json via state.selectedRoom.minPax.
+  // MIN_PAX is now read from facilities.json via state.selectedFacility.minPax.
   // This getter keeps backward-compat for any call using ReservationModal.MIN_PAX[id].
   static get MIN_PAX() {
     const map = {};
@@ -554,8 +554,8 @@ export class ReservationModal {
 
   checkMinPax(pax) {
     const min =
-      state.selectedRoom?.minPax ??
-      (ReservationModal.MIN_PAX[state.selectedRoom?.id] || 0);
+      state.selectedFacility?.minPax ??
+      (ReservationModal.MIN_PAX[state.selectedFacility?.id] || 0);
     let warning = document.getElementById("min-pax-warning");
     if (!warning) {
       warning = document.createElement("div");
@@ -565,7 +565,7 @@ export class ReservationModal {
       this.inputs.attendees?.parentElement?.appendChild(warning);
     }
     if (min > 0 && pax > 0 && pax < min) {
-      warning.textContent = `Minimum ${min} pax required for ${state.selectedRoom.name}.`;
+      warning.textContent = `Minimum ${min} pax required for ${state.selectedFacility.name}.`;
     } else {
       warning.textContent = "";
     }
@@ -609,8 +609,8 @@ export class ReservationModal {
         el.style.cursor = "";
       }
     });
-    import("./RoomListComponent.js").then(({ RoomList }) =>
-      new RoomList().render(0),
+    import("./FacilityListComponent.js").then(({ FacilityList }) =>
+      new FacilityList().render(0),
     );
   }
 
@@ -747,8 +747,8 @@ export class ReservationModal {
       this.updateVenueSuggestion();
       const pax = parseInt(attendees.value) || 0;
       this.checkMinPax(pax);
-      import("./RoomListComponent.js").then(({ RoomList }) => {
-        new RoomList().render(pax);
+      import("./FacilityListComponent.js").then(({ FacilityList }) => {
+        new FacilityList().render(pax);
       });
       this.renderFacilityPicker(pax);
     });
@@ -774,14 +774,14 @@ export class ReservationModal {
   }
 
   updatePricingSummary(duration) {
-    const currentRoom = state.selectedRoom;
+    const currentFacility = state.selectedFacility;
     const isStaff = state.user?.isStaff || false;
 
     // Check if utilities are requested
     const utilitiesRequested = this.getEquipmentValue().trim().length > 0;
 
     // Staff members get free reservations
-    const pricePerHour = isStaff ? 0 : currentRoom.pricePerHour || 0;
+    const pricePerHour = isStaff ? 0 : currentFacility.pricePerHour || 0;
     const facilityTotal = pricePerHour * duration;
     const utilityFee = duration >= 8 && !isStaff ? 800 : 0;
     const utilitiesRequestedFee = utilitiesRequested && !isStaff ? 800 : 0;
@@ -838,7 +838,7 @@ export class ReservationModal {
 
     const editingId = this.modal.dataset.editId || null;
     const conflict = findConflict(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       date.value,
       startTime.value,
       endTime.value,
@@ -880,22 +880,22 @@ export class ReservationModal {
       return showToast("Cannot book for past dates.", "error");
     if (formData.startTime >= formData.endTime)
       return showToast("Invalid time range.", "error");
-    if (!state.selectedRoom)
+    if (!state.selectedFacility)
       return showToast("Please select a facility first.", "error");
 
     const minPax =
-      state.selectedRoom?.minPax ??
-      (ReservationModal.MIN_PAX[state.selectedRoom.id] || 0);
+      state.selectedFacility?.minPax ??
+      (ReservationModal.MIN_PAX[state.selectedFacility.id] || 0);
     if (minPax > 0 && formData.attendees < minPax) {
       return showToast(
-        `Minimum ${minPax} pax required for ${state.selectedRoom.name}.`,
+        `Minimum ${minPax} pax required for ${state.selectedFacility.name}.`,
         "error",
       );
     }
 
     const editingId = this.modal.dataset.editId || null;
     const conflict = findConflict(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       formData.date,
       formData.startTime,
       formData.endTime,
@@ -915,7 +915,7 @@ export class ReservationModal {
     const duration =
       parseInt(formData.endTime.split(":")[0]) -
       parseInt(formData.startTime.split(":")[0]);
-    const pricePerHour = isStaff ? 0 : state.selectedRoom.pricePerHour || 0;
+    const pricePerHour = isStaff ? 0 : state.selectedFacility.pricePerHour || 0;
     const facilityTotal = pricePerHour * duration;
     const utilityFee = duration >= 8 && !isStaff ? 800 : 0;
     const utilitiesRequestedFee =
@@ -924,8 +924,8 @@ export class ReservationModal {
 
     this.pendingRequestData = {
       id: this.modal.dataset.editId || Date.now().toString(),
-      facilityId: state.selectedRoom.id,
-      facilityName: state.selectedRoom.name,
+      facilityId: state.selectedFacility.id,
+      facilityName: state.selectedFacility.name,
       totalAmount: totalAmount,
       paymentStatus: isStaff ? "paid" : "pending",
       isStaff: isStaff,

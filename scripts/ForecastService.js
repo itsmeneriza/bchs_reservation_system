@@ -24,7 +24,7 @@
  * CommonJS only — server-side.
  *
  * Usage:
- *   const { computeRoomAnalytics, computeSummary, computeRecommendations,
+ *   const { computeFacilityAnalytics, computeSummary, computeRecommendations,
  *           computeMonthlyTrends }
  *       = require('./scripts/ForecastService');
  */
@@ -108,7 +108,7 @@ function computeUtilization(facilityData) {
   return Math.min(100, Math.round((totalHours / available) * 100));
 }
 
-// ─── Room Analytics ───────────────────────────────────────────────────────────
+// ─── Facility Analytics ───────────────────────────────────────────────────────────
 
 /**
  * Computes analytics and next-week prediction for a single facility.
@@ -120,7 +120,7 @@ function computeUtilization(facilityData) {
  * @param {number}   [opts.comparisonYear]   Year to compare against for trend
  * @returns {object|null}  Analytics object, or null if facilityData is empty
  */
-function computeRoomAnalytics(
+function computeFacilityAnalytics(
   facilityData,
   facilityId,
   facilityNames,
@@ -271,9 +271,9 @@ function computeSummary(allData, facilityNames) {
   allData.forEach((r) => {
     facilityCounts[r.facilityId] = (facilityCounts[r.facilityId] || 0) + 1;
   });
-  const mostPopularRoomId =
+  const mostPopularFacilityId =
     Object.entries(facilityCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
-  const mostPopularRoom = facilityNames[mostPopularRoomId] || mostPopularRoomId;
+  const mostPopularFacility = facilityNames[mostPopularFacilityId] || mostPopularFacilityId;
 
   // Peak hours (top 2)
   const hourCounts = {};
@@ -294,7 +294,7 @@ function computeSummary(allData, facilityNames) {
 
   return {
     totalreservations: allData.length,
-    mostPopularRoom,
+    mostPopularFacility,
     peakHours,
     averageAttendees: avgAttendees,
   };
@@ -305,7 +305,7 @@ function computeSummary(allData, facilityNames) {
 /**
  * Generates recommendation messages from facility analytics.
  *
- * @param {object[]} facilityAnalytics  Array returned by computeRoomAnalytics calls
+ * @param {object[]} facilityAnalytics  Array returned by computeFacilityAnalytics calls
  * @returns {{ priority: string, message: string }[]}
  */
 function computeRecommendations(facilityAnalytics) {
@@ -366,7 +366,7 @@ function computeMonthlyTrends(allData, facilityIds, sliceLastN) {
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 module.exports = {
-  computeRoomAnalytics,
+  computeFacilityAnalytics,
   computeSummary,
   computeRecommendations,
   computeMonthlyTrends,

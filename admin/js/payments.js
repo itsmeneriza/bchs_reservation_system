@@ -16,9 +16,9 @@ function filterPayments() {
   document.querySelectorAll("#paidTableBody tr[data-id]").forEach((row) => {
     const matchName =
       !name || (row.dataset.name || "").toLowerCase().includes(name);
-    const matchRoom = !facility || row.dataset.facility === facility;
+    const matchFacility = !facility || row.dataset.facility === facility;
     const matchStatus = !status || row.dataset.status === status;
-    row.style.display = matchName && matchRoom && matchStatus ? "" : "none";
+    row.style.display = matchName && matchFacility && matchStatus ? "" : "none";
   });
 }
 
@@ -108,7 +108,7 @@ function renderPayments() {
           return `
         <tr data-id="${b.id}" data-name="${b.name.toLowerCase()}" data-facility="${b.facilityId}" data-status="${effectiveStatus}">
             <td><strong>${b.name}</strong></td>
-            <td><span class="badge badge-secondary">${getRoomName(b.facilityId)}</span></td>
+            <td><span class="badge badge-secondary">${getFacilityName(b.facilityId)}</span></td>
             <td>${formatDateSimple(b.date)}</td>
             <td><strong>₱${totalAmount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
             <td>

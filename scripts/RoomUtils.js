@@ -1,5 +1,5 @@
 /**
- * RoomUtils — single source of truth for facility fallback data and facility helpers.
+ * FacilityUtils — single source of truth for facility fallback data and facility helpers.
  *
  * facilities.json is the live source of truth.  These fallback constants are used
  * only when the API call to /data/facilities.json fails.  All capacities, prices,
@@ -57,7 +57,7 @@ const ROOM_NAMES = Object.fromEntries(
   ROOMS_FALLBACK.map((r) => [r.id, r.name]),
 );
 
-// ─── Room helpers ─────────────────────────────────────────────────────────────
+// ─── Facility helpers ─────────────────────────────────────────────────────────────
 
 /**
  * Returns the display name for a facility id.
@@ -68,7 +68,7 @@ const ROOM_NAMES = Object.fromEntries(
  * @param {object[]} [liveFacilities]
  * @returns {string}
  */
-function getRoomName(id, liveFacilities) {
+function getFacilityName(id, liveFacilities) {
   if (id === "global") return "ALL FACILITIES";
   const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
   const r = source.find((x) => x.id === id);
@@ -83,7 +83,7 @@ function getRoomName(id, liveFacilities) {
  * @param {object[]} [liveFacilities]
  * @returns {number}
  */
-function getRoomPrice(facilityId, liveFacilities) {
+function getFacilityPrice(facilityId, liveFacilities) {
   const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   return facility
@@ -99,7 +99,7 @@ function getRoomPrice(facilityId, liveFacilities) {
  * @param {object[]} [liveFacilities]
  * @returns {number}
  */
-function getRoomMinPax(facilityId, liveFacilities) {
+function getFacilityMinPax(facilityId, liveFacilities) {
   const source = liveFacilities && liveFacilities.length > 0 ? liveFacilities : ROOMS_FALLBACK;
   const facility = source.find((r) => r.id === facilityId);
   if (facility && facility.minPax != null) return facility.minPax;
@@ -124,22 +124,22 @@ if (typeof module !== "undefined" && module.exports) {
     ROOM_PRICE_FALLBACK,
     ROOM_MIN_PAX,
     ROOM_NAMES,
-    getRoomName,
-    getRoomPrice,
-    getRoomMinPax,
+    getFacilityName,
+    getFacilityPrice,
+    getFacilityMinPax,
     getFacilities,
   };
 }
 
 if (typeof window !== "undefined") {
-  window.RoomUtils = {
+  window.FacilityUtils = {
     ROOMS_FALLBACK,
     ROOM_PRICE_FALLBACK,
     ROOM_MIN_PAX,
     ROOM_NAMES,
-    getRoomName,
-    getRoomPrice,
-    getRoomMinPax,
+    getFacilityName,
+    getFacilityPrice,
+    getFacilityMinPax,
     getFacilities,
   };
 }

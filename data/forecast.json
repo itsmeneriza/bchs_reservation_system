@@ -6,7 +6,7 @@
     "totalAnalyzed": 291,
     "summary": {
       "totalreservations": 291,
-      "mostPopularRoom": "Auditorium",
+      "mostPopularFacility": "Auditorium",
       "peakHours": "1:00 PM - 9:00 AM",
       "averageAttendees": 153
     },

@@ -21,7 +21,7 @@ module.exports = function createChatRouter() {
   - Gymnasium (Gym): capacity 300 pax | ₱1,000/hour | basketball court, bleachers
   - Library: capacity 100 pax | ₱1,000/hour | quiet environment, AC | no food/drinks, maintain silence
   - School Grounds (Grounds): capacity 180 pax | ₱700/hour | outdoor | CLOSED on weekends (Sat & Sun)
-  - Audio-Visual Room (AVR): capacity 150 pax | ₱500/hour | projector, sound system, AC
+  - Audio-Visual Facility (AVR): capacity 150 pax | ₱500/hour | projector, sound system, AC
   
   == PRICING ==
   - Hourly rates as listed above

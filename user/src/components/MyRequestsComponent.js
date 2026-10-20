@@ -3,7 +3,7 @@
  * Displays all reservation requests made by the logged-in user
  */
 
-import { state, setSelectedDate, setSelectedRoom } from "../core/state.js";
+import { state, setSelectedDate, setSelectedFacility } from "../core/state.js";
 import {
   convertTo12Hour,
   formatDate,
@@ -585,7 +585,7 @@ export class MyRequests {
 
       // Set facility and date in state synchronously BEFORE opening the modal
       const facility = state.facilities.find((r) => r.id === req.facilityId);
-      if (facility) setSelectedRoom(facility);
+      if (facility) setSelectedFacility(facility);
       setSelectedDate(new Date(req.date + "T00:00:00"));
 
       // Open modal with the full request data to prefill all fields

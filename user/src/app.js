@@ -2,9 +2,9 @@
  * BCHS reservation System - Main Application
  */
 
-import { state, setSelectedRoom } from "./core/state.js";
+import { state, setSelectedFacility } from "./core/state.js";
 import { loadData } from "./services/reservationService.js";
-import { RoomList } from "./components/RoomListComponent.js";
+import { FacilityList } from "./components/FacilityListComponent.js";
 import { Calendar } from "./components/CalendarComponent.js";
 import { TimeSlots } from "./components/TimeSlotsComponent.js";
 import { Chat } from "./components/ChatComponent.js";
@@ -17,7 +17,7 @@ import { registerMobileViewer } from "./utils/facilityUtils.js";
 
 class ReservationApp {
   constructor() {
-    this.facilityList = new RoomList();
+    this.facilityList = new FacilityList();
     this.calendar = new Calendar();
     this.timeSlots = new TimeSlots();
     this.chat = new Chat();
@@ -38,7 +38,7 @@ class ReservationApp {
       }
 
       if (state.facilities.length > 0) {
-        setSelectedRoom(state.facilities[0]);
+        setSelectedFacility(state.facilities[0]);
       }
 
       // Render critical visible components first

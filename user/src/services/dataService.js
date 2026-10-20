@@ -57,12 +57,12 @@ export class DataService {
         pricePerHour: r.pricePerHour ?? 0,
       }));
     } catch (e) {
-      // Fallback mirrors data/facilities.json — sourced from scripts/RoomUtils.js browser global
-      // If RoomUtils is available (loaded via <script> in reservation.html), use it.
+      // Fallback mirrors data/facilities.json — sourced from scripts/FacilityUtils.js browser global
+      // If FacilityUtils is available (loaded via <script> in reservation.html), use it.
       // Otherwise use the inline fallback which must stay in sync with facilities.json.
       this.facilities =
-        typeof RoomUtils !== "undefined"
-          ? RoomUtils.ROOMS_FALLBACK
+        typeof FacilityUtils !== "undefined"
+          ? FacilityUtils.ROOMS_FALLBACK
           : [
               {
                 id: "auditorium",
@@ -208,7 +208,7 @@ export class DataService {
     return this.facilityImages[facilityId]?.length || 0;
   }
 
-  getReservationsForRoom(facilityId) {
+  getReservationsForFacility(facilityId) {
     return this.reservations.filter((b) => b.facilityId === facilityId);
   }
 }

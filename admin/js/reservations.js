@@ -1,27 +1,27 @@
 /**
  * Admin Reservations Module
  * Manual reservation creation, tab renders (Queue, Confirmed, Approved, Upcoming, History, Cancellations).
- * Room data sourced from RoomUtils (loaded via <script src="/scripts/RoomUtils.js"> in admin.html).
+ * Facility data sourced from FacilityUtils (loaded via <script src="/scripts/FacilityUtils.js"> in admin.html).
  */
 
-// ─── Room Helpers ─────────────────────────────────────────────────────────────
-// Use the live facilities array when populated, fall back to RoomUtils.ROOMS_FALLBACK.
+// ─── Facility Helpers ─────────────────────────────────────────────────────────────
+// Use the live facilities array when populated, fall back to FacilityUtils.ROOMS_FALLBACK.
 
 function _getAdminFacilities() {
   return facilities && facilities.length > 0
     ? facilities
-    : RoomUtils.ROOMS_FALLBACK;
+    : FacilityUtils.ROOMS_FALLBACK;
 }
 
 function _getAdminMinPax(facilityId) {
   const facility = _getAdminFacilities().find((r) => r.id === facilityId);
   return facility && facility.minPax != null
     ? facility.minPax
-    : RoomUtils.ROOM_MIN_PAX[facilityId] || 0;
+    : FacilityUtils.ROOM_MIN_PAX[facilityId] || 0;
 }
 
-function _getRoomPriceFallback(facilityId) {
-  return RoomUtils.ROOM_PRICE_FALLBACK[facilityId] || 0;
+function _getFacilityPriceFallback(facilityId) {
+  return FacilityUtils.ROOM_PRICE_FALLBACK[facilityId] || 0;
 }
 
 // ─── Render All Tabs ──────────────────────────────────────────────────────────
@@ -37,12 +37,12 @@ function renderAll() {
   renderCalendar();
 }
 
-// ─── Room Selects / Facility Picker ──────────────────────────────────────────
+// ─── Facility Selects / Facility Picker ──────────────────────────────────────────
 
-function populateRoomSelects() {
+function populateFacilitySelects() {
   const source = _getAdminFacilities();
 
-  const editEl = document.getElementById("editRoomId");
+  const editEl = document.getElementById("editFacilityId");
   if (editEl)
     editEl.innerHTML = source
       .map(
@@ -65,7 +65,7 @@ window.renderAdminFacilityPicker = function (filterPax) {
     filterPax =
       parseInt(document.getElementById("manualAttendees")?.value) || 0;
   const currentVal =
-    document.getElementById("manualRoom")?.value || source[0].id;
+    document.getElementById("manualFacility")?.value || source[0].id;
 
   row.innerHTML = source
     .map((r) => {
@@ -84,10 +84,10 @@ window.renderAdminFacilityPicker = function (filterPax) {
 };
 
 window.selectAdminFacility = function (facilityId) {
-  const hiddenInput = document.getElementById("manualRoom");
+  const hiddenInput = document.getElementById("manualFacility");
   if (hiddenInput) hiddenInput.value = facilityId;
   renderAdminFacilityPicker();
-  updateAdminRoomSuggestion();
+  updateAdminFacilitySuggestion();
   updateManualPricing();
   refreshManualConflicts();
   if (window.checkAdminMinPax) checkAdminMinPax();
@@ -97,12 +97,12 @@ window.selectAdminFacility = function (facilityId) {
 
 function openAddReservationModal() {
   const modal = document.getElementById("addReservationModal");
-  const defaultRoom =
+  const defaultFacility =
     facilities && facilities.length > 0 ? facilities[0].id : "auditorium";
-  const hiddenRoom = document.getElementById("manualRoom");
-  if (hiddenRoom && !hiddenRoom.value) hiddenRoom.value = defaultRoom;
+  const hiddenFacility = document.getElementById("manualFacility");
+  if (hiddenFacility && !hiddenFacility.value) hiddenFacility.value = defaultFacility;
 
-  populateRoomSelects();
+  populateFacilitySelects();
   document.getElementById("manualDate").value = new Date()
     .toISOString()
     .split("T")[0];
@@ -142,7 +142,7 @@ window.closeAddReservationModal = () => {
   document.getElementById("purposeOtherBox").style.display = "none";
   document.getElementById("purposeOtherBox").value = "";
   document.getElementById("manualAttendees").value = "0";
-  document.getElementById("manualRoom").value = "";
+  document.getElementById("manualFacility").value = "";
   document
     .querySelectorAll('#manualUtilities input[type="checkbox"]')
     .forEach((cb) => (cb.checked = false));
@@ -160,7 +160,7 @@ window.closeAddReservationModal = () => {
 // ─── Pricing Preview ──────────────────────────────────────────────────────────
 
 function updateManualPricing() {
-  const facilityId = document.getElementById("manualRoom").value;
+  const facilityId = document.getElementById("manualFacility").value;
   const start = document.getElementById("manualStartTime").value;
   const end = document.getElementById("manualEndTime").value;
   const preview = document.getElementById("manualPricingPreview");
@@ -195,7 +195,7 @@ function updateManualPricing() {
   const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour = isStaff
     ? 0
-    : (facility?.pricePerHour ?? _getRoomPriceFallback(facilityId));
+    : (facility?.pricePerHour ?? _getFacilityPriceFallback(facilityId));
   const { duration, facilityTotal, utilityFee, total } = computeBookingTotal(
     pricePerHour,
     start,
@@ -234,10 +234,10 @@ function updateManualPricing() {
   preview.style.display = "block";
 }
 
-window.updateAdminRoomSuggestion = function () {
+window.updateAdminFacilitySuggestion = function () {
   const attendees =
     parseInt(document.getElementById("manualAttendees").value) || 0;
-  const facilitySelect = document.getElementById("manualRoom");
+  const facilitySelect = document.getElementById("manualFacility");
   const suggestionBox = document.getElementById("admin-facility-suggestion");
   const suggestionText = document.getElementById("admin-suggestion-text");
   if (!attendees || attendees <= 0) {
@@ -245,31 +245,31 @@ window.updateAdminRoomSuggestion = function () {
     return;
   }
 
-  const currentRoom = facilities.find((r) => r.id === facilitySelect.value);
-  if (!currentRoom) {
+  const currentFacility = facilities.find((r) => r.id === facilitySelect.value);
+  if (!currentFacility) {
     suggestionBox.style.display = "none";
     return;
   }
 
-  if (attendees > currentRoom.capacity) {
+  if (attendees > currentFacility.capacity) {
     const fits = facilities
       .filter((r) => r.capacity >= attendees)
       .sort((a, b) => a.capacity - b.capacity);
     suggestionText.innerHTML =
       fits.length > 0
-        ? `<strong>${currentRoom.name}</strong> fits ${currentRoom.capacity} pax. Suggested: <strong>${fits.map((r) => `<a href="#" onclick="document.getElementById('manualRoom').value='${r.id}';updateAdminRoomSuggestion();return false;" style="color:#800020;">${r.name} (${r.capacity} pax)</a>`).join(", ")}</strong>`
+        ? `<strong>${currentFacility.name}</strong> fits ${currentFacility.capacity} pax. Suggested: <strong>${fits.map((r) => `<a href="#" onclick="document.getElementById('manualFacility').value='${r.id}';updateAdminFacilitySuggestion();return false;" style="color:#800020;">${r.name} (${r.capacity} pax)</a>`).join(", ")}</strong>`
         : `${attendees} pax exceeds all facilities. Contact admin for special arrangements.`;
     suggestionBox.style.display = "block";
     return;
   }
-  if (attendees < currentRoom.capacity * 0.2) {
+  if (attendees < currentFacility.capacity * 0.2) {
     const smaller = facilities
       .filter(
-        (r) => r.capacity >= attendees && r.capacity < currentRoom.capacity,
+        (r) => r.capacity >= attendees && r.capacity < currentFacility.capacity,
       )
       .sort((a, b) => a.capacity - b.capacity);
     if (smaller.length > 0) {
-      suggestionText.innerHTML = `Only ${attendees} pax — consider a smaller facility: ${smaller.map((r) => `<a href="#" onclick="document.getElementById('manualRoom').value='${r.id}';updateAdminRoomSuggestion();return false;" style="color:#800020;">${r.name} (${r.capacity} pax)</a>`).join(", ")}`;
+      suggestionText.innerHTML = `Only ${attendees} pax — consider a smaller facility: ${smaller.map((r) => `<a href="#" onclick="document.getElementById('manualFacility').value='${r.id}';updateAdminFacilitySuggestion();return false;" style="color:#800020;">${r.name} (${r.capacity} pax)</a>`).join(", ")}`;
       suggestionBox.style.display = "block";
       return;
     }
@@ -278,13 +278,13 @@ window.updateAdminRoomSuggestion = function () {
 };
 
 window.checkAdminMinPax = () => {
-  const facilityId = document.getElementById("manualRoom").value;
+  const facilityId = document.getElementById("manualFacility").value;
   const pax = parseInt(document.getElementById("manualAttendees").value) || 0;
   const min = _getAdminMinPax(facilityId);
   const warning = document.getElementById("admin-min-pax-warning");
   if (!warning) return;
   if (min > 0 && pax > 0 && pax < min) {
-    warning.textContent = `Minimum ${min} pax required for ${getRoomName(facilityId)}.`;
+    warning.textContent = `Minimum ${min} pax required for ${getFacilityName(facilityId)}.`;
     warning.style.display = "block";
   } else {
     warning.style.display = "none";
@@ -295,8 +295,8 @@ window.checkAdminMinPax = () => {
 
 async function saveManualReservation() {
   const name = document.getElementById("manualName").value.trim();
-  const facilityId = document.getElementById("manualRoom").value;
-  const facilityName = getRoomName(facilityId);
+  const facilityId = document.getElementById("manualFacility").value;
+  const facilityName = getFacilityName(facilityId);
   const date = document.getElementById("manualDate").value;
   const startTime = document.getElementById("manualStartTime").value;
   const endTime = document.getElementById("manualEndTime").value;
@@ -352,14 +352,14 @@ async function saveManualReservation() {
   }
   const minPax = _getAdminMinPax(facilityId);
   if (minPax > 0 && attendees < minPax) {
-    alert(`Minimum ${minPax} pax required for ${getRoomName(facilityId)}.`);
+    alert(`Minimum ${minPax} pax required for ${getFacilityName(facilityId)}.`);
     return;
   }
 
   const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour = isStaff
     ? 0
-    : (facility?.pricePerHour ?? _getRoomPriceFallback(facilityId));
+    : (facility?.pricePerHour ?? _getFacilityPriceFallback(facilityId));
   const { total: totalAmount } = computeBookingTotal(
     pricePerHour,
     startTime,
@@ -435,7 +435,7 @@ function renderQueue() {
           return `<tr>
             <td>${formatDateSimple(req.submittedAt)}</td>
             <td><strong>${req.name}</strong>${editedTag}</td>
-            <td><span class="badge badge-secondary">${getRoomName(req.facilityId)}</span></td>
+            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
             <td>${formatDateSimple(req.date)}</td>
             <td><div class="truncate" title="${req.purpose}">${req.purpose}</div></td>
             ${paymentCell}
@@ -572,7 +572,7 @@ function renderConfirmed() {
 
           return `<tr${rowStyle}>
             <td><strong>${req.name}</strong></td>
-            <td><span class="badge badge-secondary">${getRoomName(req.facilityId)}</span></td>
+            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
             <td>${formatDateSimple(req.date)}</td>
             ${visitCell}
             <td><button class="btn btn-bchs btn-sm" style="${btnStyle}" onclick="openEditModal('${req.id}','${btnMode}')">${btnLabel}</button></td>
@@ -637,7 +637,7 @@ function renderApproved() {
           return `
         <tr${rowStyle}>
             <td><strong>${req.name}</strong></td>
-            <td><span class="badge badge-secondary">${getRoomName(req.facilityId)}</span></td>
+            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
             <td>${formatDateSimple(req.date)}</td>
             <td>${convertTo12Hour(req.startTime)}–${convertTo12Hour(req.endTime)}</td>
             <td><div class="truncate" title="${req.purpose}">${req.purpose}</div>
@@ -665,13 +665,13 @@ function renderUpcoming() {
     .filter((r) => {
       const isUp =
         (r.status === "approved" || r.status === "blocked") && r.date >= today;
-      const matchesRoom =
+      const matchesFacility =
         facilityFilter === "all" || r.facilityId === facilityFilter;
       const matchSearch =
         !filter ||
         r.name.toLowerCase().includes(filter) ||
         r.purpose.toLowerCase().includes(filter);
-      return isUp && matchesRoom && matchSearch;
+      return isUp && matchesFacility && matchSearch;
     })
     .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -704,7 +704,7 @@ function renderUpcoming() {
           }
           return `<div class="reservation-card ${cardClass}" style="flex-direction:row;align-items:center;gap:8px;">
             <div style="flex:1;min-width:0;">
-                <div class="res-card-row1"><span class="res-card-name">${isBlock ? "UNAVAILABLE" : b.name}</span>${badge}<span style="flex:1;"></span><span class="res-card-facility">${getRoomName(b.facilityId)}</span></div>
+                <div class="res-card-row1"><span class="res-card-name">${isBlock ? "UNAVAILABLE" : b.name}</span>${badge}<span style="flex:1;"></span><span class="res-card-facility">${getFacilityName(b.facilityId)}</span></div>
                 <div class="res-card-row2"><span class="res-card-time">${formatDateSimple(b.date)} &nbsp;${convertTo12Hour(b.startTime)}–${convertTo12Hour(b.endTime)}</span><span class="res-card-purpose">${b.purpose}</span></div>
             </div>${actions}</div>`;
         })
@@ -735,7 +735,7 @@ function renderCancellations() {
           return `<tr>
             <td>${req.cancellationRequestedAt ? formatDateSimple(req.cancellationRequestedAt) : "N/A"}</td>
             <td><strong>${req.name}</strong>${isBlockCancelled ? ' <span style="font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-weight:700;">BLOCK</span>' : ""}</td>
-            <td><span class="badge badge-secondary">${getRoomName(req.facilityId)}</span></td>
+            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
             <td>${formatDateSimple(req.date)}</td>
             <td><div class="truncate" title="${req.cancellationReason}" style="max-width:300px;">${req.cancellationReason}</div></td>
             <td><button class="btn btn-bchs btn-sm" onclick="openCancellationReview('${req.id}')">Review</button></td>
@@ -758,7 +758,7 @@ window.openCancellationReview = (id) => {
   const fmt12 = (t) => convertTo12Hour(t);
   document.getElementById("cr-details").innerHTML = `
         <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Name</span><strong>${req.name}</strong></div>
-        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Facility</span><strong>${getRoomName(req.facilityId)}</strong></div>
+        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Facility</span><strong>${getFacilityName(req.facilityId)}</strong></div>
         <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Date</span><strong>${formatDateSimple(req.date)}</strong></div>
         <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Time</span><strong>${fmt12(req.startTime)} – ${fmt12(req.endTime)}</strong></div>
         <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Purpose</span><span style="color:#374151;">${req.purpose}</span></div>
@@ -877,17 +877,17 @@ function filterHistory() {
     .toLowerCase()
     .trim();
   const facilityFilter =
-    document.getElementById("historyRoomFilter")?.value || "all";
+    document.getElementById("historyFacilityFilter")?.value || "all";
   const statusFilter =
     document.getElementById("historyStatusFilter")?.value || "all";
 
   const filtered = historyCache.filter((req) => {
     const statusText = _getHistoryStatusLabel(req);
     const matchSearch = !search || req.name.toLowerCase().includes(search);
-    const matchRoom =
+    const matchFacility =
       facilityFilter === "all" || req.facilityId === facilityFilter;
     const matchStatus = statusFilter === "all" || statusText === statusFilter;
-    return matchSearch && matchRoom && matchStatus;
+    return matchSearch && matchFacility && matchStatus;
   });
 
   const anyActive =
@@ -912,7 +912,7 @@ function filterHistory() {
           return `<tr>
             <td>${formatDateSimple(req.date)}</td>
             <td><strong>${req.name}</strong>${confirmedOn}</td>
-            <td>${getRoomName(req.facilityId)}</td>
+            <td>${getFacilityName(req.facilityId)}</td>
             <td><span class="badge ${statusBadge}">${statusText}</span></td>
             <td><button class="btn btn-outline btn-sm" onclick="openHistoryView('${req.id}')">View</button></td>
         </tr>`;
@@ -923,7 +923,7 @@ function filterHistory() {
 
 function clearHistoryFilters() {
   const search = document.getElementById("historySearchFilter");
-  const facility = document.getElementById("historyRoomFilter");
+  const facility = document.getElementById("historyFacilityFilter");
   const status = document.getElementById("historyStatusFilter");
   if (search) search.value = "";
   if (facility) facility.value = "all";
@@ -962,7 +962,7 @@ window.openHistoryView = (id) => {
         </div>`;
 
   let rows = `
-        ${row("Facility", getRoomName(r.facilityId))}
+        ${row("Facility", getFacilityName(r.facilityId))}
         ${row("Name", r.name || "—")}
         ${row("Contact", r.contact || "—")}
         ${row("Email", r.email || "—")}

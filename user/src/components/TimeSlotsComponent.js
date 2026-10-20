@@ -59,7 +59,7 @@ export class TimeSlots {
   }
 
   render() {
-    if (!this.container || !state.selectedRoom) return;
+    if (!this.container || !state.selectedFacility) return;
 
     // 1. Render Facility Preview Image
     this.renderFacilityPreview();
@@ -71,7 +71,7 @@ export class TimeSlots {
 
     const dateStr = getLocalISODate(state.selectedDate);
     const dayreservations = getReservationsForDate(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       dateStr,
     );
 
@@ -151,11 +151,11 @@ export class TimeSlots {
 
     this.currentImageIndex = 0;
     const imageUrl = dataService.getFacilityImage(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       this.currentImageIndex,
     );
-    const facilityName = state.selectedRoom.name;
-    const capacity = state.selectedRoom.capacity;
+    const facilityName = state.selectedFacility.name;
+    const capacity = state.selectedFacility.capacity;
 
     this.previewWrapper.innerHTML = `
             <div class="facility-preview-card" title="Click to enlarge view">
@@ -179,13 +179,13 @@ export class TimeSlots {
   }
 
   openViewer() {
-    const imageCount = dataService.getFacilityImageCount(state.selectedRoom.id);
+    const imageCount = dataService.getFacilityImageCount(state.selectedFacility.id);
     const imageUrl = dataService.getFacilityImage(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       this.currentImageIndex,
     );
-    const facilityName = state.selectedRoom.name;
-    const capacity = state.selectedRoom.capacity;
+    const facilityName = state.selectedFacility.name;
+    const capacity = state.selectedFacility.capacity;
 
     this.viewerImage.src = imageUrl;
     this.viewerCaption.textContent = `${facilityName} - School Facility (Max ${capacity} Pax)`;
@@ -206,12 +206,12 @@ export class TimeSlots {
   }
 
   navigateViewerImage(direction) {
-    const imageCount = dataService.getFacilityImageCount(state.selectedRoom.id);
+    const imageCount = dataService.getFacilityImageCount(state.selectedFacility.id);
     this.currentImageIndex =
       (this.currentImageIndex + direction + imageCount) % imageCount;
 
     const imageUrl = dataService.getFacilityImage(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       this.currentImageIndex,
     );
 

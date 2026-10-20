@@ -3,14 +3,14 @@
  * Pure helpers shared across all admin modules.
  */
 
-// ─── Room Helpers ─────────────────────────────────────────────────────────────
+// ─── Facility Helpers ─────────────────────────────────────────────────────────────
 
-function getRoomName(id) {
+function getFacilityName(id) {
   if (id === "global") return "ALL FACILITIES";
   const r = (
-    facilities && facilities.length > 0 ? facilities : RoomUtils.ROOMS_FALLBACK
+    facilities && facilities.length > 0 ? facilities : FacilityUtils.ROOMS_FALLBACK
   ).find((x) => x.id === id);
-  return r ? r.name : RoomUtils.ROOM_NAMES[id] || id;
+  return r ? r.name : FacilityUtils.ROOM_NAMES[id] || id;
 }
 
 // ─── Time Formatters ─────────────────────────────────────────────────────────
@@ -120,9 +120,9 @@ function getAdminBookedHours(facilityId, dateStr, excludeId = null) {
     if (r.id === excludeId) return;
     if (["cancelled", "refused", "rejected"].includes(r.status)) return;
     if (!["approved", "pending", "blocked"].includes(r.status)) return;
-    const matchesRoom =
+    const matchesFacility =
       r.facilityId === facilityId || r.facilityId === "global";
-    if (!matchesRoom || r.date !== dateStr) return;
+    if (!matchesFacility || r.date !== dateStr) return;
     const [startH, startM] = r.startTime.split(":").map(Number);
     const [endH, endM] = r.endTime.split(":").map(Number);
     // Walk in 30-minute increments from the booking's actual start to its end (exclusive)
@@ -172,7 +172,7 @@ function applyConflictStyling(selectEl, takenHours) {
  * Call whenever facility or date changes.
  */
 window.refreshManualConflicts = function () {
-  const facilityId = document.getElementById("manualRoom")?.value;
+  const facilityId = document.getElementById("manualFacility")?.value;
   const dateStr = document.getElementById("manualDate")?.value;
   const startTime = document.getElementById("manualStartTime")?.value;
   const endTime = document.getElementById("manualEndTime")?.value;
@@ -253,9 +253,9 @@ function adminCheckConflict(
       if (["cancelled", "refused", "rejected"].includes(r.status)) return false;
       if (!["approved", "accepted", "pending", "blocked"].includes(r.status))
         return false;
-      const matchesRoom =
+      const matchesFacility =
         r.facilityId === facilityId || r.facilityId === "global";
-      if (!matchesRoom || r.date !== dateStr) return false;
+      if (!matchesFacility || r.date !== dateStr) return false;
       if (r.status === "blocked" && r.isFullDayBlock) return true;
       // Overlap: existing starts before new ends AND existing ends after new starts
       return r.startTime < endTime && r.endTime > startTime;

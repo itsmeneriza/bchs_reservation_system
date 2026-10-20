@@ -4,7 +4,7 @@
 
 export const state = {
   facilities: [],
-  selectedRoom: null,
+  selectedFacility: null,
   selectedDate: new Date(),
   currentMonth: new Date().getMonth(),
   currentYear: new Date().getFullYear(),
@@ -16,8 +16,8 @@ export const state = {
   user: JSON.parse(localStorage.getItem("bchs_user_data") || "null"),
 };
 
-export function setSelectedRoom(facility) {
-  state.selectedRoom = facility;
+export function setSelectedFacility(facility) {
+  state.selectedFacility = facility;
 }
 
 export function setSelectedDate(date) {

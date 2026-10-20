@@ -423,7 +423,7 @@
   color: white;
 }
 
-/* Room Analytics Grid */
+/* Facility Analytics Grid */
 .facility-analytics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

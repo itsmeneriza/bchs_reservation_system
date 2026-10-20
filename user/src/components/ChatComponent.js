@@ -9,8 +9,8 @@ import { state, addChatMessage, setChatLoading } from "../core/state.js";
 // Default suggestion chips shown after every assistant reply
 const DEFAULT_CHIPS = [
   "How to reserve?",
-  "Room prices",
-  "Room capacity",
+  "Facility prices",
+  "Facility capacity",
   "How to cancel?",
   "Check availability",
 ];
@@ -80,7 +80,7 @@ const getOfflineReply = (question) => {
   }
 
   const facilities = state.facilities || [];
-  const mentionedRoom = facilities.find((facility) => {
+  const mentionedFacility = facilities.find((facility) => {
     const name = facility.name.toLowerCase();
     return (
       normalized.includes(name) ||
@@ -109,13 +109,13 @@ const getOfflineReply = (question) => {
     return "To reserve: select a facility, double-click an available calendar date, complete the form and time slots, accept the facility usage policy, then follow the payment instructions after approval. A down payment is required for non-staff reservations; the amount is confirmed after approval and is due within 3 working days.";
   }
 
-  if (asksPrice || asksCapacity || mentionedRoom) {
-    const relevantFacilities = mentionedRoom ? [mentionedRoom] : facilities;
+  if (asksPrice || asksCapacity || mentionedFacility) {
+    const relevantFacilities = mentionedFacility ? [mentionedFacility] : facilities;
     const details = relevantFacilities.map((facility) => {
       const facts = [];
-      if (asksCapacity || mentionedRoom)
+      if (asksCapacity || mentionedFacility)
         facts.push(`capacity: ${facility.capacity} people`);
-      if (asksPrice || mentionedRoom)
+      if (asksPrice || mentionedFacility)
         facts.push(
           `₱${Number(facility.pricePerHour).toLocaleString("en-PH")}/hour`,
         );
@@ -145,7 +145,7 @@ export class Chat {
     if (state.chatMessages.length === 0) {
       addChatMessage({
         sender: "assistant",
-        text: "Hello! I'm your <strong>BCHS Reservation Assistant</strong>.<br><br>I can help you with:<br>• Pricing &amp; payment information<br>• Room capacity and recommendations<br>• Checking availability<br>• Reservation procedures<br>• Cancellation &amp; refund policies<br>• Facility details and features<br><br>What would you like to know?",
+        text: "Hello! I'm your <strong>BCHS Reservation Assistant</strong>.<br><br>I can help you with:<br>• Pricing &amp; payment information<br>• Facility capacity and recommendations<br>• Checking availability<br>• Reservation procedures<br>• Cancellation &amp; refund policies<br>• Facility details and features<br><br>What would you like to know?",
         chips: DEFAULT_CHIPS,
       });
     }

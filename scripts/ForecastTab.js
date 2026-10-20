@@ -95,7 +95,7 @@ export class Forecast {
 
     const stats = {
       totalreservations: filtered.length,
-      byRoom: {},
+      byFacility: {},
       byMonth: {},
       byDayOfWeek: {},
       totalAttendees: 0,
@@ -103,14 +103,14 @@ export class Forecast {
     };
 
     filtered.forEach((reservation) => {
-      if (!stats.byRoom[reservation.facilityId]) {
-        stats.byRoom[reservation.facilityId] = {
+      if (!stats.byFacility[reservation.facilityId]) {
+        stats.byFacility[reservation.facilityId] = {
           count: 0,
           attendees: 0,
         };
       }
-      stats.byRoom[reservation.facilityId].count++;
-      stats.byRoom[reservation.facilityId].attendees +=
+      stats.byFacility[reservation.facilityId].count++;
+      stats.byFacility[reservation.facilityId].attendees +=
         reservation.attendees || 0;
 
       const month = new Date(reservation.date).toLocaleString("default", {
@@ -138,13 +138,13 @@ export class Forecast {
 
     let maxCount = 0;
     let mostPopular = "";
-    Object.keys(stats.byRoom).forEach((facilityId) => {
-      if (stats.byRoom[facilityId].count > maxCount) {
-        maxCount = stats.byRoom[facilityId].count;
+    Object.keys(stats.byFacility).forEach((facilityId) => {
+      if (stats.byFacility[facilityId].count > maxCount) {
+        maxCount = stats.byFacility[facilityId].count;
         mostPopular = facilityId;
       }
     });
-    stats.mostPopularRoom = mostPopular;
+    stats.mostPopularFacility = mostPopular;
 
     let maxMonthCount = 0;
     let busiestMonth = "";
@@ -208,17 +208,17 @@ export class Forecast {
       facilityComparisons: {},
     };
 
-    const currentRoomAnalytics = Array.isArray(currentStats.facilityAnalytics)
+    const currentFacilityAnalytics = Array.isArray(currentStats.facilityAnalytics)
       ? currentStats.facilityAnalytics
-      : Object.keys(currentStats.byRoom || {}).map((facilityId) => ({
+      : Object.keys(currentStats.byFacility || {}).map((facilityId) => ({
           facilityId,
-          totalreservations: currentStats.byRoom[facilityId].count,
+          totalreservations: currentStats.byFacility[facilityId].count,
         }));
 
-    currentRoomAnalytics.forEach((item) => {
+    currentFacilityAnalytics.forEach((item) => {
       const facilityId = item.facilityId;
       const current = item.totalreservations ?? item.count ?? 0;
-      const lastYear = lastYearStats.byRoom[facilityId];
+      const lastYear = lastYearStats.byFacility[facilityId];
 
       if (lastYear) {
         comparison.facilityComparisons[facilityId] = {
@@ -402,16 +402,16 @@ export class Forecast {
       {
         ...currentYearStats,
         facilityAnalytics,
-        byRoom: currentYearStats ? currentYearStats.byRoom : {},
+        byFacility: currentYearStats ? currentYearStats.byFacility : {},
         averageAttendees: currentYearStats
           ? currentYearStats.averageAttendees
           : summary.averageAttendees || 0,
         totalreservations: currentYearStats
           ? currentYearStats.totalreservations
           : summary.totalreservations || 0,
-        mostPopularRoom: currentYearStats
-          ? currentYearStats.mostPopularRoom
-          : summary.mostPopularRoom || "N/A",
+        mostPopularFacility: currentYearStats
+          ? currentYearStats.mostPopularFacility
+          : summary.mostPopularFacility || "N/A",
       },
       lastYearStats,
     );
@@ -419,7 +419,7 @@ export class Forecast {
     const currentSummary = currentYearStats || {
       totalreservations: summary.totalreservations || 0,
       averageAttendees: summary.averageAttendees || 0,
-      mostPopularRoom: summary.mostPopularRoom || "N/A",
+      mostPopularFacility: summary.mostPopularFacility || "N/A",
     };
 
     this.container.innerHTML = `
@@ -452,7 +452,7 @@ export class Forecast {
                     <div class="hero-stat-card secondary">
                         <div class="hero-stat-icon"></div>
                         <div class="hero-stat-content">
-                            <div class="hero-stat-value">${currentSummary.mostPopularRoom}</div>
+                            <div class="hero-stat-value">${currentSummary.mostPopularFacility}</div>
                             <div class="hero-stat-label">Most Popular Venue</div>
                         </div>
                     </div>
@@ -480,7 +480,7 @@ export class Forecast {
             <!-- Busy Patterns Analysis -->
             ${lastYearStats ? this.renderBusyPatterns(lastYearStats) : ""}
 
-            <!-- Room Analytics -->
+            <!-- Facility Analytics -->
             <div class="forecast-section">
                 <div class="section-header">
                     <h3 class="section-title">
@@ -509,7 +509,7 @@ export class Forecast {
                 <div class="facility-analytics-grid">
                     ${this.rankFacilities(facilityAnalytics)
                       .map((facility, idx) =>
-                        this.renderRoomAnalytics(facility, comparison, idx),
+                        this.renderFacilityAnalytics(facility, comparison, idx),
                       )
                       .join("")}
                 </div>
@@ -885,7 +885,7 @@ export class Forecast {
         `;
   }
 
-  getRoomName(facilityId) {
+  getFacilityName(facilityId) {
     const facilityNames = {
       auditorium: "Auditorium",
       library: "Library",
@@ -949,12 +949,12 @@ export class Forecast {
             `);
     }
 
-    if (current.mostPopularRoom !== lastYear.mostPopularRoom) {
+    if (current.mostPopularFacility !== lastYear.mostPopularFacility) {
       insights.push(`
                 <div class="insight-item info">
                     <div class="insight-icon"></div>
                     <div class="insight-content">
-                        <div class="insight-text">Most popular venue shifted from <strong>${this.getRoomName(lastYear.mostPopularRoom)}</strong> to <strong>${current.mostPopularRoom}</strong></div>
+                        <div class="insight-text">Most popular venue shifted from <strong>${this.getFacilityName(lastYear.mostPopularFacility)}</strong> to <strong>${current.mostPopularFacility}</strong></div>
                     </div>
                 </div>
             `);
@@ -1268,7 +1268,7 @@ export class Forecast {
             </div>`;
   }
 
-  renderRoomAnalytics(facility, comparison, rank = -1) {
+  renderFacilityAnalytics(facility, comparison, rank = -1) {
     const trendIcon =
       facility.trend === "increasing"
         ? "+"

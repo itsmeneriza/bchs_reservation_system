@@ -39,7 +39,7 @@ async function openQuickBlock(dateStr) {
         (b) => `
             <div style="display:flex;justify-content:space-between;align-items:center;background:white;border:1px solid #e2e8f0;padding:8px 12px;border-radius:6px;margin-bottom:6px;">
                 <div style="font-size:13px;">
-                    <strong style="color:#b91c1c;">${getRoomName(b.facilityId)}</strong>
+                    <strong style="color:#b91c1c;">${getFacilityName(b.facilityId)}</strong>
                     <div style="font-size:11px;color:#64748b;">Reason: ${b.purpose.replace("ADMIN MANUAL BLOCK: ", "")}</div>
                 </div>
                 <button class="btn btn-outline btn-sm" onclick="quickUnblock('${b.id}','${dateStr}')">Open Slot</button>
@@ -50,7 +50,7 @@ async function openQuickBlock(dateStr) {
     // Disable checkboxes for already-blocked facilities
     dayBlocks.forEach((b) => {
       const cb = document.querySelector(
-        `input[name="facilityBlock"][value="${getRoomName(b.facilityId)}"]`,
+        `input[name="facilityBlock"][value="${getFacilityName(b.facilityId)}"]`,
       );
       if (cb) {
         cb.disabled = true;

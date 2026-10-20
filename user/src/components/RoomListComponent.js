@@ -1,14 +1,14 @@
 /**
- * Room List Component
+ * Facility List Component
  * Displays available facilities with pagination (3 per page)
  * Updated: Navigation buttons now flank the facility cards.
  */
 
-import { state, setSelectedRoom } from "../core/state.js";
+import { state, setSelectedFacility } from "../core/state.js";
 import { Calendar } from "./CalendarComponent.js";
 import { TimeSlots } from "./TimeSlotsComponent.js";
 
-export class RoomList {
+export class FacilityList {
   constructor() {
     this.container = document.getElementById("facility-list");
   }
@@ -22,7 +22,7 @@ export class RoomList {
       const facilityCard = document.createElement("button");
       facilityCard.className = "facility-card-mini";
 
-      if (state.selectedRoom && state.selectedRoom.id === facility.id) {
+      if (state.selectedFacility && state.selectedFacility.id === facility.id) {
         facilityCard.classList.add("selected");
       }
 
@@ -47,14 +47,14 @@ export class RoomList {
             `;
 
       if (!tooSmall) {
-        facilityCard.addEventListener("click", () => this.selectRoom(facility));
+        facilityCard.addEventListener("click", () => this.selectFacility(facility));
       }
       this.container.appendChild(facilityCard);
     });
   }
 
-  selectRoom(facility) {
-    setSelectedRoom(facility);
+  selectFacility(facility) {
+    setSelectedFacility(facility);
     this.render();
 
     const calendar = new Calendar();

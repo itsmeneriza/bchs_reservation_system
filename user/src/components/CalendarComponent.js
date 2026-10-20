@@ -33,9 +33,9 @@ export class Calendar {
   }
 
   render() {
-    if (!this.container || !state.selectedRoom) return;
+    if (!this.container || !state.selectedFacility) return;
 
-    this.facilityTitleEl.textContent = `Calendar - ${state.selectedRoom.name}`;
+    this.facilityTitleEl.textContent = `Calendar - ${state.selectedFacility.name}`;
     const monthYear = getMonthYear(state.currentMonth, state.currentYear);
     this.monthYearEl.textContent = monthYear;
     if (this.monthYearMobileEl) this.monthYearMobileEl.textContent = monthYear;
@@ -75,14 +75,14 @@ export class Calendar {
     const isCurrentDay = isToday(day, state.currentMonth, state.currentYear);
     const selected = isSameDate(state.selectedDate, date);
     const density = getReservationDensity(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       day,
       state.currentMonth,
       state.currentYear,
     );
 
     const dayreservations = getReservationsForDate(
-      state.selectedRoom.id,
+      state.selectedFacility.id,
       dateStr,
     );
     const hasPending = dayreservations.some((b) => b.status === "pending");
@@ -99,7 +99,7 @@ export class Calendar {
 
     // Hard disabled states: Past dates or Grounds on weekends
     const isDisabled =
-      isPast || (state.selectedRoom.id === "grounds" && isWeekend);
+      isPast || (state.selectedFacility.id === "grounds" && isWeekend);
 
     let bgColor = "transparent";
     if (isAdminBlocked) {
@@ -211,7 +211,7 @@ export class Calendar {
     const groundsNote = document.getElementById("grounds-note");
     if (groundsNote) {
       groundsNote.style.display =
-        state.selectedRoom.id === "grounds" ? "block" : "none";
+        state.selectedFacility.id === "grounds" ? "block" : "none";
     }
   }
 

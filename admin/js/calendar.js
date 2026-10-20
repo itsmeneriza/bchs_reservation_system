@@ -23,9 +23,9 @@ function renderCalendar() {
     (r) => r.status === "approved" || r.status === "blocked",
   );
 
-  const currentRoomFilter = document.getElementById("facilityFilter").value;
-  const currentRoomId =
-    currentRoomFilter === "all" ? "global" : currentRoomFilter.toLowerCase();
+  const currentFacilityFilter = document.getElementById("facilityFilter").value;
+  const currentFacilityId =
+    currentFacilityFilter === "all" ? "global" : currentFacilityFilter.toLowerCase();
 
   let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     .map((d) => `<div class="calendar-header-cell">${d}</div>`)
@@ -44,7 +44,7 @@ function renderCalendar() {
     const isManuallyBlocked = dayEntries.some(
       (e) =>
         e.status === "blocked" &&
-        (e.facilityId === currentRoomId || e.facilityId === "global") &&
+        (e.facilityId === currentFacilityId || e.facilityId === "global") &&
         e.isFullDayBlock === true,
     );
     const hasOtherEntries = dayEntries.some(
@@ -123,14 +123,14 @@ async function handleDayToggle(dateStr) {
         const label = isEvent
           ? entry.name
           : isBlock
-            ? `Block — ${getRoomName(entry.facilityId)}`
+            ? `Block — ${getFacilityName(entry.facilityId)}`
             : entry.name;
 
         const sub = isEvent
-          ? `${convertTo12Hour(entry.startTime)}–${convertTo12Hour(entry.endTime)} · ${getRoomName(entry.facilityId)}`
+          ? `${convertTo12Hour(entry.startTime)}–${convertTo12Hour(entry.endTime)} · ${getFacilityName(entry.facilityId)}`
           : isBlock
             ? entry.purpose.replace("ADMIN MANUAL BLOCK: ", "")
-            : `${convertTo12Hour(entry.startTime)}–${convertTo12Hour(entry.endTime)} · ${getRoomName(entry.facilityId)}`;
+            : `${convertTo12Hour(entry.startTime)}–${convertTo12Hour(entry.endTime)} · ${getFacilityName(entry.facilityId)}`;
 
         const badgeStyle = isEvent
           ? "background:#fef3c7;color:#92400e;"
