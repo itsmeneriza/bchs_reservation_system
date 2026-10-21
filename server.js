@@ -1,3 +1,4 @@
+import 'dotenv/config'; // load variables from hidden .env file
 import express from 'express';
 import { AuthService } from './scripts/AuthService.js';
 
