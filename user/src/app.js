@@ -1,7 +1,7 @@
 ﻿/**
  * BCHS reservation System - Main Application
  */
-
+import { LoginHandler } from "./components?LoginComponent.js"; //new login import
 import { state, setSelectedFacility } from "./core/state.js";
 import { loadData } from "./services/reservationService.js";
 import { FacilityList } from "./components/FacilityListComponent.js";
@@ -17,6 +17,7 @@ import { registerMobileViewer } from "./utils/facilityUtils.js";
 
 class ReservationApp {
   constructor() {
+    this.loginHandler = new LoginHandler();
     this.facilityList = new FacilityList();
     this.calendar = new Calendar();
     this.timeSlots = new TimeSlots();
