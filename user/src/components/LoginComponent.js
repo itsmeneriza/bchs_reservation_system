@@ -2,7 +2,7 @@
  * Login Component
  * Handles portal authentication with phone and optional staff validation.
  */
-
+import { loginUser } from '../services/authService.js';
 import { state, setLoginState } from '../core/state.js';
 import { showToast } from './NotificationComponent.js';
 import { isValidPHPhone, normalizePHPhone } from '../utils/dateUtils.js';
@@ -159,10 +159,18 @@ export class LoginHandler {
             userData.name = normalized;
         }
 
-        setLoginState(true, userData);
-        this.syncUI();
-        this.close();
-        showToast(`Welcome, ${userData.isStaff ? userData.name : 'User'}!`, 'success');
+        // Login new: Call loginUser service and update app state with response
+        Try{
+            userData = await loginUser(userData)
+
+            setLoginState(true, userData);
+            this.syncUI();
+            this.close();
+            showToast(`Welcome, ${userData.isStaff ? userData.name : 'User'}!`, 'success');
+    
+        }catch (error) {
+            this.showError(error.message || "Authentication failed. Please try again")
+        }
     }
 
     handleLogout() {
