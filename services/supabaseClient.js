@@ -1,12 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey =
-    process.env.SUPABASE_ANON_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
+export function createSupabaseClient(accessToken) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const anonKey = process.env.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase URL or Key is not defined in environment variables');
+    if (!supabaseUrl || !anonKey) {
+        const error = new Error('SUPABASE_URL and SUPABASE_ANON_KEY must be configured.');
+        error.status = 503;
+        throw error;
+    }
+
+    return createClient(supabaseUrl, anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+        ...(accessToken
+            ? { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+            : {}),
+    });
 }
-
-export const supabase = createClient(supabaseUrl, supabaseKey);

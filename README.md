@@ -85,9 +85,10 @@ The server also prints these URLs in the terminal when it starts.
 
 ## Server Structure
 
-`server.js` configures Express, serves the static frontends, mounts the API routers, starts scheduled jobs, and listens for requests. API handlers are grouped by feature in `routes/`:
+`server.js` configures Express, serves the static frontends, mounts API routers, and listens for requests. API handlers are grouped by feature in `routes/`:
 
-- `requests.js` handles reservations, facilities, events, and accepted reservations.
+- `events.js` reads events from Supabase and protects event create, update, and delete operations with administrator authentication and RLS.
+- `requests.js` contains the earlier file-backed request, facility, and event handlers.
 - `history.js` handles archived reservations and periodic archiving.
 - `forecast.js` handles forecast calculation, caching, and refresh.
 - `notifications.js` handles email notifications, reminders, and cancellation OTPs.

@@ -1,7 +1,7 @@
 /**
  * Admin Data Loader
  * Fetches facilities, staff, requests, and events from the server API.
- * Shared logic: FacilityUtils (fallback data), DateUtils (parseEventTime)
+ * Shared logic: DateUtils (parseEventTime)
  * loaded via <script src="/scripts/FacilityUtils.js"> and <script src="/scripts/DateUtils.js">
  * before this file in admin.html — available as window.FacilityUtils and window.DateUtils.
  */
@@ -15,21 +15,22 @@ async function loadData() {
     renderAdminEvents();
   } catch (error) {
     console.error("Error loading data:", error);
+    showToast(error.message || "Could not load admin data.", "error");
   }
 }
 
 // ─── Facilities ────────────────────────────────────────────────────────────────────
 
 async function loadFacilities() {
-  try {
-    const response = await fetch("/api/facilities");
-    if (response.ok) {
-      const data = await response.json();
-      facilities = data.facilities || [];
-    }
-  } catch (e) {
-    facilities = FacilityUtils.FACILITIES_FALLBACK;
+  const response = await fetch("/api/facilities");
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || `Facilities API returned ${response.status}.`);
   }
+  if (!Array.isArray(data.facilities)) {
+    throw new Error("Facilities API response did not contain a facilities list.");
+  }
+  facilities = data.facilities;
   populateFacilitySelects();
   if (
     document.getElementById("addReservationModal")?.classList.contains("active")
@@ -94,41 +95,45 @@ async function loadRequests() {
 async function loadEvents() {
   try {
     const res = await fetch("/api/events");
-    if (res.ok) {
-      const data = await res.json();
-      adminEvents = data.events || [];
-
-      // Remove previously merged synthetic entries to avoid duplicates
-      requests = requests.filter((r) => {
-        const id = typeof r?.id === "string" ? r.id : "";
-        return !id.startsWith("evt_") && !id.startsWith("event_");
-      });
-
-      adminEvents.forEach((ev) => {
-        const syntheticId = "evt_" + ev.id;
-        if (requests.find((r) => r.id === syntheticId)) return;
-        const [start, end] = parseEventTime(ev.time);
-        requests.push({
-          id: syntheticId,
-          facilityId: ev.location.toLowerCase(),
-          facilityName: ev.location,
-          name: ev.title,
-          date: ev.date,
-          startTime: start,
-          endTime: end,
-          purpose: ev.description || ev.title,
-          attendees: ev.attendees || 0,
-          status: "approved",
-          paymentStatus: "paid",
-          totalAmount: 0,
-          isSchoolEvent: true,
-          submittedAt: ev.date + "T00:00:00.000Z",
-        });
-      });
-      return;
+    if (!res.ok) {
+      throw new Error(`Events API returned ${res.status}.`);
     }
-  } catch (e) {}
-  adminEvents = [];
+    const data = await res.json();
+    if (!Array.isArray(data.events)) {
+      throw new Error("Events API response did not contain an events list.");
+    }
+    adminEvents = data.events;
+
+    // Remove previously merged synthetic entries to avoid duplicates.
+    requests = requests.filter((r) => {
+      const id = typeof r?.id === "string" ? r.id : "";
+      return !id.startsWith("evt_") && !id.startsWith("event_");
+    });
+
+    adminEvents.forEach((ev) => {
+      const syntheticId = "evt_" + ev.id;
+      if (requests.find((r) => r.id === syntheticId)) return;
+      const [start, end] = parseEventTime(ev.time);
+      requests.push({
+        id: syntheticId,
+        facilityId: ev.facilityId || ev.location.toLowerCase(),
+        facilityName: ev.location,
+        name: ev.title,
+        date: ev.date,
+        startTime: start,
+        endTime: end,
+        purpose: ev.description || ev.title,
+        status: "approved",
+        paymentStatus: "paid",
+        totalAmount: 0,
+        isSchoolEvent: true,
+        submittedAt: ev.date + "T00:00:00.000Z",
+      });
+    });
+  } catch (error) {
+    adminEvents = [];
+    console.error("Could not load events from Supabase:", error);
+  }
 }
 
 // ─── Event Time Parser ────────────────────────────────────────────────────────

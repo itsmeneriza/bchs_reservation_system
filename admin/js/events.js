@@ -6,6 +6,10 @@
 // ─── Open / Close Modal ───────────────────────────────────────────────────────
 
 function openAddEventModal(date) {
+  if (!facilities.length) {
+    showToast("Facilities could not be loaded. Please try again later.", "error");
+    return;
+  }
   const modal = document.getElementById("addEventModal");
   const timeOptions = buildTimeOptions();
   document.getElementById("eventDate").value =
@@ -60,7 +64,7 @@ async function saveNewEvent() {
   // Hard conflict check — block save if time overlaps any existing reservation
   const facilityId = location.toLowerCase();
   const saveBtn = document.getElementById("saveEventBtn");
-  const excludeId = saveBtn._editingId ? "event_" + saveBtn._editingId : null;
+  const excludeId = saveBtn._editingId ? "evt_" + saveBtn._editingId : null;
   const existingConflict = adminCheckConflict(
     facilityId,
     date,
@@ -91,8 +95,6 @@ async function saveNewEvent() {
       location,
       description,
       imageUrl,
-      startVal,
-      endVal,
     });
     if (!saved) return;
   } else {
@@ -103,8 +105,6 @@ async function saveNewEvent() {
       location,
       description,
       imageUrl,
-      startVal,
-      endVal,
     });
     if (!saved) return;
   }
@@ -117,25 +117,18 @@ async function saveNewEvent() {
   document.getElementById("eventDescription").value = "";
   document.getElementById("eventImageUrl").value = "";
 
-  if (editingId) {
-    await loadData();
-  } else {
-    renderCalendar();
-    renderAdminEvents();
-    renderUpcoming();
-  }
+  await loadData();
 }
 
 async function _updateEvent(
   editingId,
-  { title, date, time, location, description, imageUrl, startVal, endVal },
+  { title, date, time, location, description, imageUrl },
 ) {
   const updatedEvent = {
     title,
     date,
     time,
     location,
-    attendees: 0,
     description,
     image: imageUrl || randomGradient(),
   };
@@ -153,24 +146,6 @@ async function _updateEvent(
     showToast("Failed to update event: " + e.message, "error");
     return false;
   }
-
-  // Sync the linked reservation entry
-  const linkedReqId = "event_" + editingId;
-  try {
-    await fetch(`/api/requests/${linkedReqId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: title,
-        date,
-        startTime: startVal,
-        endTime: endVal,
-        purpose: description,
-        facilityId: location.toLowerCase(),
-        facilityName: location,
-      }),
-    });
-  } catch (_) {}
 
   // Update in-memory
   const idx = adminEvents.findIndex(
@@ -198,8 +173,6 @@ async function _createEvent({
   location,
   description,
   imageUrl,
-  startVal,
-  endVal,
 }) {
   const newEvent = {
     id: Date.now().toString(),
@@ -207,7 +180,6 @@ async function _createEvent({
     date,
     time,
     location,
-    attendees: 0,
     description,
     image: imageUrl || randomGradient(),
   };
@@ -227,37 +199,6 @@ async function _createEvent({
     return false;
   }
 
-  // Create a linked approved reservation to block the slot on the calendar
-  const reservation = {
-    id: "event_" + newEvent.id,
-    facilityId: location.toLowerCase(),
-    facilityName: location,
-    name: title,
-    contact: "School Event",
-    email: "admin@bchs.edu",
-    date,
-    startTime: startVal,
-    endTime: endVal,
-    purpose: description,
-    attendees: 0,
-    status: "approved",
-    paymentStatus: "paid",
-    totalAmount: 0,
-    isSchoolEvent: true,
-    submittedAt: new Date().toISOString(),
-  };
-  try {
-    await fetch("/api/requests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(reservation),
-    });
-  } catch (e) {
-    console.warn(
-      "[WARN] Event saved but reservation slot could not be created.",
-    );
-  }
-
   showToast("New school event posted successfully!", "success");
   return true;
 }
@@ -271,12 +212,8 @@ window.deleteEvent = async function (id) {
       method: "DELETE",
     });
     if (!res.ok) throw new Error("Server returned " + res.status);
-    const linkedReqId = "event_" + id;
-    try {
-      await fetch(`/api/requests/${linkedReqId}`, { method: "DELETE" });
-    } catch (_) {}
     requests = requests.filter(
-      (r) => r.id !== "evt_" + id && r.id !== linkedReqId,
+      (r) => r.id !== "evt_" + id && r.id !== "event_" + id,
     );
     adminEvents = adminEvents.filter((e) => e.id !== id && e.id !== String(id));
   } catch (e) {
@@ -291,21 +228,17 @@ window.deleteEvent = async function (id) {
 
 window.deleteEventFromSchedule = async (id) => {
   if (!confirm("Delete this event? This cannot be undone.")) return;
-  const linkedReqId = "event_" + id;
   try {
     const res = await window.adminFetch(`/api/events/${id}`, {
       method: "DELETE",
     });
     if (!res.ok) throw new Error("Server returned " + res.status);
-    try {
-      await fetch(`/api/requests/${linkedReqId}`, { method: "DELETE" });
-    } catch (_) {}
   } catch (e) {
     showToast("Failed to delete event: " + e.message, "error");
     return;
   }
   requests = requests.filter(
-    (r) => r.id !== "evt_" + id && r.id !== linkedReqId && r.id !== id,
+    (r) => r.id !== "evt_" + id && r.id !== "event_" + id && r.id !== id,
   );
   adminEvents = adminEvents.filter((e) => e.id !== id && e.id !== String(id));
   renderCalendar();

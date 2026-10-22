@@ -43,6 +43,7 @@ export async function requireAdmin(req, res, next) {
     }
 
     req.adminUser = data.user;
+    req.accessToken = accessToken;
     return next();
   } catch (error) {
     console.error("Could not verify administrator access:", error);

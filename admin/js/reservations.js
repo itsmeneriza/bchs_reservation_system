@@ -1,27 +1,21 @@
 /**
  * Admin Reservations Module
  * Manual reservation creation, tab renders (Queue, Confirmed, Approved, Upcoming, History, Cancellations).
- * Facility data sourced from FacilityUtils (loaded via <script src="/scripts/FacilityUtils.js"> in admin.html).
+ * Facility records are loaded from the Supabase-backed /api/facilities endpoint.
  */
 
 // ─── Facility Helpers ─────────────────────────────────────────────────────────────
-// Use the live facilities array when populated, fall back to FacilityUtils.FACILITIES_FALLBACK.
-
 function _getAdminFacilities() {
-  return facilities && facilities.length > 0
-    ? facilities
-    : FacilityUtils.FACILITIES_FALLBACK;
+  return Array.isArray(facilities) ? facilities : [];
 }
 
 function _getAdminMinPax(facilityId) {
   const facility = _getAdminFacilities().find((r) => r.id === facilityId);
-  return facility && facility.minPax != null
-    ? facility.minPax
-    : FacilityUtils.FACILITY_MIN_PAX[facilityId] || 0;
+  return facility?.minPax ?? 0;
 }
 
-function _getFacilityPriceFallback(facilityId) {
-  return FacilityUtils.FACILITY_PRICE_FALLBACK[facilityId] || 0;
+function _getAdminFacilityPrice(facilityId) {
+  return _getAdminFacilities().find((r) => r.id === facilityId)?.pricePerHour ?? 0;
 }
 
 // ─── Render All Tabs ──────────────────────────────────────────────────────────
@@ -50,6 +44,26 @@ function populateFacilitySelects() {
       )
       .join("");
 
+  const eventLocation = document.getElementById("eventLocation");
+  if (eventLocation) {
+    const selectedFacilityId =
+      facilities.find((facility) => facility.name === eventLocation.value)?.id ||
+      eventLocation.value;
+    eventLocation.innerHTML = source.length
+      ? source
+          .map(
+            (facility) =>
+              `<option value="${facility.name}" data-facility-id="${facility.id}">${facility.name}</option>`,
+          )
+          .join("")
+      : '<option value="">No facilities available</option>';
+    const selectedFacility = facilities.find(
+      (facility) =>
+        facility.id === selectedFacilityId || facility.name === selectedFacilityId,
+    );
+    if (selectedFacility) eventLocation.value = selectedFacility.name;
+  }
+
   renderAdminFacilityPicker();
   if (
     document.getElementById("addReservationModal")?.classList.contains("active")
@@ -65,8 +79,12 @@ window.renderAdminFacilityPicker = function (filterPax) {
     filterPax =
       parseInt(document.getElementById("manualAttendees")?.value) || 0;
   const currentVal =
-    document.getElementById("manualFacility")?.value || source[0].id;
+    document.getElementById("manualFacility")?.value || source[0]?.id || "";
 
+  if (!source.length) {
+    row.innerHTML = '<p class="empty-message">No facilities are available.</p>';
+    return;
+  }
   row.innerHTML = source
     .map((r) => {
       const tooSmall = filterPax > 0 && r.capacity < filterPax;
@@ -97,8 +115,11 @@ window.selectAdminFacility = function (facilityId) {
 
 function openAddReservationModal() {
   const modal = document.getElementById("addReservationModal");
-  const defaultFacility =
-    facilities && facilities.length > 0 ? facilities[0].id : "auditorium";
+  if (!facilities.length) {
+    showToast("Facilities could not be loaded. Please try again later.", "error");
+    return;
+  }
+  const defaultFacility = facilities[0].id;
   const hiddenFacility = document.getElementById("manualFacility");
   if (hiddenFacility && !hiddenFacility.value) hiddenFacility.value = defaultFacility;
 
@@ -195,7 +216,7 @@ function updateManualPricing() {
   const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour = isStaff
     ? 0
-    : (facility?.pricePerHour ?? _getFacilityPriceFallback(facilityId));
+    : (facility?.pricePerHour ?? _getAdminFacilityPrice(facilityId));
   const { duration, facilityTotal, utilityFee, total } = computeBookingTotal(
     pricePerHour,
     start,
@@ -359,7 +380,7 @@ async function saveManualReservation() {
   const facility = facilities.find((r) => r.id === facilityId);
   const pricePerHour = isStaff
     ? 0
-    : (facility?.pricePerHour ?? _getFacilityPriceFallback(facilityId));
+    : (facility?.pricePerHour ?? _getAdminFacilityPrice(facilityId));
   const { total: totalAmount } = computeBookingTotal(
     pricePerHour,
     startTime,

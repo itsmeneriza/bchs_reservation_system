@@ -39,7 +39,8 @@ export class DataService {
       // Load facilities, reservations in parallel — skip forecast (deferred)
       await Promise.all([this.loadFacilities(), this.loadReservations()]);
       return true;
-    } catch {
+    } catch (error) {
+      console.error("Could not load reservation data:", error);
       return false;
     }
   }
@@ -49,58 +50,15 @@ export class DataService {
   }
 
   async loadFacilities() {
-    try {
-      const response = await fetch("/api/facilities");
-      const data = await response.json();
-      this.facilities = data.facilities.map((r) => ({
-        ...r,
-        pricePerHour: r.pricePerHour ?? 0,
-      }));
-    } catch (e) {
-      // Fallback mirrors data/facilities.json — sourced from scripts/FacilityUtils.js browser global
-      // If FacilityUtils is available (loaded via <script> in reservation.html), use it.
-      // Otherwise use the inline fallback which must stay in sync with facilities.json.
-      this.facilities =
-        typeof FacilityUtils !== "undefined"
-          ? FacilityUtils.FACILITIES_FALLBACK
-          : [
-              {
-                id: "auditorium",
-                name: "Auditorium",
-                capacity: 700,
-                pricePerHour: 1800,
-                minPax: 100,
-              },
-              {
-                id: "library",
-                name: "Library",
-                capacity: 100,
-                pricePerHour: 1000,
-                minPax: 40,
-              },
-              {
-                id: "grounds",
-                name: "Grounds",
-                capacity: 180,
-                pricePerHour: 700,
-                minPax: 50,
-              },
-              {
-                id: "avr",
-                name: "AVR",
-                capacity: 150,
-                pricePerHour: 500,
-                minPax: 30,
-              },
-              {
-                id: "gym",
-                name: "Gym",
-                capacity: 300,
-                pricePerHour: 1000,
-                minPax: 50,
-              },
-            ];
+    const response = await fetch("/api/facilities");
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Facilities API returned ${response.status}.`);
     }
+    if (!Array.isArray(data.facilities) || data.facilities.length === 0) {
+      throw new Error("No facilities are available in the Supabase facilities table.");
+    }
+    this.facilities = data.facilities;
   }
 
   async loadReservations() {
@@ -138,7 +96,7 @@ export class DataService {
       const data = await eventsRes.value.json();
       eventReservations = (data.events || []).map((ev) => {
         const [start, end] = this._parseEventTime(ev.time);
-        const facilityId = ev.location.toLowerCase();
+        const facilityId = ev.facilityId || ev.location.toLowerCase();
         return {
           id: "evt_" + ev.id,
           facilityId,
@@ -150,7 +108,6 @@ export class DataService {
           startTime: start,
           endTime: end,
           purpose: ev.description || ev.title,
-          attendees: ev.attendees || 0,
           status: "approved",
           paymentStatus: "paid",
           totalAmount: 0,
