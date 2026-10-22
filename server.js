@@ -4,6 +4,7 @@ import { AuthService } from './scripts/AuthService.js';
 import authRouter from './routes/auth.js';
 
 const app = express();
+const router = express.Router();
 app.use(express.json());
 app.use('/api', authRouter);
 
@@ -28,3 +29,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+export default router;
