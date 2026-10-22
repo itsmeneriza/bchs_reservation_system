@@ -4,14 +4,26 @@
  * All logic lives in the individual modules loaded before this file.
  */
 
-document.addEventListener("DOMContentLoaded", async () => {
+let adminInitialized = false;
+let adminRefreshTimer;
+
+window.addEventListener("bchs:admin-authenticated", async () => {
+  if (adminInitialized) return;
+  adminInitialized = true;
+
   setupTabs();
   setupModals();
   setupFilters();
   setupCalendarControls();
 
   await loadData();
-  setInterval(loadData, 30000);
+  adminRefreshTimer = setInterval(loadData, 30000);
+});
+
+window.addEventListener("bchs:admin-logged-out", () => {
+  window.clearInterval(adminRefreshTimer);
+  adminRefreshTimer = null;
+  adminInitialized = false;
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────

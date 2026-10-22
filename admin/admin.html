@@ -17,16 +17,16 @@
           </p>
         </div>
 
-        <form id="adminLoginForm" class="login-form" novalidate>
+        <form id="adminLoginForm" class="login-form">
           <div style="margin-bottom: 1rem;">
-            <label for="adminUsername" style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
-              Username
+            <label for="adminEmail" style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
+              Admin email
             </label>
             <input
-              id="adminUsername"
-              type="text"
+              id="adminEmail"
+              type="email"
               class="input"
-              placeholder="Enter admin username"
+              placeholder="Enter administrator email"
               autocomplete="username"
               required
             />
@@ -55,12 +55,6 @@
             style="display: none; margin-top: 0.9rem; color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.85rem;"
           ></div>
 
-          <div
-            style="margin-top: 1rem; font-size: 0.8rem; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 0.9rem;"
-          >
-            Demo login:
-            <strong>admin</strong> / <strong>admin123</strong>
-          </div>
         </form>
       </div>
     </div>
@@ -2235,68 +2229,6 @@
       </div>
     </div>
 
-    <script>
-      // Simple admin auth for the dashboard.
-      // This is just a beginner-friendly starter version.
-      // Replace this with real Supabase/Auth or your own backend later.
-      const ADMIN_USER = "admin";
-      const ADMIN_PASS = "admin123";
-      const ADMIN_SESSION_KEY = "bchs_admin_logged_in";
-
-      function showAdminApp() {
-        const loginScreen = document.getElementById("adminLoginScreen");
-        const adminApp = document.getElementById("adminApp");
-        if (loginScreen) loginScreen.style.display = "none";
-        if (adminApp) adminApp.style.display = "block";
-        sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
-      }
-
-      function hideAdminApp() {
-        const loginScreen = document.getElementById("adminLoginScreen");
-        const adminApp = document.getElementById("adminApp");
-        if (loginScreen) loginScreen.style.display = "flex";
-        if (adminApp) adminApp.style.display = "none";
-        sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const loginForm = document.getElementById("adminLoginForm");
-        const errorBox = document.getElementById("adminLoginError");
-        const logoutBtn = document.getElementById("logoutAdminBtn");
-
-        // If the admin already logged in before, keep them inside the dashboard.
-        if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
-          showAdminApp();
-        } else {
-          hideAdminApp();
-        }
-
-        loginForm.addEventListener("submit", (event) => {
-          event.preventDefault();
-
-          const username = document.getElementById("adminUsername").value.trim();
-          const password = document.getElementById("adminPassword").value;
-
-          if (username === ADMIN_USER && password === ADMIN_PASS) {
-            errorBox.style.display = "none";
-            errorBox.textContent = "";
-            showAdminApp();
-            loginForm.reset();
-            return;
-          }
-
-          errorBox.textContent = "Invalid username or password. Please try again.";
-          errorBox.style.display = "block";
-        });
-
-        logoutBtn.addEventListener("click", () => {
-          hideAdminApp();
-          document.getElementById("adminUsername").value = "";
-          document.getElementById("adminPassword").value = "";
-        });
-      });
-    </script>
-
     <script src="/scripts/DateUtils.js"></script>
     <script src="/scripts/FacilityUtils.js"></script>
     <script src="js/state.js"></script>
@@ -2309,6 +2241,7 @@
     <script src="js/payments.js"></script>
     <script src="js/editModal.js"></script>
     <script src="js/app.js"></script>
+    <script type="module" src="/admin/js/adminAuth.js"></script>
     <script type="module" src="/admin/js/forecast.js"></script>
   </body>
 </html>

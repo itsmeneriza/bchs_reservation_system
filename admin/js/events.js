@@ -84,7 +84,7 @@ async function saveNewEvent() {
   const editingId = saveBtn._editingId;
 
   if (editingId) {
-    await _updateEvent(editingId, {
+    const saved = await _updateEvent(editingId, {
       title,
       date,
       time,
@@ -94,8 +94,9 @@ async function saveNewEvent() {
       startVal,
       endVal,
     });
+    if (!saved) return;
   } else {
-    await _createEvent({
+    const saved = await _createEvent({
       title,
       date,
       time,
@@ -105,6 +106,7 @@ async function saveNewEvent() {
       startVal,
       endVal,
     });
+    if (!saved) return;
   }
 
   saveBtn.textContent = "Post Event";
@@ -138,19 +140,18 @@ async function _updateEvent(
     image: imageUrl || randomGradient(),
   };
   try {
-    const res = await fetch(`/api/events/${editingId}`, {
+    const res = await window.adminFetch(`/api/events/${editingId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedEvent),
     });
-    if (!res.ok)
-      throw new Error(
-        (await res.json().catch(() => ({}))).message ||
-          `PUT failed: ${res.status}`,
-      );
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      throw new Error(result.message || `PUT failed: ${res.status}`);
+    }
   } catch (e) {
     showToast("Failed to update event: " + e.message, "error");
-    return;
+    return false;
   }
 
   // Sync the linked reservation entry
@@ -187,6 +188,7 @@ async function _updateEvent(
     };
 
   showToast("Event updated successfully!", "success");
+  return true;
 }
 
 async function _createEvent({
@@ -211,15 +213,18 @@ async function _createEvent({
   };
 
   try {
-    const res = await fetch("/api/events", {
+    const res = await window.adminFetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newEvent),
     });
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      throw new Error(result.message || `POST failed: ${res.status}`);
+    }
   } catch (e) {
-    showToast("Failed to save event. Is the server running?", "error");
-    return;
+    showToast("Failed to save event: " + e.message, "error");
+    return false;
   }
 
   // Create a linked approved reservation to block the slot on the calendar
@@ -254,6 +259,7 @@ async function _createEvent({
   }
 
   showToast("New school event posted successfully!", "success");
+  return true;
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
@@ -261,7 +267,9 @@ async function _createEvent({
 window.deleteEvent = async function (id) {
   if (!confirm("Delete this event? This cannot be undone.")) return;
   try {
-    const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+    const res = await window.adminFetch(`/api/events/${id}`, {
+      method: "DELETE",
+    });
     if (!res.ok) throw new Error("Server returned " + res.status);
     const linkedReqId = "event_" + id;
     try {
@@ -284,6 +292,18 @@ window.deleteEvent = async function (id) {
 window.deleteEventFromSchedule = async (id) => {
   if (!confirm("Delete this event? This cannot be undone.")) return;
   const linkedReqId = "event_" + id;
+  try {
+    const res = await window.adminFetch(`/api/events/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Server returned " + res.status);
+    try {
+      await fetch(`/api/requests/${linkedReqId}`, { method: "DELETE" });
+    } catch (_) {}
+  } catch (e) {
+    showToast("Failed to delete event: " + e.message, "error");
+    return;
+  }
   requests = requests.filter(
     (r) => r.id !== "evt_" + id && r.id !== linkedReqId && r.id !== id,
   );
@@ -291,15 +311,6 @@ window.deleteEventFromSchedule = async (id) => {
   renderCalendar();
   renderAdminEvents();
   renderUpcoming();
-  try {
-    await fetch(`/api/events/${id}`, { method: "DELETE" });
-    try {
-      await fetch(`/api/requests/${linkedReqId}`, { method: "DELETE" });
-    } catch (_) {}
-  } catch (e) {
-    showToast("Failed to delete event. Is the server running?", "error");
-    return;
-  }
   showToast("Event deleted successfully", "success");
 };
 
