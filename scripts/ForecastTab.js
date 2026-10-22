@@ -81,6 +81,7 @@ export class Forecast {
 
         const stats = {
             totalreservations: filtered.length,
+            totalRevenue: 0,
             byRoom: {},
             byMonth: {},
             byDayOfWeek: {},
@@ -89,6 +90,8 @@ export class Forecast {
         };
 
         filtered.forEach(reservation => {
+            stats.totalRevenue += Number(reservation.totalAmount) || 0;
+
             if (!stats.byRoom[reservation.roomId]) {
                 stats.byRoom[reservation.roomId] = {
                     count: 0,
@@ -346,10 +349,21 @@ export class Forecast {
 
         const currentSummary = currentYearStats || {
             totalreservations: summary.totalreservations || 0,
+            totalRevenue: summary.totalRevenue || 0,
             averageAttendees: summary.averageAttendees || 0,
             mostPopularRoom: summary.mostPopularRoom || 'N/A'
         };
         const isAdminView = this.container?.id === 'admin-forecast-content';
+        const totalRevenue = Number(currentSummary.totalRevenue || summary.totalRevenue || 0);
+        const revenueMarkup = isAdminView ? `
+            <div class="hero-stat-card revenue">
+                <div class="hero-stat-icon"></div>
+                <div class="hero-stat-content">
+                    <div class="hero-stat-value">₱${totalRevenue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div class="hero-stat-label">Estimated Revenue</div>
+                </div>
+            </div>
+        ` : '';
         const facilityOverviewMarkup = isAdminView ? `
             <!-- Hero Stats Section -->
             <div class="forecast-hero">
@@ -391,6 +405,7 @@ export class Forecast {
                             <div class="hero-stat-label">Peak Hours</div>
                         </div>
                     </div>
+                    ${revenueMarkup}
                     <div class="hero-stat-card success">
                         <div class="hero-stat-icon"></div>
                         <div class="hero-stat-content">

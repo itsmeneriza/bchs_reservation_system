@@ -204,6 +204,7 @@ function computeRoomAnalytics(roomData, roomId, roomNames, opts = {}) {
 function computeSummary(allData, roomNames) {
     const totalAttendees = allData.reduce((s, r) => s + (parseInt(r.attendees) || 0), 0);
     const avgAttendees = allData.length > 0 ? Math.round(totalAttendees / allData.length) : 0;
+    const totalRevenue = allData.reduce((s, r) => s + (Number(r.totalAmount) || 0), 0);
 
     // Most popular room
     const roomCounts = {};
@@ -230,6 +231,7 @@ function computeSummary(allData, roomNames) {
 
     return {
         totalreservations: allData.length,
+        totalRevenue,
         mostPopularRoom,
         peakHours,
         averageAttendees: avgAttendees
