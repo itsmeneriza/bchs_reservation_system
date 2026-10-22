@@ -4,6 +4,7 @@
  * Session helpers and staff utilities come from scripts/AuthService.js.
  */
 import { loginUser } from '../services/authService.js';
+import { setLoginState } from '../core/state.js';
 import {
     SESSION_KEYS,
     getSession,
@@ -129,8 +130,10 @@ import {
         async function processLogin(payload, errEL) {
         try {
             const user = await loginUser(payload);
-            localStorage.setItem('bchs_user_logged_in', 'true');
-            localStorage.setItem('bchs_user_data', JSON.stringify(user));
+
+            //replace manual localStorage calls with core state management
+            setLoginState(true, user);
+
             hideModal('landing-login-modal');
             renderAuthState();
         }catch (error) {
@@ -177,7 +180,7 @@ import {
         const phone = '0' + cleaned;
 
         await processLogin({ isStaff: false, phone }, errEl);
-        
+
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
