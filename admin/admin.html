@@ -8,11 +8,76 @@
     <link rel="stylesheet" href="/src/styles/forecast.css" />
   </head>
   <body>
-    <div class="app-container">
+    <div id="adminLoginScreen" class="login-wrapper">
+      <div class="login-card" style="padding: 2rem; border-radius: 16px;">
+        <div class="login-header">
+          <h2 style="margin: 0 0 0.5rem; color: #1e293b">Admin Login</h2>
+          <p style="margin: 0; color: #64748b; font-size: 0.9rem;">
+            This page is only for BCHS administrators.
+          </p>
+        </div>
+
+        <form id="adminLoginForm" class="login-form" novalidate>
+          <div style="margin-bottom: 1rem;">
+            <label for="adminUsername" style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
+              Username
+            </label>
+            <input
+              id="adminUsername"
+              type="text"
+              class="input"
+              placeholder="Enter admin username"
+              autocomplete="username"
+              required
+            />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label for="adminPassword" style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
+              Password
+            </label>
+            <input
+              id="adminPassword"
+              type="password"
+              class="input"
+              placeholder="Enter admin password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-bchs" style="width: 100%; margin-top: 0.25rem;">
+            Login
+          </button>
+
+          <div
+            id="adminLoginError"
+            style="display: none; margin-top: 0.9rem; color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.85rem;"
+          ></div>
+
+          <div
+            style="margin-top: 1rem; font-size: 0.8rem; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 0.9rem;"
+          >
+            Demo login:
+            <strong>admin</strong> / <strong>admin123</strong>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="adminApp" class="app-container" style="display: none;">
       <div class="header">
         <div>
           <h1>BCHS Facility Reservation Admin Portal</h1>
         </div>
+        <button
+          id="logoutAdminBtn"
+          class="btn btn-outline btn-sm"
+          type="button"
+          style="margin-left: auto;"
+        >
+          Logout
+        </button>
       </div>
 
       <!-- Tabs Navigation -->
@@ -2169,6 +2234,68 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Simple admin auth for the dashboard.
+      // This is just a beginner-friendly starter version.
+      // Replace this with real Supabase/Auth or your own backend later.
+      const ADMIN_USER = "admin";
+      const ADMIN_PASS = "admin123";
+      const ADMIN_SESSION_KEY = "bchs_admin_logged_in";
+
+      function showAdminApp() {
+        const loginScreen = document.getElementById("adminLoginScreen");
+        const adminApp = document.getElementById("adminApp");
+        if (loginScreen) loginScreen.style.display = "none";
+        if (adminApp) adminApp.style.display = "block";
+        sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+      }
+
+      function hideAdminApp() {
+        const loginScreen = document.getElementById("adminLoginScreen");
+        const adminApp = document.getElementById("adminApp");
+        if (loginScreen) loginScreen.style.display = "flex";
+        if (adminApp) adminApp.style.display = "none";
+        sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const loginForm = document.getElementById("adminLoginForm");
+        const errorBox = document.getElementById("adminLoginError");
+        const logoutBtn = document.getElementById("logoutAdminBtn");
+
+        // If the admin already logged in before, keep them inside the dashboard.
+        if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+          showAdminApp();
+        } else {
+          hideAdminApp();
+        }
+
+        loginForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+
+          const username = document.getElementById("adminUsername").value.trim();
+          const password = document.getElementById("adminPassword").value;
+
+          if (username === ADMIN_USER && password === ADMIN_PASS) {
+            errorBox.style.display = "none";
+            errorBox.textContent = "";
+            showAdminApp();
+            loginForm.reset();
+            return;
+          }
+
+          errorBox.textContent = "Invalid username or password. Please try again.";
+          errorBox.style.display = "block";
+        });
+
+        logoutBtn.addEventListener("click", () => {
+          hideAdminApp();
+          document.getElementById("adminUsername").value = "";
+          document.getElementById("adminPassword").value = "";
+        });
+      });
+    </script>
 
     <script src="/scripts/DateUtils.js"></script>
     <script src="/scripts/FacilityUtils.js"></script>
