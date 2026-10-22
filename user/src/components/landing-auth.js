@@ -3,7 +3,7 @@
  * Handles login, session management, and auth UI for the landing page.
  * Session helpers and staff utilities come from scripts/AuthService.js.
  */
-
+import { loginUser } from '../services/authService.js';
 import {
     SESSION_KEYS,
     getSession,
@@ -147,12 +147,19 @@ import {
             return;
         }
 
-        setSession({ isStaff: true, name: member.name, phone: member.phone || id, staffId: id });
-        hideModal('landing-login-modal');
-        syncUI();
+        try {
+            const user = await loginUser({ isStaff: true, staffId: id });
+            localStorage.setItem('bchs_user_logged_in', 'true');
+            localStorage.setItem('bchs_user_data', JSON.stringify(user));
+            hideModal('landing-login-modal');
+            renderAuthState();
+        } catch (error) {
+            errEl.textContent = error.message || 'Staff authentication failed';
+            errEl.style.display = 'block';
+        }
     }
 
-    function handlePhoneLogin(errEl) {
+    async function handlePhoneLogin(errEl) {
         const raw     = document.getElementById('landing-phone').value.trim();
         const cleaned = raw.replace(/\s|-/g, '');
 
@@ -162,10 +169,18 @@ import {
             return;
         }
 
-        const normalized = '0' + cleaned;
-        setSession({ isStaff: false, phone: normalized, name: normalized });
-        hideModal('landing-login-modal');
-        syncUI();
+        const phone = '0' + cleaned;
+
+        try {
+            const user = await loginUser({ isStaff: false, phone });
+            localStorage.setItem('bchs_user_logged_in', 'true');
+            localStorage.setItem('bchs_user_data', JSON.stringify(user));
+            hideModal('landing-login-modal');
+            renderAuthState();
+        } catch (error) {
+            errEl.textContent = error.message || 'Phone authentication failed.';
+            errEl.style.display = 'block'; 
+        }
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
