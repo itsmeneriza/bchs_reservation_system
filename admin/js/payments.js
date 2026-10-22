@@ -40,7 +40,9 @@ function renderPayments() {
   const body = document.getElementById("paidTableBody");
   if (!body) return;
 
-  const approved = requests.filter((r) => r.status === "approved");
+  const approved = requests.filter(
+    (r) => r.status === "approved" && !r.isSchoolEvent,
+  );
 
   // ── Collect payment totals ────────────────────────────────────────────────
   // For each approved booking we track:
