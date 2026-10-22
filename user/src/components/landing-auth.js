@@ -126,6 +126,19 @@ import {
         }
     }
 
+        async function processLogin(payload, errEL) {
+        try {
+            const user = await loginUser(payload);
+            localStorage.setItem('bchs_user_logged_in', 'true');
+            localStorage.setItem('bchs_user_data', JSON.stringify(user));
+            hideModal('landing-login-modal');
+            renderAuthState();
+        }catch (error) {
+            errEL.textContent = error.message || 'Authentication failed.';
+            errEL.style.display = 'block';
+        }
+    }
+
     async function handleStaffLogin(errEl) {
         const id = document.getElementById('landing-staffid').value.trim();
 
@@ -147,16 +160,8 @@ import {
             return;
         }
 
-        try {
-            const user = await loginUser({ isStaff: true, staffId: id });
-            localStorage.setItem('bchs_user_logged_in', 'true');
-            localStorage.setItem('bchs_user_data', JSON.stringify(user));
-            hideModal('landing-login-modal');
-            renderAuthState();
-        } catch (error) {
-            errEl.textContent = error.message || 'Staff authentication failed';
-            errEl.style.display = 'block';
-        }
+        await processLogin({ isStaff: true, staffId: id }, errEl);
+
     }
 
     async function handlePhoneLogin(errEl) {
@@ -171,16 +176,8 @@ import {
 
         const phone = '0' + cleaned;
 
-        try {
-            const user = await loginUser({ isStaff: false, phone });
-            localStorage.setItem('bchs_user_logged_in', 'true');
-            localStorage.setItem('bchs_user_data', JSON.stringify(user));
-            hideModal('landing-login-modal');
-            renderAuthState();
-        } catch (error) {
-            errEl.textContent = error.message || 'Phone authentication failed.';
-            errEl.style.display = 'block'; 
-        }
+        await processLogin({ isStaff: false, phone }, errEl);
+        
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
