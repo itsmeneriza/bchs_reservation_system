@@ -17,3 +17,18 @@ export function createSupabaseClient(accessToken) {
             : {}),
     });
 }
+
+export function createServiceRoleSupabaseClient() {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        const error = new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured.');
+        error.status = 503;
+        throw error;
+    }
+
+    return createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+    });
+}

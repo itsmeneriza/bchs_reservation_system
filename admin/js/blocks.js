@@ -132,6 +132,7 @@ async function confirmQuickBlock() {
   const isFullDay = startTime === "07:00" && endTime === "18:00";
   const newBlocks = selectedFacilities.map((facilityName) => ({
     id: "block_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+    source: "walk_in",
     facilityId: facilityName === "all" ? "global" : facilityName.toLowerCase(),
     facilityName: facilityName === "all" ? "ALL FACILITIES" : facilityName,
     name: "ADMIN BLOCK",

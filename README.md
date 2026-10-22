@@ -88,7 +88,9 @@ The server also prints these URLs in the terminal when it starts.
 `server.js` configures Express, serves the static frontends, mounts API routers, and listens for requests. API handlers are grouped by feature in `routes/`:
 
 - `events.js` reads events from Supabase and protects event create, update, and delete operations with administrator authentication and RLS.
-- `requests.js` contains the earlier file-backed request, facility, and event handlers.
+- `requestsSupabase.js` reads and writes facility-user reservations in Supabase.
+- `facilities.js` reads facility definitions from Supabase.
+- `requests.js` contains legacy file-backed handlers and is not mounted by the current server.
 - `history.js` handles archived reservations and periodic archiving.
 - `forecast.js` handles forecast calculation, caching, and refresh.
 - `notifications.js` handles email notifications, reminders, and cancellation OTPs.
@@ -157,16 +159,23 @@ The shared email transport is configured in `services/mailer.js`; existing date,
 
 ## Data Storage
 
-All data is stored as JSON files in the `data/` folder:
+Facility definitions, events, and current facility-user reservation requests
+are stored in Supabase. Follow [REQUESTS_SUPABASE_STEPS.txt](./REQUESTS_SUPABASE_STEPS.txt)
+to create the reservations table and configure the server. Events use
+[EVENTS_SUPABASE_STEPS.txt](./EVENTS_SUPABASE_STEPS.txt).
+
+The following supporting and legacy data remains in the `data/` folder:
 
 | File              | Description                             |
 | ----------------- | --------------------------------------- |
-| `requests.json`   | Pending and active reservation requests |
-| `accepted.json`   | Approved reservations                   |
+| `requests.json`   | Legacy reservation records; not automatically imported into Supabase |
+| `accepted.json`   | Legacy approved reservations            |
 | `history.json`    | Archived past reservations              |
-| `events.json`     | Scheduled events                        |
-| `facilities.json` | Facility/facility definitions           |
+| `events.json`     | Source records for the one-time events import |
+| `facilities.json` | Legacy facility definitions             |
 | `staff.json`      | Staff accounts                          |
 | `forecast.json`   | Cached usage forecast                   |
 
-> When hosting on platforms like Railway or Render, note that the file system is **ephemeral** - data resets on redeploy. For persistent storage, consider migrating to a database like MongoDB Atlas or PostgreSQL.
+> Existing requests in `requests.json` and `accepted.json` are not automatically
+> copied to the Supabase reservations table. See the requests setup guide before
+> expecting legacy records in the new table.

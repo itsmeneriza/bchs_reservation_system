@@ -118,8 +118,8 @@ export class DataService {
     }
 
     // 4. Merge — no duplicates
-    const merged = [...acceptedReservations];
-    [...apiRequests, ...eventReservations].forEach((entry) => {
+    const merged = [...apiRequests];
+    [...acceptedReservations, ...eventReservations].forEach((entry) => {
       if (!merged.find((b) => b.id === entry.id)) merged.push(entry);
     });
 

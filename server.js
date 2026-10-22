@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import authRouter from './routes/auth.js';
 import { createEventsRouter } from './routes/events.js';
 import { createFacilitiesRouter } from './routes/facilities.js';
+import { createRequestsRouter } from './routes/requestsSupabase.js';
 import { requireAdmin } from './middleware/requireAdmin.js';
 
 const projectDir = path.dirname(fileURLToPath(import.meta.url));
@@ -33,6 +34,7 @@ app.use(express.static(path.join(projectDir, 'user', 'public')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/facilities', createFacilitiesRouter());
+app.use('/api/requests', createRequestsRouter());
 app.get('/api/admin/config', (_req, res) => {
   const url = process.env.SUPABASE_URL;
   const anonKey = process.env.SUPABASE_ANON_KEY;

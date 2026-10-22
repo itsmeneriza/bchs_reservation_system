@@ -929,6 +929,9 @@ export class ReservationModal {
       totalAmount: totalAmount,
       paymentStatus: isStaff ? "paid" : "pending",
       isStaff: isStaff,
+      source: isStaff ? "staff" : "guest",
+      staffId: isStaff ? state.user?.id || null : null,
+      guestId: isStaff ? null : state.user?.id || null,
       userId:
         state.user?.phone ||
         state.user?.staffId ||

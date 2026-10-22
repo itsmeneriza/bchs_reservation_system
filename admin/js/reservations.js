@@ -390,6 +390,7 @@ async function saveManualReservation() {
 
   const newEntry = {
     id: "admin_" + Date.now(),
+    source: "walk_in",
     facilityId,
     facilityName,
     name,
