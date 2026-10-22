@@ -1355,10 +1355,18 @@ function generateForecastFromData() {
 
     // -- Ahead predictions: next 3 months based on same-month avg from history -
     const monthlyAvg = {};
+    const monthlyRevenueAvg = {};
+    const totalRevenue = all.reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
+    const averageRevenuePerReservation = all.length > 0 ? totalRevenue / all.length : 0;
     all.forEach(r => {
-      const m = new Date(r.date).getMonth();
+      const d = new Date(r.date);
+      const m = d.getMonth();
+      const revenue = Number(r.totalAmount) || 0;
       if (!monthlyAvg[m]) monthlyAvg[m] = { total: 0, rooms: {} };
       monthlyAvg[m].total++;
+      if (!monthlyRevenueAvg[m]) monthlyRevenueAvg[m] = { totalRevenue: 0, totalReservations: 0 };
+      monthlyRevenueAvg[m].totalRevenue += revenue;
+      monthlyRevenueAvg[m].totalReservations += 1;
       roomIds.forEach(rid => {
         if (!monthlyAvg[m].rooms[rid]) monthlyAvg[m].rooms[rid] = 0;
         if (r.roomId === rid) monthlyAvg[m].rooms[rid]++;
@@ -1393,6 +1401,11 @@ function generateForecastFromData() {
       const predicted = avg
         ? Math.round(avg.total / yearsOfData)
         : Math.round(all.length / 12);
+      const revenueHistory = monthlyRevenueAvg[m] || { totalRevenue: 0, totalReservations: 0 };
+      const avgRevenuePerReservation = revenueHistory.totalReservations > 0
+        ? revenueHistory.totalRevenue / revenueHistory.totalReservations
+        : averageRevenuePerReservation;
+      const projectedRevenue = Math.max(0, Math.round((predicted * growthFactor) * avgRevenuePerReservation));
       const roomPredictions = {};
       roomIds.forEach(rid => {
         roomPredictions[rid] = avg ? Math.round((avg.rooms[rid] || 0) / yearsOfData) : 0;
@@ -1400,6 +1413,7 @@ function generateForecastFromData() {
       predictedTrends.push({
         week: `Predicted: ${label}`,
         totalreservations: Math.round(predicted * growthFactor),
+        estimatedRevenue: projectedRevenue,
         ...roomPredictions
       });
     }

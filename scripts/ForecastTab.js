@@ -468,7 +468,7 @@ export class Forecast {
                     <span class="section-badge" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0;">Predicted</span>
                 </div>
                 <div style="font-size:0.78rem;color:#64748b;margin-bottom:0.75rem;padding:0 0.25rem;">
-                    Based on historical patterns and year-over-year growth trends.
+                    Projected revenue uses forecasted bookings × historical revenue-per-reservation, adjusted for recent growth.
                 </div>
                 <div class="trends-grid">
                     ${(aheadPredictions || weeklyTrends.filter(t => t.week.startsWith('Predicted'))).map(trend => this.renderWeeklyTrend(trend)).join('')}
@@ -1207,6 +1207,8 @@ export class Forecast {
 
     renderWeeklyTrend(trend) {
         const isPrediction = trend.week.includes('Predicted');
+        const revenue = Number(trend.estimatedRevenue || 0);
+        const revenueLabel = isPrediction ? 'Projected Revenue' : 'Recorded Revenue';
 
         return `
             <div class="trend-card ${isPrediction ? 'prediction' : 'current'}">
@@ -1219,10 +1221,16 @@ export class Forecast {
                         <div class="trend-total-label">Total Reservations</div>
                         <div class="trend-total-value">${trend.totalreservations}</div>
                     </div>
+                    ${isPrediction ? `
+                        <div class="trend-total" style="margin-top:0.55rem;">
+                            <div class="trend-total-label">${revenueLabel}</div>
+                            <div class="trend-total-value" style="color:#166534;">₱${revenue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        </div>
+                    ` : ''}
                     <div class="trend-breakdown">
                         <div class="breakdown-item">
                             <div class="breakdown-bar">
-                                <div class="breakdown-fill auditorium" style="width: ${(trend.auditorium / trend.totalreservations * 100)}%"></div>
+                                <div class="breakdown-fill auditorium" style="width: ${(trend.auditorium / Math.max(trend.totalreservations, 1) * 100)}%"></div>
                             </div>
                             <div class="breakdown-info">
                                 <span class="breakdown-icon"></span>
@@ -1232,7 +1240,7 @@ export class Forecast {
                         </div>
                         <div class="breakdown-item">
                             <div class="breakdown-bar">
-                                <div class="breakdown-fill library" style="width: ${(trend.library / trend.totalreservations * 100)}%"></div>
+                                <div class="breakdown-fill library" style="width: ${(trend.library / Math.max(trend.totalreservations, 1) * 100)}%"></div>
                             </div>
                             <div class="breakdown-info">
                                 <span class="breakdown-icon"></span>
@@ -1242,7 +1250,7 @@ export class Forecast {
                         </div>
                         <div class="breakdown-item">
                             <div class="breakdown-bar">
-                                <div class="breakdown-fill grounds" style="width: ${(trend.grounds / trend.totalreservations * 100)}%"></div>
+                                <div class="breakdown-fill grounds" style="width: ${(trend.grounds / Math.max(trend.totalreservations, 1) * 100)}%"></div>
                             </div>
                             <div class="breakdown-info">
                                 <span class="breakdown-icon"></span>
