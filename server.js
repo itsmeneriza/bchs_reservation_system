@@ -1,6 +1,7 @@
 import 'dotenv/config'; // load variables from hidden .env file
 import express from 'express';
 import { AuthService } from './scripts/AuthService.js';
+import authRouter from './routes/auth.js';
 
 const app = express();
 app.use(express.json());
