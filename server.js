@@ -20,6 +20,9 @@ app.get('/scripts/DateUtils.js', (_req, res) => {
 app.get('/scripts/FacilityUtils.js', (_req, res) => {
   res.sendFile(path.join(projectDir, 'scripts', 'FacilityUtils.js'));
 });
+app.get('/scripts/ForecastTab.js', (_req, res) => {
+  res.sendFile(path.join(projectDir, 'scripts', 'ForecastTab.js'));
+});
 app.get('/admin', (_req, res) => {
   res.redirect('/admin/admin.html');
 });

@@ -10,12 +10,12 @@ export async function loginUser({ isStaff, staffId, phone }) {
 
     const result = await response.json();
     
-    if (!response.ok || !result.success || !result.data) {
+    if (!response.ok || !result.success || !result.user) {
         throw new Error(result.message || 'Login failed. Please try again.');
     }
 
     const profile = result.user;
-    const guestPhone = profile.mobile_number || profile.phone_number;
+    const guestPhone = profile.phone_number || profile.mobile_number;
 
     return {
         ...profile,

@@ -1,27 +1,12 @@
 /**
  * Landing Page Auth
  * Handles login, session management, and auth UI for the landing page.
- * Session helpers and staff utilities come from scripts/AuthService.js.
+ * Login state is shared with the reservation app through core/state.js.
  */
 import { loginUser } from '../services/authService.js';
-import { setLoginState } from '../core/state.js';
-import {
-    SESSION_KEYS,
-    getSession,
-    setSession,
-    clearSession,
-    loadStaffData as fetchStaffData,
-    findStaffById
-} from '/scripts/AuthService.js';
+import { state, setLoginState } from '../core/state.js';
 
 (function () {
-    // ─── State ────────────────────────────────────────────────────────────────
-
-    let staffData = [];
-
-    // Pre-load staff data in the background
-    loadStaffDataLocal();
-
     // ─── Modal Helpers ────────────────────────────────────────────────────────
 
     function showModal(id) {
@@ -35,7 +20,7 @@ import {
     // ─── UI Sync ──────────────────────────────────────────────────────────────
 
     function syncUI() {
-        const user = getSession();
+        const user = state.isLoggedIn ? state.user : null;
         const unlogged = document.getElementById('landing-auth-unlogged');
         const logged   = document.getElementById('landing-auth-logged');
         const nameEl   = document.getElementById('landing-user-name');
@@ -72,7 +57,7 @@ import {
 
         // Profile button → populate and open user menu
         document.getElementById('landing-profile-btn').onclick = () => {
-            const user = getSession();
+            const user = state.isLoggedIn ? state.user : null;
             if (!user) return;
             document.getElementById('landing-user-initial').textContent =
                 (user.name || user.phone || 'U')[0].toUpperCase();
@@ -85,7 +70,7 @@ import {
 
         // Logout
         document.getElementById('landing-logout-btn').onclick = () => {
-            clearSession();
+            setLoginState(false);
             hideModal('landing-user-menu');
             syncUI();
             setTimeout(() => location.reload(), 1000);
@@ -108,12 +93,6 @@ import {
         };
     }
 
-    // ─── Staff Data ───────────────────────────────────────────────────────────
-
-    async function loadStaffDataLocal() {
-        staffData = await fetchStaffData();
-    }
-
     // ─── Login Logic ──────────────────────────────────────────────────────────
 
     async function handleLogin(toggle) {
@@ -123,22 +102,21 @@ import {
         if (toggle.checked) {
             await handleStaffLogin(errEl);
         } else {
-            handlePhoneLogin(errEl);
+            await handlePhoneLogin(errEl);
         }
     }
 
-        async function processLogin(payload, errEL) {
+    async function processLogin(payload, errEl) {
         try {
             const user = await loginUser(payload);
 
-            //replace manual localStorage calls with core state management
             setLoginState(true, user);
 
             hideModal('landing-login-modal');
-            renderAuthState();
-        }catch (error) {
-            errEL.textContent = error.message || 'Authentication failed.';
-            errEL.style.display = 'block';
+            syncUI();
+        } catch (error) {
+            errEl.textContent = error.message || 'Authentication failed.';
+            errEl.style.display = 'block';
         }
     }
 
@@ -147,18 +125,6 @@ import {
 
         if (!id) {
             errEl.textContent = 'Staff ID is required.';
-            errEl.style.display = 'block';
-            return;
-        }
-
-        // Lazy-load staff data if not yet available
-        if (staffData.length === 0) {
-            await loadStaffDataLocal();
-        }
-
-        const member = findStaffById(staffData, id);
-        if (!member) {
-            errEl.textContent = 'Staff ID not found.';
             errEl.style.display = 'block';
             return;
         }

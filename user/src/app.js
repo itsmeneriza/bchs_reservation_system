@@ -1,7 +1,7 @@
 ﻿/**
  * BCHS reservation System - Main Application
  */
-import { LoginHandler } from "./components?LoginComponent.js"; //new login import
+import { LoginHandler } from "./components/LoginComponent.js";
 import { state, setSelectedFacility } from "./core/state.js";
 import { loadData } from "./services/reservationService.js";
 import { FacilityList } from "./components/FacilityListComponent.js";
@@ -11,7 +11,6 @@ import { Chat } from "./components/ChatComponent.js";
 import { ReservationModal } from "./components/ReservationModalComponent.js";
 import { Forecast } from "./components/ForecastComponent.js";
 import { CancellationHandler } from "./components/CancellationComponent.js";
-import { LoginHandler } from "./components/LoginComponent.js";
 import { MyRequests } from "./components/MyRequestsComponent.js";
 import { registerMobileViewer } from "./utils/facilityUtils.js";
 
@@ -25,7 +24,6 @@ class ReservationApp {
     this.reservationModal = new ReservationModal();
     this.forecast = new Forecast();
     this.cancellationHandler = new CancellationHandler();
-    this.loginHandler = new LoginHandler();
     this.myRequests = new MyRequests();
   }
 
