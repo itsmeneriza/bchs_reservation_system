@@ -122,6 +122,65 @@ function fromDbReservation(row) {
 
 const RESERVATION_SELECT = "*, facilities(name)";
 
+const PATCH_FIELD_ALIASES = {
+  facility_id: ["facilityId", "facility_id"],
+  user_type: ["userType", "user_type", "isStaff", "is_staff", "source"],
+  staff_id: ["staffId", "staff_id"],
+  guest_id: ["guestId", "guest_id"],
+  source: ["source"],
+  name: ["name"],
+  email: ["email"],
+  contact: ["contact", "phone"],
+  is_staff: ["isStaff", "is_staff", "source"],
+  date: ["date"],
+  start_time: ["startTime", "start_time"],
+  end_time: ["endTime", "end_time"],
+  attendees: ["attendees"],
+  purpose: ["purpose"],
+  additional_notes: ["additionalNotes", "additional_notes"],
+  status: ["status"],
+  payment_status: ["paymentStatus", "payment_status"],
+  appointment_date: ["appointmentDate", "appointment_date"],
+  appointment_time: ["appointmentTime", "appointment_time"],
+  total_amount: ["totalAmount", "total_amount"],
+  down_payment_paid: ["downPaymentPaid", "down_payment_paid"],
+  remaining_balance_paid: [
+    "remainingBalancePaid",
+    "remaining_balance_paid",
+  ],
+  block_reschedule_pending: [
+    "blockReschedulePending",
+    "block_reschedule_pending",
+  ],
+  block_reschedule_reason: [
+    "blockRescheduleReason",
+    "block_reschedule_reason",
+  ],
+  admin_edit_snapshot: ["adminEditSnapshot", "admin_edit_snapshot"],
+  submitted_at: ["submittedAt", "submitted_at"],
+};
+
+function toDbReservationPatch(existing, changes) {
+  const merged = {
+    ...fromDbReservation(existing),
+    ...changes,
+    id: existing.reservation_code || String(existing.id),
+  };
+  const reservation = toDbReservation(merged);
+  const patch = {
+    request_data: reservation.request_data,
+    updated_at: new Date().toISOString(),
+  };
+
+  for (const [column, aliases] of Object.entries(PATCH_FIELD_ALIASES)) {
+    if (aliases.some((alias) => Object.hasOwn(changes, alias))) {
+      patch[column] = reservation[column];
+    }
+  }
+
+  return patch;
+}
+
 function handleSupabaseError(res, error, action) {
   console.error(`Could not ${action} reservation in Supabase:`, error);
   const status =
@@ -274,12 +333,7 @@ export function createRequestsRouter() {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
 
-      const merged = {
-        ...fromDbReservation(existing),
-        ...req.body,
-        id: existing.reservation_code || String(existing.id),
-      };
-      const payload = toDbReservation(merged);
+      const payload = toDbReservationPatch(existing, req.body || {});
       const { data, error } = await client
         .from("reservations")
         .update(payload)
