@@ -81,6 +81,8 @@ Then open in your browser:
 - User app: [http://localhost:3000](http://localhost:3000)
 - Admin panel: [http://localhost:3000/admin/admin.html](http://localhost:3000/admin/admin.html)
 
+The server also prints these URLs in the terminal when it starts.
+
 ## Server Structure
 
 `server.js` configures Express, serves the static frontends, mounts the API routers, starts scheduled jobs, and listens for requests. API handlers are grouped by feature in `routes/`:
