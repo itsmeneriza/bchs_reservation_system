@@ -1,5 +1,9 @@
 import express from "express";
-import { createServiceRoleSupabaseClient } from "../services/supabaseClient.js";
+import { verifySessionToken } from "./auth.js";
+import {
+  createServiceRoleSupabaseClient,
+  createSupabaseClient,
+} from "../services/supabaseClient.js";
 
 const INTERNAL_FIELDS = new Set([
   "_editedByUser",
@@ -222,17 +226,113 @@ function getCurrentIsoWeekRange() {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+function getRequestOwnerMatches(actor) {
+  if (!actor || actor.kind !== "user") return null;
+
+  const user = actor.user || {};
+  const matches = new Set();
+  if (user.sub) matches.add(user.sub);
+  if (user.id) matches.add(user.id);
+  if (user.phone) matches.add(user.phone);
+  if (user.mobile_number) matches.add(user.mobile_number);
+  if (user.email) matches.add(user.email);
+  return [...matches].filter(Boolean);
+}
+
+function isRequestOwnedByUser(actor, row) {
+  const matches = getRequestOwnerMatches(actor);
+  if (!matches || !row) return false;
+
+  const normalizedMatches = matches.map((value) => String(value));
+  const contactValue = row.contact ? String(row.contact) : "";
+  const emailValue = row.email ? String(row.email) : "";
+  const staffId = row.staff_id ? String(row.staff_id) : "";
+  const guestId = row.guest_id ? String(row.guest_id) : "";
+
+  return (
+    normalizedMatches.includes(staffId) ||
+    normalizedMatches.includes(guestId) ||
+    normalizedMatches.includes(contactValue) ||
+    normalizedMatches.includes(emailValue)
+  );
+}
+
+async function getRequestActor(req) {
+  const authHeader = req.get("authorization") || "";
+  const accessToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length).trim()
+    : "";
+
+  if (!accessToken) {
+    return { ok: false, status: 401, message: "Authentication is required." };
+  }
+
+  const appSession = verifySessionToken(accessToken);
+  if (appSession) {
+    return {
+      ok: true,
+      kind: "user",
+      user: appSession,
+    };
+  }
+
+  try {
+    const { data, error } = await createSupabaseClient(accessToken)
+      .auth.getUser(accessToken);
+    if (error || !data?.user) {
+      return { ok: false, status: 401, message: "Your sign-in is invalid or expired." };
+    }
+    if (data.user.app_metadata?.role !== "admin") {
+      return { ok: false, status: 403, message: "User access is required." };
+    }
+    return {
+      ok: true,
+      kind: "admin",
+      user: data.user,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 401,
+      message: "Your sign-in is invalid or expired.",
+    };
+  }
+}
+
+function requireRequestAuth() {
+  return async function (req, res, next) {
+    const actor = await getRequestActor(req);
+    if (!actor.ok) {
+      return res.status(actor.status || 401).json({
+        success: false,
+        message: actor.message || "Authentication is required.",
+      });
+    }
+    req.auth = actor;
+    req.sessionUser = actor.user;
+    return next();
+  };
+}
+
 export function createRequestsRouter() {
   const router = express.Router();
 
-  router.get("/", async (_req, res) => {
+  router.use(requireRequestAuth());
+
+  router.get("/", async (req, res) => {
     try {
       const { data, error } = await createServiceRoleSupabaseClient()
         .from("reservations")
         .select(RESERVATION_SELECT)
         .order("submitted_at", { ascending: false });
       if (error) throw error;
-      return res.json({ requests: (data || []).map(fromDbReservation) });
+
+      const isUserScoped = req.auth.kind === "user";
+      const visible = isUserScoped
+        ? (data || []).filter((row) => isRequestOwnedByUser(req.auth, row))
+        : data || [];
+
+      return res.json({ requests: visible.map(fromDbReservation) });
     } catch (error) {
       return handleSupabaseError(res, error, "load");
     }
@@ -249,6 +349,9 @@ export function createRequestsRouter() {
       if (!data) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, data)) {
+        return res.status(403).json({ success: false, message: "You do not have access to this request." });
+      }
       return res.json({ request: fromDbReservation(data) });
     } catch (error) {
       return handleSupabaseError(res, error, "load");
@@ -258,6 +361,19 @@ export function createRequestsRouter() {
   router.post("/", async (req, res) => {
     try {
       const payload = toDbReservation(req.body || {});
+      if (req.auth.kind === "user") {
+        const ownsRequest =
+          (payload.staff_id && String(payload.staff_id) === String(req.auth.user.sub)) ||
+          (payload.guest_id && String(payload.guest_id) === String(req.auth.user.sub)) ||
+          (req.auth.user.phone && String(payload.contact || "") === String(req.auth.user.phone)) ||
+          (req.auth.user.email && String(payload.email || "") === String(req.auth.user.email));
+        if (!ownsRequest) {
+          return res.status(403).json({
+            success: false,
+            message: "You can only submit reservations for your own account.",
+          });
+        }
+      }
       if (!payload.facility_id && payload.request_data.facilityId !== "global") {
         return res.status(400).json({
           success: false,
@@ -350,6 +466,9 @@ export function createRequestsRouter() {
       if (!existing) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
+        return res.status(403).json({ success: false, message: "You do not have permission to update this request." });
+      }
 
       const changes = req.body || {};
       const payload = toDbReservationPatch(existing, changes);
@@ -378,7 +497,21 @@ export function createRequestsRouter() {
 
   router.delete("/:id", async (req, res) => {
     try {
-      const { data, error } = await createServiceRoleSupabaseClient()
+      const client = createServiceRoleSupabaseClient();
+      const { data: existing, error: findError } = await client
+        .from("reservations")
+        .select("reservation_code, staff_id, guest_id, contact, email")
+        .eq("reservation_code", req.params.id)
+        .maybeSingle();
+      if (findError) throw findError;
+      if (!existing) {
+        return res.status(404).json({ success: false, message: "Request not found." });
+      }
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
+        return res.status(403).json({ success: false, message: "You do not have permission to delete this request." });
+      }
+
+      const { data, error } = await client
         .from("reservations")
         .delete()
         .eq("reservation_code", req.params.id)

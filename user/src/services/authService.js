@@ -1,3 +1,19 @@
+export function getSessionToken() {
+    return localStorage.getItem('bchs_user_session') || '';
+}
+
+export function attachUserSessionToFetch() {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+        const headers = new Headers(init.headers || {});
+        const token = getSessionToken();
+        if (token) {
+            headers.set('Authorization', `Bearer ${token}`);
+        }
+        return originalFetch(input, { ...init, headers });
+    };
+}
+
 export async function loginUser({ isStaff, staffId, phone }) {
 
     const response = await fetch('/api/auth/login', {
@@ -16,6 +32,7 @@ export async function loginUser({ isStaff, staffId, phone }) {
 
     const profile = result.user;
     const guestPhone = profile.phone_number || profile.mobile_number;
+    const sessionToken = result.sessionToken || '';
 
     return {
         ...profile,
@@ -25,6 +42,7 @@ export async function loginUser({ isStaff, staffId, phone }) {
             ? profile.phone_number || profile.staff_id
             : guestPhone,
         loginTime: new Date().toISOString(),
+        sessionToken,
     };
     
 }

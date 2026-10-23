@@ -3,6 +3,7 @@
  */
 import { LoginHandler } from "./components/LoginComponent.js";
 import { state, setSelectedFacility } from "./core/state.js";
+import { attachUserSessionToFetch } from "./services/authService.js";
 import { loadData } from "./services/reservationService.js";
 import { FacilityList } from "./components/FacilityListComponent.js";
 import { Calendar } from "./components/CalendarComponent.js";
@@ -13,6 +14,8 @@ import { Forecast } from "./components/ForecastComponent.js";
 import { CancellationHandler } from "./components/CancellationComponent.js";
 import { MyRequests } from "./components/MyRequestsComponent.js";
 import { registerMobileViewer } from "./utils/facilityUtils.js";
+
+attachUserSessionToFetch();
 
 class ReservationApp {
   constructor() {
