@@ -54,14 +54,14 @@ export class ReservationModal {
   injectUIElements() {
     const footer = this.form.querySelector(".modal-footer");
 
-    // 1. Payment Notice
-    const notice = document.createElement("div");
-    notice.style.cssText =
+    this.paymentDeadlineNotice = document.createElement("div");
+    this.paymentDeadlineNotice.style.cssText =
       "background: #f0fdf4; border: 1px solid #749965; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #3f6212;";
-    notice.innerHTML = `<strong>Payment Deadline:</strong> Settlement must be made <strong>3 working days prior</strong> to the event. Unpaid reservations risk loss of priority to school activities.`;
-    this.form.insertBefore(notice, footer);
+    this.paymentDeadlineNotice.innerHTML =
+      "<strong>Payment Deadline:</strong> Settlement must be made <strong>3 working days prior</strong> to the event. Unpaid reservations risk loss of priority to school activities.";
+    this.form.insertBefore(this.paymentDeadlineNotice, footer);
 
-    // 2. Suggestion Box — inserted after custom-purpose-group
+    // Suggestion Box — inserted after custom-purpose-group
     this.suggestionBox = document.createElement("div");
     this.suggestionBox.id = "venue-suggestion";
     this.suggestionBox.style.cssText =
@@ -73,10 +73,10 @@ export class ReservationModal {
         customPurposeGroup.nextSibling,
       );
     } else {
-      this.form.insertBefore(this.suggestionBox, notice);
+      this.form.insertBefore(this.suggestionBox, this.paymentDeadlineNotice);
     }
 
-    // 3. Facility Picker Row — injected just before the purpose group
+    // Facility Picker Row — injected just before the purpose group
     this.facilityPicker = document.createElement("div");
     this.facilityPicker.className = "form-group facility-picker-group";
     this.facilityPicker.innerHTML = `<label>Facility *</label><div id="modal-facility-row" class="modal-facility-row"></div>`;
@@ -132,6 +132,8 @@ export class ReservationModal {
       document.getElementById("login-modal").classList.add("active");
       return;
     }
+
+    this.paymentDeadlineNotice.hidden = Boolean(state.user?.isStaff);
 
     const selectedDateStr = getLocalISODate(state.selectedDate);
 
