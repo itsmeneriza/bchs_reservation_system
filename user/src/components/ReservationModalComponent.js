@@ -942,7 +942,11 @@ export class ReservationModal {
       submittedAt: new Date().toISOString(),
       _isEdit: !!this.modal.dataset.editId,
     };
-    this.openPolicy();
+    if (isStaff && !this.pendingRequestData._isEdit) {
+      await this.handlePolicyAccept();
+    } else {
+      this.openPolicy();
+    }
   }
 
   async handlePolicyAccept() {
