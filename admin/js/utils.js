@@ -96,13 +96,25 @@ function showToast(m, t) {
 // ─── API Helper ───────────────────────────────────────────────────────────────
 
 async function patchRequest(id, update) {
-  const res = await fetch(`/api/requests/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(update),
-  });
-  if (!res.ok) console.warn("[WARN] patchRequest failed for", id);
-  return res.ok;
+  try {
+    const response = await fetch(`/api/requests/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error(
+        `Could not update reservation ${id}:`,
+        result.message || response.statusText,
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(`Could not update reservation ${id}:`, error);
+    return false;
+  }
 }
 
 // ─── Conflict Detection ───────────────────────────────────────────────────────

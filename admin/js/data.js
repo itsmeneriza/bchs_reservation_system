@@ -10,10 +10,17 @@
 
 async function loadData() {
   try {
-    await Promise.all([loadFacilities(), loadRequests(), loadStaff(), loadEvents()]);
+    await Promise.all([loadFacilities(), loadStaff()]);
+    await loadRequests();
+    await loadEvents();
+    mergeAdminEventsIntoRequests();
     renderAll();
     renderAdminEvents();
   } catch (error) {
+    requests = [];
+    mergeAdminEventsIntoRequests();
+    renderAll();
+    renderAdminEvents();
     console.error("Error loading data:", error);
     showToast(error.message || "Could not load admin data.", "error");
   }
@@ -56,20 +63,21 @@ async function loadStaff() {
 // ─── Requests ─────────────────────────────────────────────────────────────────
 
 async function loadRequests() {
-  try {
-    const res = await fetch("/api/requests");
-    if (res.ok) {
-      const data = await res.json();
-      const combined = data.requests || [];
-
-      // Deduplicate by ID — keep the last occurrence so edits win over originals
-      const seen = new Map();
-      combined.forEach((r) => seen.set(r.id, r));
-      requests = Array.from(seen.values());
-    }
-  } catch (e) {
-    console.warn("[WARN] Could not load requests from server");
+  const response = await fetch("/api/requests");
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(
+      data.message || `Reservations API returned ${response.status}.`,
+    );
   }
+  if (!Array.isArray(data.requests)) {
+    throw new Error("Reservations API response did not contain a reservation list.");
+  }
+
+  // Deduplicate by ID — keep the last occurrence so edits win over originals.
+  const seen = new Map();
+  data.requests.forEach((request) => seen.set(request.id, request));
+  requests = Array.from(seen.values());
 }
 
 // ─── Events ───────────────────────────────────────────────────────────────────
@@ -86,36 +94,37 @@ async function loadEvents() {
     }
     adminEvents = data.events;
 
-    // Remove previously merged synthetic entries to avoid duplicates.
-    requests = requests.filter((r) => {
-      const id = typeof r?.id === "string" ? r.id : "";
-      return !id.startsWith("evt_") && !id.startsWith("event_");
-    });
-
-    adminEvents.forEach((ev) => {
-      const syntheticId = "evt_" + ev.id;
-      if (requests.find((r) => r.id === syntheticId)) return;
-      const [start, end] = parseEventTime(ev.time);
-      requests.push({
-        id: syntheticId,
-        facilityId: ev.facilityId || ev.location.toLowerCase(),
-        facilityName: ev.location,
-        name: ev.title,
-        date: ev.date,
-        startTime: start,
-        endTime: end,
-        purpose: ev.description || ev.title,
-        status: "approved",
-        paymentStatus: "paid",
-        totalAmount: 0,
-        isSchoolEvent: true,
-        submittedAt: ev.date + "T00:00:00.000Z",
-      });
-    });
   } catch (error) {
     adminEvents = [];
     console.error("Could not load events from Supabase:", error);
   }
+}
+
+function mergeAdminEventsIntoRequests() {
+  requests = requests.filter((request) => {
+    const id = typeof request?.id === "string" ? request.id : "";
+    return !id.startsWith("evt_") && !id.startsWith("event_");
+  });
+
+  adminEvents.forEach((event) => {
+    const syntheticId = "evt_" + event.id;
+    const [start, end] = parseEventTime(event.time);
+    requests.push({
+      id: syntheticId,
+      facilityId: event.facilityId || event.location.toLowerCase(),
+      facilityName: event.location,
+      name: event.title,
+      date: event.date,
+      startTime: start,
+      endTime: end,
+      purpose: event.description || event.title,
+      status: "approved",
+      paymentStatus: "paid",
+      totalAmount: 0,
+      isSchoolEvent: true,
+      submittedAt: event.date + "T00:00:00.000Z",
+    });
+  });
 }
 
 // ─── Event Time Parser ────────────────────────────────────────────────────────

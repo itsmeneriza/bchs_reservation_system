@@ -3,6 +3,17 @@
  * Facility availability blocking and unblocking.
  */
 
+async function requestBlockApi(url, options, fallbackMessage) {
+  const response = await fetch(url, options);
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(
+      result.message || `${fallbackMessage} (HTTP ${response.status}).`,
+    );
+  }
+  return result;
+}
+
 // ─── Open Block Modal ─────────────────────────────────────────────────────────
 
 async function openQuickBlock(dateStr) {
@@ -87,10 +98,17 @@ window.openEditBlockModal = async (blockId, dateStr) => {
     return;
 
   try {
-    await fetch(`/api/requests/${blockId}`, { method: "DELETE" });
-    requests = requests.filter((r) => r.id !== blockId);
-  } catch (e) {}
+    await requestBlockApi(
+      `/api/requests/${blockId}`,
+      { method: "DELETE" },
+      "Could not remove the existing block.",
+    );
+  } catch (error) {
+    showToast(error.message, "error");
+    return;
+  }
 
+  await loadData();
   await openQuickBlock(dateStr);
   document.getElementById("quickBlockReason").value = block.purpose.replace(
     "ADMIN MANUAL BLOCK: ",
@@ -146,19 +164,38 @@ async function confirmQuickBlock() {
     submittedAt: new Date().toISOString(),
   }));
 
-  await Promise.all(
-    newBlocks.map((block) =>
-      fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(block),
-      }).catch(() => {}),
-    ),
-  );
+  const createdBlocks = [];
+  let blockCreationFailure = null;
+  try {
+    for (const block of newBlocks) {
+      await requestBlockApi(
+        "/api/requests",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(block),
+        },
+        "Could not save the facility block.",
+      );
+      createdBlocks.push(block);
+    }
+  } catch (error) {
+    blockCreationFailure = error;
+  }
+  if (createdBlocks.length === 0) {
+    await loadData();
+    showToast(
+      `0 of ${newBlocks.length} facility block(s) saved. ${blockCreationFailure.message}`,
+      "error",
+    );
+    return;
+  }
 
   // Move conflicting reservations to Confirmed tab for rescheduling
   const rescheduledRequests = [];
-  for (const block of newBlocks) {
+  const updateFailures = [];
+  const notificationFailures = [];
+  for (const block of createdBlocks) {
     const conflicts = requests.filter((r) => {
       if (r.status !== "approved" && r.status !== "pending") return false;
       if (r.date !== block.date) return false;
@@ -174,44 +211,70 @@ async function confirmQuickBlock() {
       const pastHour = now.getHours() - 2;
       const pastTime = `${String(Math.max(0, pastHour)).padStart(2, "0")}:00`;
 
-      await fetch(`/api/requests/${conflict.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "pending",
-          appointmentDate: todayStr,
-          appointmentTime: pastTime,
-          blockReschedulePending: true,
-          blockRescheduleReason: reason,
-        }),
-      }).catch(() => {});
+      try {
+        await requestBlockApi(
+          `/api/requests/${conflict.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              status: "pending",
+              appointmentDate: todayStr,
+              appointmentTime: pastTime,
+              blockReschedulePending: true,
+              blockRescheduleReason: reason,
+            }),
+          },
+          `Could not update conflicting reservation ${conflict.id}.`,
+        );
+      } catch (error) {
+        updateFailures.push(error.message);
+        continue;
+      }
 
       if (conflict.email) {
-        fetch("/api/notify-cancellation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: conflict.email,
-            name: conflict.name,
-            facilityName: conflict.facilityName,
-            date: conflict.date,
-            startTime: conflict.startTime,
-            endTime: conflict.endTime,
-            reason,
-          }),
-        }).catch(() => {});
+        try {
+          await requestBlockApi(
+            "/api/notify-cancellation",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: conflict.email,
+                name: conflict.name,
+                facilityName: conflict.facilityName,
+                date: conflict.date,
+                startTime: conflict.startTime,
+                endTime: conflict.endTime,
+                reason,
+              }),
+            },
+            `Could not notify ${conflict.email}.`,
+          );
+        } catch (error) {
+          notificationFailures.push(error.message);
+        }
       }
       rescheduledRequests.push(conflict);
     }
   }
 
-  const rescheduleMsg =
-    rescheduledRequests.length > 0
-      ? ` ${rescheduledRequests.length} conflicting reservation(s) moved to Confirmed tab for rescheduling.`
-      : "";
-  showToast(`Facilities blocked successfully.${rescheduleMsg}`, "error");
+  const summary = [
+    blockCreationFailure
+      ? `${createdBlocks.length} of ${newBlocks.length} facility block(s) saved. ${blockCreationFailure.message}`
+      : "Facilities blocked successfully.",
+    `${rescheduledRequests.length} conflicting reservation(s) moved to Confirmed for rescheduling.`,
+    ...updateFailures,
+    ...notificationFailures,
+  ].join(" ");
   closeQuickBlock();
   await loadData();
+  showToast(
+    summary,
+    blockCreationFailure || updateFailures.length || notificationFailures.length
+      ? "error"
+      : "success",
+  );
 
   if (rescheduledRequests.length > 0) {
     window.activateTab("confirmed");
@@ -223,9 +286,14 @@ async function confirmQuickBlock() {
 window.quickUnblock = async (id, dateStr) => {
   if (!confirm("Re-open this facility?")) return;
   try {
-    await fetch(`/api/requests/${id}`, { method: "DELETE" });
-  } catch (e) {
-    console.warn("[WARN] Could not delete block from server");
+    await requestBlockApi(
+      `/api/requests/${id}`,
+      { method: "DELETE" },
+      "Could not re-open this facility.",
+    );
+  } catch (error) {
+    showToast(error.message, "error");
+    return;
   }
   showToast("Facility re-opened", "success");
   closeQuickBlock(); // safe no-op if modal wasn't open

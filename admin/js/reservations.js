@@ -392,6 +392,7 @@ async function saveManualReservation() {
   const newEntry = {
     id: "admin_" + Date.now(),
     source: "walk_in",
+    isStaff,
     facilityId,
     facilityName,
     name,
@@ -405,7 +406,7 @@ async function saveManualReservation() {
     utilities: utilities.length ? utilities : [],
     attendees,
     status: "approved",
-    paymentStatus,
+    paymentStatus: isStaff ? "paid" : paymentStatus,
     totalAmount,
     submittedAt: new Date().toISOString(),
   };
@@ -416,10 +417,15 @@ async function saveManualReservation() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newEntry),
     });
-    if (!res.ok) throw new Error();
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        result.message || `Reservations API returned ${res.status}.`,
+      );
+    }
     showToast("Manual reservation added successfully", "success");
-  } catch (e) {
-    showToast("Failed to save reservation. Is the server running?", "error");
+  } catch (error) {
+    showToast(`Failed to save reservation: ${error.message}`, "error");
     return;
   }
 

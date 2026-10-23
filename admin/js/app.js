@@ -100,8 +100,6 @@ function setupModals() {
   // Edit modal
   document.getElementById("closeEditModal").onclick = () =>
     document.getElementById("editModal").classList.remove("active");
-  document.getElementById("cancelEdit").onclick = () =>
-    document.getElementById("editModal").classList.remove("active");
   document.getElementById("saveEdit").onclick = savereservationChanges;
 
   // Block modal

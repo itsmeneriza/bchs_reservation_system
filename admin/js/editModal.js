@@ -30,6 +30,20 @@ function escapeAdminText(value) {
   );
 }
 
+async function sendAdminReservationNotification(path, payload) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(
+      result.message || `Notification failed with status ${response.status}.`,
+    );
+  }
+}
+
 const VISIT_TIME_OPTIONS = [
   "7:00 AM – 8:00 AM",
   "8:00 AM – 9:00 AM",
@@ -957,26 +971,50 @@ window.confirmRejection = async () => {
   const r = requests.find((x) => x.id === pendingRejectionId);
   if (!r) return;
 
-  if (r.email) {
-    fetch("/api/notify-rejection", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: r.email,
-        name: r.name,
-        facilityName: r.facilityName || getFacilityName(r.facilityId),
-        date: r.date,
-        reason,
-      }),
-    }).catch(() => {});
+  const saved = await patchRequest(pendingRejectionId, {
+    status: "rejected",
+    rejectionReason: reason,
+  });
+  if (!saved) {
+    showToast("Could not reject the reservation. Please try again.", "error");
+    return;
   }
 
-  await fetch(`/api/requests/${pendingRejectionId}`, { method: "DELETE" });
-  showToast("Request rejected and deleted.", "success");
   closeRejectionModal();
   document.getElementById("editModal").classList.remove("active");
   await loadData();
-};
+
+  if (r.email) {
+    try {
+      const response = await fetch("/api/notify-rejection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: r.email,
+          name: r.name,
+          facilityName: r.facilityName || getFacilityName(r.facilityId),
+          date: r.date,
+          reason,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          result.message || `Notification failed with status ${response.status}.`,
+        );
+      }
+      showToast("Reservation rejected and saved.", "success");
+    } catch (error) {
+      console.error("Reservation was rejected but notification failed:", error);
+      showToast(
+        "Reservation rejected and saved, but the notification could not be sent.",
+        "error",
+      );
+    }
+  } else {
+    showToast("Reservation rejected and saved.", "success");
+  }
+}
 
 // ─── Save Changes ─────────────────────────────────────────────────────────────
 
@@ -1199,11 +1237,10 @@ async function savereservationChanges() {
   } else if (visitOptionsWereSent) {
     // Admin sent multiple visit options — notify user
     const r = requests.find((x) => x.id === selectedRequestToEdit);
+    let notificationFailed = false;
     if (r?.email) {
-      fetch("/api/notify-visit-options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      try {
+        await sendAdminReservationNotification("/api/notify-visit-options", {
           email: r.email,
           name: r.name,
           facilityName: r.facilityName || getFacilityName(r.facilityId),
@@ -1211,23 +1248,27 @@ async function savereservationChanges() {
           startTime: r.startTime,
           endTime: r.endTime,
           visitOptions: update.visitOptions,
-        }),
-      }).catch(() => {});
+        });
+      } catch (error) {
+        console.error("Visit options were saved but notification failed:", error);
+        notificationFailed = true;
+      }
     }
     showToast(
-      `${update.visitOptions.length} visit option${update.visitOptions.length > 1 ? "s" : ""} sent! Request moved to Confirmed tab.`,
-      "success",
+      notificationFailed
+        ? "Visit options saved, but the notification could not be sent."
+        : `${update.visitOptions.length} visit option${update.visitOptions.length > 1 ? "s" : ""} sent! Request moved to Confirmed tab.`,
+      notificationFailed ? "error" : "success",
     );
     document.getElementById("editModal").classList.remove("active");
     await loadData();
     window.activateTab("confirmed");
   } else if (appointmentWasSet) {
     const r = requests.find((x) => x.id === selectedRequestToEdit);
+    let notificationFailed = false;
     if (r?.email) {
-      fetch("/api/notify-appointment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      try {
+        await sendAdminReservationNotification("/api/notify-appointment", {
           email: r.email,
           name: r.name,
           facilityName: r.facilityName || getFacilityName(r.facilityId),
@@ -1236,12 +1277,17 @@ async function savereservationChanges() {
           endTime: r.endTime,
           appointmentDate: update.appointmentDate,
           appointmentTime: update.appointmentTime,
-        }),
-      }).catch(() => {});
+        });
+      } catch (error) {
+        console.error("Appointment was saved but notification failed:", error);
+        notificationFailed = true;
+      }
     }
     showToast(
-      "Confirmation appointment set! Request moved to Confirmed tab.",
-      "success",
+      notificationFailed
+        ? "Confirmation visit saved, but the notification could not be sent."
+        : "Confirmation appointment set! Request moved to Confirmed tab.",
+      notificationFailed ? "error" : "success",
     );
     document.getElementById("editModal").classList.remove("active");
     await loadData();
