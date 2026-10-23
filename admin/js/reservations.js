@@ -201,6 +201,8 @@ function updateManualPricing() {
   }
 
   const paymentSelect = document.getElementById("manualPaymentStatus");
+  const paymentGroup = document.getElementById("manualPaymentStatusGroup");
+  if (paymentGroup) paymentGroup.style.display = isStaff ? "none" : "";
   if (paymentSelect) {
     paymentSelect.value = isStaff ? "paid" : "pending";
     paymentSelect.disabled = isStaff;
@@ -233,7 +235,6 @@ function updateManualPricing() {
     ? "FREE"
     : `₱${facilityTotal.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
 
-  // Utility fee row — show only when applicable
   const utilityRow = document.getElementById("manualUtilityFeeRow");
   if (utilityRow) {
     if (!isStaff && utilityFee > 0) {
@@ -252,7 +253,7 @@ function updateManualPricing() {
   document.getElementById("manualPriceTotal").style.color = isStaff
     ? "#16a34a"
     : "#800020";
-  preview.style.display = "block";
+  preview.style.display = isStaff ? "none" : "block";
 }
 
 window.updateAdminFacilitySuggestion = function () {
@@ -328,8 +329,8 @@ async function saveManualReservation() {
       : purposeVal;
   const attendees =
     parseInt(document.getElementById("manualAttendees").value) || 0;
-  const paymentStatus = document.getElementById("manualPaymentStatus").value;
   const isStaff = document.getElementById("manualIsStaff")?.checked || false;
+  const paymentStatus = document.getElementById("manualPaymentStatus").value;
   const contact =
     document.getElementById("manualContactNumber").value.trim() || "N/A";
   const email =

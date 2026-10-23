@@ -1450,114 +1450,114 @@
                 "
               ></div>
             </div>
-            <div class="form-group">
-              <label>Payment Status</label>
-              <select class="select" id="manualPaymentStatus">
-                <option value="paid">Paid</option>
-                <option value="pending">Pending</option>
-                <option value="unpaid">Unpaid</option>
-              </select>
+            <div class="form-group" id="manualPaymentStatusGroup">
+                <label>Payment Status</label>
+                <select class="select" id="manualPaymentStatus">
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="unpaid">Unpaid</option>
+                </select>
             </div>
             <div
-              class="form-group full-width"
-              id="manualPricingPreview"
-              style="display: none"
+                class="form-group full-width"
+                id="manualPricingPreview"
+                style="display: none"
             >
-              <div
-                style="
-                  background: #f8fafc;
-                  border: 2px solid #e2e8f0;
-                  border-radius: 8px;
-                  padding: 12px;
-                "
-              >
                 <div
                   style="
-                    font-size: 12px;
-                    font-weight: 700;
-                    color: #1e293b;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    margin-bottom: 8px;
+                    background: #f8fafc;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 12px;
                   "
                 >
-                  Pricing Summary
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 13px;
-                    margin-bottom: 4px;
-                  "
-                >
-                  <span style="color: #64748b">Facility Rate:</span>
-                  <span id="manualPriceRate" style="font-weight: 600"
-                    >â‚±0/hr</span
+                  <div
+                    style="
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #1e293b;
+                      text-transform: uppercase;
+                      letter-spacing: 0.05em;
+                      margin-bottom: 8px;
+                    "
                   >
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 13px;
-                    margin-bottom: 4px;
-                  "
-                >
-                  <span style="color: #64748b">Duration:</span>
-                  <span id="manualPriceDuration" style="font-weight: 600"
-                    >0 hrs</span
+                    Pricing Summary
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
                   >
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 13px;
-                    margin-bottom: 4px;
-                  "
-                >
-                  <span style="color: #64748b">Facility Subtotal:</span>
-                  <span id="manualPriceSubtotal" style="font-weight: 600"
-                    >â‚±0.00</span
+                    <span style="color: #64748b">Facility Rate:</span>
+                    <span id="manualPriceRate" style="font-weight: 600"
+                      >₱0/hr</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
                   >
-                </div>
-                <div
-                  id="manualUtilityFeeRow"
-                  style="
-                    display: none;
-                    justify-content: space-between;
-                    font-size: 13px;
-                    margin-bottom: 4px;
-                  "
-                >
-                  <span style="color: #64748b">Utility Fee (8+ hrs):</span>
-                  <span
-                    id="manualUtilityFeeAmount"
-                    style="font-weight: 600; color: #92400e"
-                    >â‚±800.00</span
+                    <span style="color: #64748b">Duration:</span>
+                    <span id="manualPriceDuration" style="font-weight: 600"
+                      >0 hrs</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
                   >
-                </div>
-                <div
-                  style="height: 1px; background: #e2e8f0; margin: 6px 0"
-                ></div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 14px;
-                  "
-                >
-                  <span style="font-weight: 700; color: #1e293b"
-                    >Total Amount:</span
+                    <span style="color: #64748b">Facility Subtotal:</span>
+                    <span id="manualPriceSubtotal" style="font-weight: 600"
+                      >₱0.00</span
+                    >
+                  </div>
+                  <div
+                    id="manualUtilityFeeRow"
+                    style="
+                      display: none;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
                   >
-                  <span
-                    id="manualPriceTotal"
-                    style="font-weight: 700; color: #800020"
-                    >â‚±0.00</span
+                    <span style="color: #64748b">Utility Fee (8+ hrs):</span>
+                    <span
+                      id="manualUtilityFeeAmount"
+                      style="font-weight: 600; color: #92400e"
+                      >₱800.00</span
+                    >
+                  </div>
+                  <div
+                    style="height: 1px; background: #e2e8f0; margin: 6px 0"
+                  ></div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 14px;
+                    "
                   >
+                    <span style="font-weight: 700; color: #1e293b"
+                      >Total Amount:</span
+                    >
+                    <span
+                      id="manualPriceTotal"
+                      style="font-weight: 700; color: #800020"
+                      >₱0.00</span
+                    >
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -2048,7 +2048,6 @@
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end; gap: 0.75rem">
-            <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
             <button
               class="btn btn-destructive"
               id="rejectEditBtn"
