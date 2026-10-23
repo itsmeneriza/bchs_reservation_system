@@ -1184,19 +1184,6 @@ async function savereservationChanges() {
     return;
   }
 
-  if (update.status === "approved") {
-    const acceptedEntry = { ...requests[idx], ...update };
-    try {
-      await fetch("/api/accepted", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(acceptedEntry),
-      });
-    } catch (e) {
-      console.warn("[WARN] Could not write to accepted.json");
-    }
-  }
-
   const appointmentWasSet =
     update.appointmentDate?.trim() && update.appointmentTime?.trim();
   const visitOptionsWereSent =

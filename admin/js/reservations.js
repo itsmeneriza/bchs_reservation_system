@@ -807,36 +807,13 @@ window.confirmCancellationDelete = async () => {
 
   const now = new Date().toISOString();
 
-  // Build the archived record — mark as refused (cancelled by admin approval)
-  const archivedEntry = {
-    ...req,
-    status: "refused",
-    cancellationApprovedAt: now,
-  };
-
   try {
-    // 1. Write directly to history.json
-    await fetch("/api/history", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(archivedEntry),
-    });
-
-    // 2. Remove from accepted.json if it was approved
-    if (req.status === "approved" || req.status === "cancelled") {
-      await fetch(`/api/accepted/${_cancellationReviewId}`, {
-        method: "DELETE",
-      }).catch(() => {});
-    }
-
-    // 3. Keep in requests.json so user can see the admin-approved cancellation notice.
-    //    Just patch the status to 'refused' with a timestamp — do NOT delete.
-    await fetch(`/api/requests/${_cancellationReviewId}`, {
+    const response = await fetch(`/api/requests/${_cancellationReviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "refused", cancellationApprovedAt: now }),
     });
-
+    if (!response.ok) throw new Error("Reservation update failed.");
     showToast("Cancellation approved — user will be notified.", "success");
   } catch (e) {
     showToast("Failed to process cancellation.", "error");
@@ -852,20 +829,18 @@ window.confirmCancellationDelete = async () => {
 var historyCache = [];
 
 async function renderHistory() {
-  let history = [];
-  try {
-    const res = await fetch("/api/history");
-    if (res.ok) history = await res.json();
-  } catch (e) {}
-
   const today = new Date().toISOString().split("T")[0];
-  const historyIds = new Set(history.map((h) => h.id));
-  requests.forEach((r) => {
-    if (historyIds.has(r.id)) return;
+  let history = requests.filter((r) => {
     const isPastEvent =
-      (r.status === "approved" || r.status === "blocked") && r.date < today;
-    const isCancelled = r.status === "rejected" || r.status === "refused";
-    if (isPastEvent || isCancelled) history.push(r);
+      (r.status === "approved" ||
+        r.status === "accepted" ||
+        r.status === "blocked") &&
+      r.date < today;
+    const isCancelled = ["cancelled", "rejected", "refused"].includes(
+      r.status,
+    );
+    const isCompleted = r.status === "completed";
+    return isPastEvent || isCancelled || isCompleted;
   });
   history.sort((a, b) => b.date.localeCompare(a.date));
 
@@ -881,9 +856,11 @@ async function renderHistory() {
 }
 
 function _getHistoryStatusLabel(req) {
-  if (req.status === "rejected" || req.status === "refused") return "Cancelled";
+  if (["cancelled", "rejected", "refused"].includes(req.status))
+    return "Cancelled";
   if (req.status === "blocked") return "Past Block";
-  if (req.status === "approved") {
+  if (req.status === "completed") return "Completed";
+  if (req.status === "approved" || req.status === "accepted") {
     const today = new Date().toISOString().split("T")[0];
     // If the event date is in the past, it's fully completed
     if (req.date < today) return "Completed";

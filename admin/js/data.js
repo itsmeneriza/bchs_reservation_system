@@ -60,25 +60,7 @@ async function loadRequests() {
     const res = await fetch("/api/requests");
     if (res.ok) {
       const data = await res.json();
-      const serverRequests = data.requests || [];
-
-      // Merge with accepted.json
-      let acceptedEntries = [];
-      try {
-        const r = await fetch("/api/accepted");
-        if (r.ok) {
-          const d = await r.json();
-          acceptedEntries = (d.accepted || []).map((b) => ({
-            ...b,
-            status: "approved",
-          }));
-        }
-      } catch (e) {}
-
-      const combined = [...serverRequests];
-      acceptedEntries.forEach((s) => {
-        if (!combined.find((c) => c.id === s.id)) combined.push(s);
-      });
+      const combined = data.requests || [];
 
       // Deduplicate by ID — keep the last occurrence so edits win over originals
       const seen = new Map();

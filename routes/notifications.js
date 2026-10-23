@@ -1,33 +1,51 @@
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const { getWorkingDaysUntil, formatDateOnly } = require("../scripts/DateUtils");
-const { buildEmailHtml, buildDetailTable } = require("../scripts/EmailBuilder");
+import express from "express";
+import {
+  convertTo12Hour,
+  formatDate,
+  getWorkingDaysUntil,
+} from "../user/src/utils/dateUtils.js";
+import {
+  buildEmailHtml,
+  buildDetailTable,
+} from "../scripts/EmailBuilder.js";
+import transporter from "../services/mailer.js";
+import { createServiceRoleSupabaseClient } from "../services/supabaseClient.js";
 
-module.exports = function createNotificationRouter({ dataDir }) {
+export function createNotificationRouter() {
   const router = express.Router();
-  const repoDataDir = dataDir;
   const otpStore = new Map();
   // --- Email Reminder Logic ----------------------------------------------------
 
-  const transporter = require("../services/mailer");
-
-  // getWorkingDaysUntil is imported from ./scripts/DateUtils
+  const formatDateOnly = (date) => formatDate(date) || date;
 
   async function checkAndSendReminders() {
     try {
-      const requestsPath = path.join(repoDataDir, "requests.json");
-      if (!fs.existsSync(requestsPath)) return;
+      const client = createServiceRoleSupabaseClient();
+      const { data: reservations, error } = await client
+        .from("reservations")
+        .select("*, facilities(name)")
+        .eq("status", "approved");
+      if (error) throw error;
 
-      const data = JSON.parse(fs.readFileSync(requestsPath, "utf8"));
-      if (!Array.isArray(data.requests)) return;
-
-      let changed = false;
-
-      for (const req of data.requests) {
-        if (req.status !== "approved") continue;
-        if (req.paymentStatus === "paid") continue;
-        if (req.reminderSent) continue;
+      for (const row of reservations || []) {
+        const requestData = row.request_data || {};
+        const facility = Array.isArray(row.facilities)
+          ? row.facilities[0]
+          : row.facilities;
+        const req = {
+          ...requestData,
+          id: row.reservation_code,
+          name: row.name,
+          email: row.email,
+          facilityName: requestData.facilityName || facility?.name || "",
+          date: row.date,
+          startTime: row.start_time,
+          endTime: row.end_time,
+          paymentStatus: row.payment_status,
+          totalAmount: Number(row.total_amount || 0),
+        };
+        if (!req.email || req.paymentStatus === "paid" || req.reminderSent)
+          continue;
 
         const daysLeft = getWorkingDaysUntil(req.date);
         if (daysLeft > 5 || daysLeft < 0) continue;
@@ -59,22 +77,32 @@ module.exports = function createNotificationRouter({ dataDir }) {
 
         try {
           await transporter.sendMail(mailOptions);
-          req.reminderSent = true;
-          changed = true;
-          console.log(`Reminder sent to ${req.email} for request ${req.id}`);
         } catch (mailErr) {
           console.error(
             `Failed to send reminder to ${req.email}:`,
             mailErr.message,
           );
+          continue;
         }
+
+        const { error: updateError } = await client
+          .from("reservations")
+          .update({
+            request_data: { ...requestData, reminderSent: true },
+          })
+          .eq("reservation_code", row.reservation_code);
+        if (updateError) {
+          console.error(
+            `Could not save reminder state for ${req.id}:`,
+            updateError,
+          );
+          continue;
+        }
+        console.log(`Reminder sent to ${req.email} for request ${req.id}`);
       }
 
-      if (changed) {
-        fs.writeFileSync(requestsPath, JSON.stringify(data, null, 2), "utf8");
-      }
     } catch (err) {
-      console.error("Error in checkAndSendReminders:", err.message);
+      console.error("Error in checkAndSendReminders:", err);
     }
   }
 
@@ -275,7 +303,6 @@ module.exports = function createNotificationRouter({ dataDir }) {
         .json({ success: false, message: "No email provided" });
 
     // Convert 24h times to 12h for the email
-    const { convertTo12Hour } = require("./scripts/DateUtils");
     const timeDisplay = `${convertTo12Hour(startTime)} � ${convertTo12Hour(endTime)}`;
 
     const mailOptions = {
@@ -396,5 +423,5 @@ module.exports = function createNotificationRouter({ dataDir }) {
       res.status(500).json({ success: false, message: err.message });
     }
   });
-  return { router, transporter, checkAndSendReminders };
-};
+  return { router, checkAndSendReminders };
+}

@@ -12,7 +12,7 @@ function nullableDate(value) {
   return value.trim() || null;
 }
 
-function toDbReservation(payload = {}) {
+export function toDbReservation(payload = {}) {
   const body = payload && typeof payload === "object" ? payload : {};
   const source = String(
     body.source ||
@@ -97,7 +97,7 @@ function toDbReservation(payload = {}) {
   };
 }
 
-function fromDbReservation(row) {
+export function fromDbReservation(row) {
   const facility = Array.isArray(row.facilities)
     ? row.facilities[0]
     : row.facilities;

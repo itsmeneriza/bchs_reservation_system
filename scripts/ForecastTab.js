@@ -26,46 +26,26 @@ export class Forecast {
   }
 
   async loadData() {
-    // Single fetch for both years — history.json holds all archived records
-    // accepted.json holds upcoming approved reservations (future months of 2026).
-    // We fetch both once and derive lastYearData / currentYearData from them.
     try {
       const currentYear = new Date().getFullYear();
       const lastYear = currentYear - 1;
-
-      const [historyRes, acceptedRes] = await Promise.all([
-        fetch("/api/history").catch(() => null),
-        fetch("/api/accepted").catch(() => null),
-      ]);
-
-      const historyRaw = historyRes?.ok ? await historyRes.json() : [];
-      const acceptedRaw = acceptedRes?.ok ? await acceptedRes.json() : [];
-
-      const historyRecords = Array.isArray(historyRaw) ? historyRaw : [];
-      const acceptedRecords = Array.isArray(acceptedRaw)
-        ? acceptedRaw
-        : acceptedRaw.accepted || [];
-
-      // last year: all history records that fall in lastYear
-      this.lastYearData = historyRecords.filter(
-        (r) => r.date && new Date(r.date).getFullYear() === lastYear,
+      const response = await fetch("/api/requests");
+      if (!response.ok) {
+        throw new Error(`Requests API returned ${response.status}.`);
+      }
+      const { requests = [] } = await response.json();
+      const approved = requests.filter(
+        (reservation) =>
+          reservation.date &&
+          ["approved", "accepted"].includes(reservation.status),
       );
 
-      // current year: history records for currentYear  +  accepted records for currentYear
-      // deduplicate by id (accepted is the source of truth for any record that exists in both)
-      const seen = new Set();
-      this.currentYearData = [
-        ...acceptedRecords.filter(
-          (r) => r.date && new Date(r.date).getFullYear() === currentYear,
-        ),
-        ...historyRecords.filter(
-          (r) => r.date && new Date(r.date).getFullYear() === currentYear,
-        ),
-      ].filter((r) => {
-        if (!r.id || seen.has(r.id)) return false;
-        seen.add(r.id);
-        return true;
-      });
+      this.lastYearData = approved.filter(
+        (r) => new Date(r.date).getFullYear() === lastYear,
+      );
+      this.currentYearData = approved.filter(
+        (r) => new Date(r.date).getFullYear() === currentYear,
+      );
     } catch (e) {
       console.error("Failed to load reservation data", e);
     }
@@ -669,9 +649,9 @@ export class Forecast {
     ];
 
     // this.lastYearData is pre-filtered to lastYear by loadData().
-    // Approved filter: status==='approved' OR no status (seeded historical records).
+    // Only approved reservations count toward facility usage.
     const lyApproved = (this.lastYearData || []).filter(
-      (r) => r.date && (r.status === "approved" || !r.status),
+      (r) => r.date && r.status === "approved",
     );
 
     const buildLastYearPerFacility = (facilityId) =>
@@ -688,8 +668,7 @@ export class Forecast {
     });
 
     // this.currentYearData is pre-filtered to currentYear by loadData().
-    // accepted.json records are always approved; history 2026 records are filtered to approved.
-    // Additional guard: only count approved status (blocks/rejects/refusals are excluded).
+    // Only approved reservations count; blocks and cancelled requests are excluded.
     const cyApproved = (currentYearData || []).filter(
       (r) => r.date && r.status === "approved",
     );

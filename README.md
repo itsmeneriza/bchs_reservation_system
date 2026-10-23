@@ -90,9 +90,8 @@ The server also prints these URLs in the terminal when it starts.
 - `events.js` reads events from Supabase and protects event create, update, and delete operations with administrator authentication and RLS.
 - `requests.js` reads and writes facility-user reservations in Supabase.
 - `facilities.js` reads facility definitions from Supabase.
-- `history.js` handles archived reservations and periodic archiving.
-- `forecast.js` handles forecast calculation, caching, and refresh.
-- `notifications.js` handles email notifications, reminders, and cancellation OTPs.
+- `forecast.js` calculates forecasts from approved Supabase reservations.
+- `notifications.js` sends email notifications and reads/writes reminder state in Supabase.
 - `chat.js` handles the reservation assistant endpoint.
 
 The shared email transport is configured in `services/mailer.js`; existing date, email-template, and forecast helpers remain in `scripts/`.
@@ -163,18 +162,18 @@ are stored in Supabase. Follow [REQUESTS_SUPABASE_STEPS.txt](./REQUESTS_SUPABASE
 to create the reservations table and configure the server. Events use
 [EVENTS_SUPABASE_STEPS.txt](./EVENTS_SUPABASE_STEPS.txt).
 
-The following supporting and legacy data remains in the `data/` folder:
+The reservation JSON files are migration backups only; the running application
+does not read or write them. Run `npm run migrate:reservations` once to import
+legacy requests, approved reservations, and history into Supabase. The migration
+skips reservation codes already present in Supabase. Keep the JSON files as
+backups until the import has been verified.
 
 | File              | Description                             |
 | ----------------- | --------------------------------------- |
-| `requests.json`   | Legacy reservation records; not automatically imported into Supabase |
-| `accepted.json`   | Legacy approved reservations            |
-| `history.json`    | Archived past reservations              |
+| `requests.json`   | One-time reservation migration source / backup |
+| `accepted.json`   | One-time approved-reservation migration source / backup |
+| `history.json`    | One-time history migration source / backup |
 | `events.json`     | Source records for the one-time events import |
-| `facilities.json` | Legacy facility definitions             |
-| `staff.json`      | Staff accounts                          |
-| `forecast.json`   | Cached usage forecast                   |
-
-> Existing requests in `requests.json` and `accepted.json` are not automatically
-> copied to the Supabase reservations table. See the requests setup guide before
-> expecting legacy records in the new table.
+| `facilities.json` | Legacy facility definitions                   |
+| `staff.json`      | Legacy staff records                          |
+| `forecast.json`   | Legacy forecast cache; not used by the app    |

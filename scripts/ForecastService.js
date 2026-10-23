@@ -1,6 +1,5 @@
 /**
- * ForecastService — shared forecast algorithm used by both forecast functions
- * in server.js.
+ * ForecastService — shared forecast algorithm used by the Supabase forecast route.
  *
  * Methodology (v4):
  *
@@ -21,17 +20,22 @@
  *    medium — seasonal baseline with 1 year of same-week data
  *    low    — WMA fallback used (no same-week history)
  *
- * CommonJS only — server-side.
+ * ES module — server-side.
  *
  * Usage:
- *   const { computeFacilityAnalytics, computeSummary, computeRecommendations,
- *           computeMonthlyTrends }
- *       = require('./scripts/ForecastService');
+ *   import { computeFacilityAnalytics, computeSummary, computeRecommendations,
+ *            computeMonthlyTrends } from './scripts/ForecastService.js';
  */
 
-"use strict";
-
-const { getISOWeek } = require("./DateUtils");
+function getISOWeek(date) {
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -365,7 +369,7 @@ function computeMonthlyTrends(allData, facilityIds, sliceLastN) {
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
-module.exports = {
+export {
   computeFacilityAnalytics,
   computeSummary,
   computeRecommendations,

@@ -9,7 +9,7 @@
  *   buildDetailTable(rows)                   → <table> HTML for reservation details
  *
  * Usage in server.js:
- *   const { buildEmailHtml, buildDetailTable } = require('./scripts/EmailBuilder');
+ *   import { buildEmailHtml, buildDetailTable } from './scripts/EmailBuilder.js';
  *
  * CommonJS only — this module is server-side code exclusively.
  */
@@ -119,4 +119,4 @@ function buildDiffTable(rows, labels = {}) {
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
-module.exports = { buildEmailHtml, buildDetailTable, buildDiffTable };
+export { buildEmailHtml, buildDetailTable, buildDiffTable };

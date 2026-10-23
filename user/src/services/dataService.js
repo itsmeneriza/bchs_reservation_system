@@ -62,38 +62,28 @@ export class DataService {
   }
 
   async loadReservations() {
-    // Run all 3 fetches in parallel
-    const [acceptedRes, requestsRes, eventsRes] = await Promise.allSettled([
-      fetch("/api/accepted"),
+    const [requestsRes, eventsRes] = await Promise.all([
       fetch("/api/requests"),
       fetch("/api/events"),
     ]);
 
-    // 1. Accepted reservations
-    let acceptedReservations = [];
-    if (acceptedRes.status === "fulfilled" && acceptedRes.value.ok) {
-      const data = await acceptedRes.value.json();
-      acceptedReservations = (data.accepted || []).map((b) => ({
-        ...b,
-        status: "approved",
-      }));
-    }
-
-    // 2. Live requests — exclude linked event reservations (id starts with 'event_')
+    // Exclude linked event reservations (id starts with 'event_')
     // Those are already represented via the /api/events fetch as 'evt_' entries.
     let apiRequests = [];
-    if (requestsRes.status === "fulfilled" && requestsRes.value.ok) {
-      const data = await requestsRes.value.json();
+    if (requestsRes.ok) {
+      const data = await requestsRes.json();
       apiRequests = (data.requests || []).filter((r) => {
         const id = typeof r?.id === "string" ? r.id : "";
         return !id.startsWith("event_") && !id.startsWith("evt_");
       });
+    } else {
+      throw new Error(`Requests API returned ${requestsRes.status}.`);
     }
 
-    // 3. Events
+    // Events
     let eventReservations = [];
-    if (eventsRes.status === "fulfilled" && eventsRes.value.ok) {
-      const data = await eventsRes.value.json();
+    if (eventsRes.ok) {
+      const data = await eventsRes.json();
       eventReservations = (data.events || []).map((ev) => {
         const [start, end] = this._parseEventTime(ev.time);
         const facilityId = ev.facilityId || ev.location.toLowerCase();
@@ -117,9 +107,9 @@ export class DataService {
       });
     }
 
-    // 4. Merge — no duplicates
+    // Merge event entries with the canonical Supabase reservations.
     const merged = [...apiRequests];
-    [...acceptedReservations, ...eventReservations].forEach((entry) => {
+    eventReservations.forEach((entry) => {
       if (!merged.find((b) => b.id === entry.id)) merged.push(entry);
     });
 
