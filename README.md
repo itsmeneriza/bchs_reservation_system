@@ -88,9 +88,8 @@ The server also prints these URLs in the terminal when it starts.
 `server.js` configures Express, serves the static frontends, mounts API routers, and listens for requests. API handlers are grouped by feature in `routes/`:
 
 - `events.js` reads events from Supabase and protects event create, update, and delete operations with administrator authentication and RLS.
-- `requestsSupabase.js` reads and writes facility-user reservations in Supabase.
+- `requests.js` reads and writes facility-user reservations in Supabase.
 - `facilities.js` reads facility definitions from Supabase.
-- `requests.js` contains legacy file-backed handlers and is not mounted by the current server.
 - `history.js` handles archived reservations and periodic archiving.
 - `forecast.js` handles forecast calculation, caching, and refresh.
 - `notifications.js` handles email notifications, reminders, and cancellation OTPs.

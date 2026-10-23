@@ -35,7 +35,7 @@ export async function saveReservationRequest(request) {
   );
   if (conflict) return false;
 
-  // Save via requestService → POST /api/requests → requests.json
+  // Save through the server API to Supabase.
   try {
     const saved = await requestService.saveRequest(request);
     if (saved) {

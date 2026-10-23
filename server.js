@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import authRouter from './routes/auth.js';
 import { createEventsRouter } from './routes/events.js';
 import { createFacilitiesRouter } from './routes/facilities.js';
-import { createRequestsRouter } from './routes/requestsSupabase.js';
+import { createRequestsRouter } from './routes/requests.js';
 import { requireAdmin } from './middleware/requireAdmin.js';
 
 const projectDir = path.dirname(fileURLToPath(import.meta.url));

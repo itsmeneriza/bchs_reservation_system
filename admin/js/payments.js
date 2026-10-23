@@ -131,7 +131,7 @@ function renderPayments() {
             </td>
             <td>
                 <span class="badge badge-interactive ${getPaymentBadgeClass(effectiveStatus)}"
-                      onclick="${isStaff ? "" : `cyclePaymentStatus('${b.id}','${b.paymentStatus}')`}"
+                      onclick="${isStaff ? "" : `cyclePaymentStatus('${b.id}','${effectiveStatus}')`}"
                       style="${isStaff ? "cursor:default;opacity:0.85;" : ""}">
                     ${isStaff ? "PAID (Staff)" : effectiveStatus.toUpperCase()}
                 </span>
@@ -164,8 +164,12 @@ window.cyclePaymentStatus = async (id, currentStatus) => {
     return;
   }
   const map = { pending: "paid", unpaid: "pending" }; // prevent paid->unpaid transition
-  const next = map[currentStatus] || "pending";
-  await patchRequest(id, { paymentStatus: next });
+  const next = map[currentStatus || req.paymentStatus || "pending"] || "pending";
+  const saved = await patchRequest(id, { paymentStatus: next });
+  if (!saved) {
+    showToast("Could not update payment status. Please try again.", "error");
+    return;
+  }
   await loadData();
   showToast(`Payment marked as ${next}`, "success");
 };
@@ -188,7 +192,14 @@ window.toggleDownPayment = async (id, newState) => {
       : newState && remainingPaid
         ? "paid"
         : "pending";
-  await patchRequest(id, { downPaymentPaid: newState, paymentStatus });
+  const saved = await patchRequest(id, {
+    downPaymentPaid: newState,
+    paymentStatus,
+  });
+  if (!saved) {
+    showToast("Could not update payment status. Please try again.", "error");
+    return;
+  }
   await loadData();
   showToast(
     newState ? "Down payment marked as paid" : "Down payment reversed",
@@ -214,7 +225,14 @@ window.toggleRemainingBalance = async (id, newState) => {
       : downPaid && newState
         ? "paid"
         : "pending";
-  await patchRequest(id, { remainingBalancePaid: newState, paymentStatus });
+  const saved = await patchRequest(id, {
+    remainingBalancePaid: newState,
+    paymentStatus,
+  });
+  if (!saved) {
+    showToast("Could not update payment status. Please try again.", "error");
+    return;
+  }
   await loadData();
   showToast(
     newState
@@ -225,7 +243,13 @@ window.toggleRemainingBalance = async (id, newState) => {
 };
 
 window.updateInlinePayment = async (id, amount) => {
-  await patchRequest(id, { totalAmount: parseFloat(amount) || 0 });
+  const saved = await patchRequest(id, {
+    totalAmount: parseFloat(amount) || 0,
+  });
+  if (!saved) {
+    showToast("Could not update payment amount. Please try again.", "error");
+    return;
+  }
   await loadData();
   showToast("Amount updated", "success");
 };

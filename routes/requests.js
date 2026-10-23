@@ -7,6 +7,11 @@ const INTERNAL_FIELDS = new Set([
   "rescheduleOptionIndex",
 ]);
 
+function nullableDate(value) {
+  if (typeof value !== "string") return value ?? null;
+  return value.trim() || null;
+}
+
 function toDbReservation(payload = {}) {
   const body = payload && typeof payload === "object" ? payload : {};
   const source = String(
@@ -29,6 +34,17 @@ function toDbReservation(payload = {}) {
   const requestData = Object.fromEntries(
     Object.entries(body).filter(([key]) => !INTERNAL_FIELDS.has(key)),
   );
+  if (Object.hasOwn(requestData, "date")) {
+    requestData.date = nullableDate(requestData.date);
+  }
+  if (Object.hasOwn(requestData, "appointmentDate")) {
+    requestData.appointmentDate = nullableDate(requestData.appointmentDate);
+  }
+  if (Object.hasOwn(requestData, "appointment_date")) {
+    requestData.appointment_date = nullableDate(
+      requestData.appointment_date,
+    );
+  }
 
   return {
     reservation_code: String(body.reservationCode || id),
@@ -49,7 +65,7 @@ function toDbReservation(payload = {}) {
         ? (body.contact || body.phone).trim()
         : "") || (source === "walk_in" ? "ADMIN" : ""),
     is_staff: userType === "staff",
-    date: body.date || null,
+    date: nullableDate(body.date),
     start_time: body.startTime || body.start_time || null,
     end_time: body.endTime || body.end_time || null,
     attendees: body.attendees ?? null,
@@ -57,7 +73,9 @@ function toDbReservation(payload = {}) {
     additional_notes: body.additionalNotes ?? body.additional_notes ?? null,
     status: body.status || "pending",
     payment_status: body.paymentStatus || body.payment_status || "pending",
-    appointment_date: body.appointmentDate ?? body.appointment_date ?? null,
+    appointment_date: nullableDate(
+      body.appointmentDate ?? body.appointment_date,
+    ),
     appointment_time: body.appointmentTime ?? body.appointment_time ?? null,
     total_amount: Number(body.totalAmount ?? body.total_amount ?? 0),
     down_payment_paid: Boolean(
@@ -333,7 +351,14 @@ export function createRequestsRouter() {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
 
-      const payload = toDbReservationPatch(existing, req.body || {});
+      const changes = req.body || {};
+      const payload = toDbReservationPatch(existing, changes);
+      if (Object.hasOwn(changes, "date") && !payload.date) {
+        return res.status(400).json({
+          success: false,
+          message: "Choose a valid reservation date.",
+        });
+      }
       const { data, error } = await client
         .from("reservations")
         .update(payload)
