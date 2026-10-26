@@ -29,7 +29,7 @@ export class Forecast {
     try {
       const currentYear = new Date().getFullYear();
       const lastYear = currentYear - 1;
-      const response = await fetch("/api/requests");
+      const response = await window.adminFetch("/api/requests");
       if (!response.ok) {
         throw new Error(`Requests API returned ${response.status}.`);
       }

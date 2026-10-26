@@ -97,7 +97,7 @@ function showToast(m, t) {
 
 async function patchRequest(id, update) {
   try {
-    const response = await fetch(`/api/requests/${id}`, {
+    const response = await window.adminFetch(`/api/requests/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(update),

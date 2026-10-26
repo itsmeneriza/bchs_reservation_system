@@ -97,6 +97,7 @@ export class MyRequests {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
+                requestId,
                 email: req.email,
                 name: req.name,
                 facilityName: req.facilityName,

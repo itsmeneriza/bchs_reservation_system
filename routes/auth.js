@@ -5,7 +5,11 @@ import { AuthService } from '../scripts/AuthService.js';
 const router = express.Router();
 
 function getSessionSecret() {
-    return process.env.SESSION_SECRET || process.env.SUPABASE_ANON_KEY || 'bchs-local-dev-secret';
+    const secret = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!secret) {
+        throw new Error('SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be configured.');
+    }
+    return secret;
 }
 
 function buildSessionToken(user) {
@@ -23,22 +27,30 @@ function buildSessionToken(user) {
 
 export function verifySessionToken(token) {
     if (typeof token !== 'string' || !token.trim()) return null;
-    const [payloadPart, signaturePart] = token.split('.');
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const [payloadPart, signaturePart] = parts;
     if (!payloadPart || !signaturePart) return null;
 
-    const expectedSignature = crypto.createHmac('sha256', getSessionSecret()).update(payloadPart).digest('base64url');
-    if (!crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signaturePart))) {
-        return null;
-    }
-
+    let payload;
     try {
-        const payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8'));
-        if (!payload || typeof payload !== 'object') return null;
-        if (Date.now() > Number(payload.expiresAt || 0)) return null;
-        return payload;
+        const expectedSignature = crypto.createHmac('sha256', getSessionSecret()).update(payloadPart).digest('base64url');
+        const expectedBuffer = Buffer.from(expectedSignature);
+        const actualBuffer = Buffer.from(signaturePart);
+        if (
+            expectedBuffer.length !== actualBuffer.length ||
+            !crypto.timingSafeEqual(expectedBuffer, actualBuffer)
+        ) {
+            return null;
+        }
+        payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8'));
     } catch (error) {
         return null;
     }
+
+    if (!payload || typeof payload !== 'object' || payload.role !== 'user') return null;
+    if (Date.now() > Number(payload.expiresAt || 0)) return null;
+    return payload;
 }
 
 async function handleLogin(req, res) {

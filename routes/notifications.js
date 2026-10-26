@@ -10,6 +10,8 @@ import {
 } from "../scripts/EmailBuilder.js";
 import transporter from "../services/mailer.js";
 import { createServiceRoleSupabaseClient } from "../services/supabaseClient.js";
+import { requireAdmin } from "../middleware/requireAdmin.js";
+import { getRequestActor, isRequestOwnedByUser } from "./requests.js";
 
 export function createNotificationRouter() {
   const router = express.Router();
@@ -108,7 +110,7 @@ export function createNotificationRouter() {
 
   // --- Appointment Visit Notification -----------------------------------------
 
-  router.post("/api/notify-appointment", async (req, res) => {
+  router.post("/api/notify-appointment", requireAdmin, async (req, res) => {
     const {
       email,
       name,
@@ -162,7 +164,7 @@ export function createNotificationRouter() {
 
   // --- Block Cancellation Notification ----------------------------------------
 
-  router.post("/api/notify-visit-options", async (req, res) => {
+  router.post("/api/notify-visit-options", requireAdmin, async (req, res) => {
     const {
       email,
       name,
@@ -237,20 +239,53 @@ export function createNotificationRouter() {
   // --- User-Confirmed Visit Slot Notification -----------------------------------
 
   router.post("/api/notify-appointment-confirmed", async (req, res) => {
-    const {
-      email,
-      name,
-      facilityName,
-      date,
-      startTime,
-      endTime,
-      appointmentDate,
-      appointmentTime,
-    } = req.body;
+    const actor = await getRequestActor(req);
+    if (!actor.ok) {
+      return res.status(actor.status || 401).json({
+        success: false,
+        message: actor.message || "Authentication is required.",
+      });
+    }
+    if (actor.kind !== "user") {
+      return res.status(403).json({ success: false, message: "User access is required." });
+    }
+    if (typeof req.body?.requestId !== "string" || !req.body.requestId) {
+      return res.status(400).json({ success: false, message: "A request ID is required." });
+    }
+
+    let reservation;
+    try {
+      const { data, error } = await createServiceRoleSupabaseClient()
+        .from("reservations")
+        .select("*, facilities(name)")
+        .eq("reservation_code", req.body.requestId)
+        .maybeSingle();
+      if (error) throw error;
+      reservation = data;
+    } catch (error) {
+      console.error("Could not load request for visit confirmation:", error);
+      return res.status(500).json({ success: false, message: "Could not confirm the visit." });
+    }
+    if (!reservation || !isRequestOwnedByUser(actor, reservation)) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to confirm this visit.",
+      });
+    }
+
+    const facility = Array.isArray(reservation.facilities)
+      ? reservation.facilities[0]
+      : reservation.facilities;
+    const email = reservation.email;
+    const name = reservation.name;
+    const facilityName = reservation.request_data?.facilityName || facility?.name || "";
+    const date = reservation.date;
+    const startTime = reservation.start_time;
+    const endTime = reservation.end_time;
+    const appointmentDate = reservation.appointment_date;
+    const appointmentTime = reservation.appointment_time;
     if (!email)
-      return res
-        .status(400)
-        .json({ success: false, message: "No email provided" });
+      return res.status(400).json({ success: false, message: "No email is available for this request." });
 
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
@@ -294,7 +329,7 @@ export function createNotificationRouter() {
 
   // --- Block Cancellation Notification (existing) ------------------------------
 
-  router.post("/api/notify-cancellation", async (req, res) => {
+  router.post("/api/notify-cancellation", requireAdmin, async (req, res) => {
     const { email, name, facilityName, date, startTime, endTime, reason } =
       req.body;
     if (!email)
@@ -342,15 +377,55 @@ export function createNotificationRouter() {
   // --- Cancellation OTP � Send -------------------------------------------------
 
   router.post("/api/send-cancellation-otp", async (req, res) => {
-    const { requestId, email, name } = req.body;
-    if (!requestId || !email) {
+    const actor = await getRequestActor(req);
+    if (!actor.ok) {
+      return res.status(actor.status || 401).json({
+        success: false,
+        message: actor.message || "Authentication is required.",
+      });
+    }
+    const { requestId } = req.body || {};
+    if (typeof requestId !== "string" || !requestId) {
       return res
         .status(400)
-        .json({ success: false, message: "requestId and email are required" });
+        .json({ success: false, message: "requestId is required" });
+    }
+    const { data: reservation, error: reservationError } =
+      await createServiceRoleSupabaseClient()
+        .from("reservations")
+        .select("reservation_code,staff_id,guest_id,contact,email,name")
+        .eq("reservation_code", requestId)
+        .maybeSingle();
+    if (reservationError) {
+      console.error("Could not load request for cancellation verification:", reservationError);
+      return res.status(500).json({ success: false, message: "Could not verify the request." });
+    }
+    if (
+      !reservation ||
+      actor.kind !== "user" ||
+      !isRequestOwnedByUser(actor, reservation)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to cancel this request.",
+      });
+    }
+    const email = reservation.email;
+    const name = reservation.name;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "No email is available for this request.",
+      });
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore.set(requestId, { code, expiresAt: Date.now() + 10 * 60 * 1000 });
+    otpStore.set(requestId, {
+      code,
+      email,
+      expiresAt: Date.now() + 10 * 60 * 1000,
+      attempts: 0,
+    });
 
     try {
       await transporter.sendMail({
@@ -375,11 +450,43 @@ export function createNotificationRouter() {
 
   // --- Cancellation OTP � Verify -----------------------------------------------
 
-  router.post("/api/verify-cancellation-otp", (req, res) => {
-    const { requestId, code } = req.body;
+  router.post("/api/verify-cancellation-otp", async (req, res) => {
+    const actor = await getRequestActor(req);
+    if (!actor.ok) {
+      return res.status(actor.status || 401).json({
+        success: false,
+        message: actor.message || "Authentication is required.",
+      });
+    }
+    const { requestId, code } = req.body || {};
+    if (typeof requestId !== "string" || !requestId) {
+      return res.status(400).json({ valid: false, message: "requestId is required." });
+    }
+    const { data: reservation, error } = await createServiceRoleSupabaseClient()
+      .from("reservations")
+      .select("reservation_code,staff_id,guest_id,contact,email")
+      .eq("reservation_code", requestId)
+      .maybeSingle();
+    if (error) {
+      console.error("Could not load request for cancellation verification:", error);
+      return res.status(500).json({ valid: false, message: "Could not verify the request." });
+    }
+    if (
+      actor.kind !== "user" ||
+      !reservation ||
+      !isRequestOwnedByUser(actor, reservation)
+    ) {
+      return res.status(403).json({ valid: false, message: "You do not have permission to cancel this request." });
+    }
     const stored = otpStore.get(requestId);
 
-    if (!stored || Date.now() > stored.expiresAt || stored.code !== code) {
+    if (!stored || Date.now() > stored.expiresAt || stored.email !== reservation.email || stored.code !== code) {
+      if (stored) {
+        stored.attempts += 1;
+        if (stored.attempts >= 5 || Date.now() > stored.expiresAt) {
+          otpStore.delete(requestId);
+        }
+      }
       return res.status(200).json({ valid: false });
     }
 
@@ -389,7 +496,7 @@ export function createNotificationRouter() {
 
   // --- Rejection Notification --------------------------------------------------
 
-  router.post("/api/notify-rejection", async (req, res) => {
+  router.post("/api/notify-rejection", requireAdmin, async (req, res) => {
     const { email, name, facilityName, date, reason } = req.body;
     if (!email)
       return res

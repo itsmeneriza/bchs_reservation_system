@@ -50,11 +50,21 @@ export class CancellationHandler {
         });
     }
 
-    open(reservationId) {
-        const reservation = state.reservations.find(b => b.id === reservationId);
+    async open(reservationId) {
+        let reservation = state.reservations.find(b => b.id === reservationId);
         if (!reservation) {
             showToast('Unable to find reservation record.', 'error');
             return;
+        }
+
+        if (!reservation.email) {
+            try {
+                const response = await fetch(`/api/requests/${encodeURIComponent(reservationId)}`);
+                const result = await response.json().catch(() => ({}));
+                if (response.ok && result.request) reservation = result.request;
+            } catch (error) {
+                console.error('Could not load reservation details for cancellation:', error);
+            }
         }
 
         // Only allow cancellation of user-submitted records (must have email)

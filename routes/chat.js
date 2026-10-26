@@ -1,7 +1,6 @@
-const express = require("express");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import express from "express";
 
-module.exports = function createChatRouter() {
+export default function createChatRouter() {
   const router = express.Router();
   // --- Gemini AI Chat Endpoint -------------------------------------------------
 
@@ -115,13 +114,11 @@ module.exports = function createChatRouter() {
           });
       }
 
-      const genAI = new GoogleGenerativeAI(apiKey);
       const modelCandidates = Array.from(
         new Set(
           [
-            process.env.GEMINI_MODEL,
-            "gemini-3.5-flash-lite",
-            "gemini-3.8-flash",
+            process.env.GEMINI_MODEL || "gemini-3.8-flash",
+            "gemini-3.1-flash-lite",
           ].filter(Boolean),
         ),
       );
@@ -171,32 +168,82 @@ module.exports = function createChatRouter() {
           .json({ success: false, message: "User message cannot be empty" });
       }
 
-      let model = null;
-      for (const candidate of modelCandidates) {
+      const conversation = [
+        ...history.map(
+          (message) =>
+            `${message.role === "user" ? "User" : "Assistant"}: ${message.parts[0].text}`,
+        ),
+        `User: ${userText}`,
+      ].join("\n\n");
+      let lastError;
+      for (const [index, candidate] of modelCandidates.entries()) {
+        const controller = new AbortController();
+        const timeoutMs =
+          modelCandidates.length > 1 && index === 0 ? 12000 : 30000;
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
         try {
-          model = genAI.getGenerativeModel(
+          const response = await fetch(
+            "https://generativelanguage.googleapis.com/v1beta/interactions",
             {
-              model: candidate,
-              systemInstruction: BCHS_SYSTEM_PROMPT,
-              generationConfig: { maxOutputTokens: 256 },
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": apiKey,
+              },
+              body: JSON.stringify({
+                model: candidate,
+                input: conversation,
+                system_instruction: BCHS_SYSTEM_PROMPT,
+                generation_config: {
+                  max_output_tokens: 256,
+                  thinking_level: "low",
+                },
+                store: false,
+              }),
+              signal: controller.signal,
             },
-            { timeout: 25000 },
           );
-          const chat = model.startChat({ history });
-          const result = await chat.sendMessage(userText);
-          const reply = normalizeAssistantReply(result.response.text());
+          const result = await response.json();
+          if (!response.ok) {
+            const error = new Error(
+              result.error?.message || `Gemini returned HTTP ${response.status}.`,
+            );
+            error.status = response.status;
+            throw error;
+          }
+          const outputText = (result.steps || [])
+            .filter((step) => step.type === "model_output")
+            .flatMap((step) => step.content || [])
+            .filter(
+              (content) =>
+                content.type === "text" && typeof content.text === "string",
+            )
+            .map((content) => content.text)
+            .join("\n");
+          const reply = normalizeAssistantReply(result.output_text || outputText);
           if (!reply) throw new Error("Gemini returned an empty response");
           return res.status(200).json({ success: true, reply });
         } catch (error) {
+          lastError = error;
           console.warn(
-            `Gemini model ${candidate} failed:`,
+            `Gemini model ${candidate} failed (${error?.status || error?.name || "error"}):`,
             error?.message || error,
           );
-          if (![404, 503].includes(error?.status)) break;
+          if (
+            error?.name !== "AbortError" &&
+            ![404, 408, 429, 500, 502, 503, 504].includes(error?.status)
+          ) {
+            break;
+          }
+        } finally {
+          clearTimeout(timeoutId);
         }
       }
 
-      return res.status(502).json({
+      const status =
+        [429, 503].includes(lastError?.status) ? 503 :
+        lastError?.name === "AbortError" ? 504 : 502;
+      return res.status(status).json({
         success: false,
         message:
           "The AI assistant is temporarily unavailable. Please try again later.",
@@ -212,4 +259,4 @@ module.exports = function createChatRouter() {
     }
   });
   return router;
-};
+}

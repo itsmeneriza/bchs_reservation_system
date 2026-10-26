@@ -55,6 +55,59 @@ before update on public.reservations
 for each row
 execute function public.update_reservations_modified_column();
 
+create or replace function public.prevent_reservation_time_conflicts()
+returns trigger as $$
+begin
+  if new.status = 'blocked' then
+    return new;
+  end if;
+
+  if new.status not in ('pending', 'approved', 'accepted') then
+    return new;
+  end if;
+
+  if tg_op = 'UPDATE'
+    and new.facility_id is not distinct from old.facility_id
+    and new.date is not distinct from old.date
+    and new.start_time is not distinct from old.start_time
+    and new.end_time is not distinct from old.end_time
+    and (
+      new.status = old.status
+      or old.status in ('pending', 'approved', 'accepted')
+    ) then
+    return new;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtext(new.date::text)::bigint);
+
+  if exists (
+    select 1
+    from public.reservations existing
+    where existing.reservation_code <> new.reservation_code
+      and existing.date = new.date
+      and existing.status in ('pending', 'approved', 'accepted', 'blocked')
+      and (
+        existing.facility_id is null
+        or new.facility_id is null
+        or existing.facility_id = new.facility_id
+      )
+      and existing.start_time < new.end_time
+      and existing.end_time > new.start_time
+  ) then
+    raise exception 'reservation_time_conflict'
+      using errcode = 'P0001';
+  end if;
+
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_prevent_reservation_time_conflicts on public.reservations;
+create trigger trg_prevent_reservation_time_conflicts
+before insert or update on public.reservations
+for each row
+execute function public.prevent_reservation_time_conflicts();
+
 alter table public.reservations enable row level security;
 
 drop policy if exists "Public read reservations" on public.reservations;
