@@ -32,6 +32,8 @@ class ReservationApp {
 
   async init() {
     try {
+      this.chat.init();
+
       const dataLoaded = await loadData();
       if (!dataLoaded) {
         alert(
@@ -47,7 +49,6 @@ class ReservationApp {
       this.facilityList.render();
       this.calendar.render();
       this.timeSlots.render();
-      this.chat.init();
       this.reservationModal.init();
       this.initEventListeners();
       this.handleHashTab();

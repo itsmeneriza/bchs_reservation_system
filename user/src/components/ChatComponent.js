@@ -17,6 +17,13 @@ const DEFAULT_CHIPS = [
 const CHAT_REQUEST_TIMEOUT_MS = 55000;
 const OUT_OF_SCOPE_REPLY =
   "I can only help with BCHS facility reservations, including availability, pricing, policies, and booking procedures. What reservation question can I help with?";
+const OFFLINE_FACILITIES = [
+  { id: "auditorium", name: "Auditorium", capacity: 700, pricePerHour: 1800 },
+  { id: "gym", name: "Gymnasium", capacity: 300, pricePerHour: 1000 },
+  { id: "library", name: "Library", capacity: 100, pricePerHour: 1000 },
+  { id: "grounds", name: "School Grounds", capacity: 180, pricePerHour: 700 },
+  { id: "avr", name: "Audio-Visual Facility (AVR)", capacity: 150, pricePerHour: 500 },
+];
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -79,7 +86,9 @@ const getOfflineReply = (question) => {
     return OUT_OF_SCOPE_REPLY;
   }
 
-  const facilities = state.facilities || [];
+  const facilities = state.facilities?.length
+    ? state.facilities
+    : OFFLINE_FACILITIES;
   const mentionedFacility = facilities.find((facility) => {
     const name = facility.name.toLowerCase();
     return (
