@@ -7,23 +7,14 @@
 async function loadEvents() {
     let events = [];
     try {
-        // Try server API first (source of truth)
         const res = await fetch('/api/events');
-        if (res.ok) {
-            const data = await res.json();
-            events = data.events || [];
-        } else {
-            throw new Error();
+        if (!res.ok) {
+            throw new Error(`Events API returned ${res.status}.`);
         }
-    } catch {
-        try {
-            // Fallback to static file
-            const res = await fetch('/data/events.json');
-            const data = await res.json();
-            events = data.events || [];
-        } catch (e) {
-            console.error('Error loading events:', e);
-        }
+        const data = await res.json();
+        events = data.events || [];
+    } catch (error) {
+        console.error('Could not load events from the server:', error);
     }
     renderEvents(events);
 }
@@ -145,7 +136,6 @@ function createEventCard(event, isPast = false) {
             <div class="event-details-panel" id="${cardId}">
                 <div class="event-details-inner">
                     ${event.time ? `<p><span class="detail-label">&#128336; Time</span> ${event.time}</p>` : ''}
-                    ${event.attendees ? `<p><span class="detail-label">&#128101; Expected Attendees</span> ${event.attendees}</p>` : ''}
                     ${event.description ? `<p><span class="detail-label">&#128221; Details</span> ${event.description}</p>` : ''}
                 </div>
             </div>

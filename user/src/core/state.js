@@ -3,52 +3,60 @@
  */
 
 export const state = {
-    rooms: [],
-    selectedRoom: null,
-    selectedDate: new Date(),
-    currentMonth: new Date().getMonth(),
-    currentYear: new Date().getFullYear(),
-    reservations: [],
-    chatMessages: [],
-    isChatLoading: false,
-    // Auth state
-    isLoggedIn: localStorage.getItem('bchs_user_logged_in') === 'true',
-    user: JSON.parse(localStorage.getItem('bchs_user_data') || 'null')
+  facilities: [],
+  selectedFacility: null,
+  selectedDate: new Date(),
+  currentMonth: new Date().getMonth(),
+  currentYear: new Date().getFullYear(),
+  reservations: [],
+  chatMessages: [],
+  isChatLoading: false,
+  // Auth state
+  isLoggedIn: localStorage.getItem("bchs_user_logged_in") === "true",
+  user: JSON.parse(localStorage.getItem("bchs_user_data") || "null"),
+  sessionToken: localStorage.getItem("bchs_user_session") || "",
 };
 
-export function setSelectedRoom(room) {
-    state.selectedRoom = room;
+export function setSelectedFacility(facility) {
+  state.selectedFacility = facility;
 }
 
 export function setSelectedDate(date) {
-    state.selectedDate = date;
+  state.selectedDate = date;
 }
 
 export function setMonth(month, year) {
-    state.currentMonth = month;
-    state.currentYear = year;
+  state.currentMonth = month;
+  state.currentYear = year;
 }
 
 export function addReservation(reservation) {
-    state.reservations.push(reservation);
+  state.reservations.push(reservation);
 }
 
 export function addChatMessage(message) {
-    state.chatMessages.push(message);
+  state.chatMessages.push(message);
 }
 
 export function setChatLoading(isLoading) {
-    state.isChatLoading = isLoading;
+  state.isChatLoading = isLoading;
 }
 
 export function setLoginState(isLoggedIn, userData = null) {
-    state.isLoggedIn = isLoggedIn;
-    state.user = userData;
-    if (isLoggedIn) {
-        localStorage.setItem('bchs_user_logged_in', 'true');
-        localStorage.setItem('bchs_user_data', JSON.stringify(userData));
-    } else {
-        localStorage.removeItem('bchs_user_logged_in');
-        localStorage.removeItem('bchs_user_data');
+  state.isLoggedIn = isLoggedIn;
+  state.user = userData;
+  if (isLoggedIn) {
+    const sessionToken = userData?.sessionToken || localStorage.getItem("bchs_user_session") || "";
+    state.sessionToken = sessionToken;
+    localStorage.setItem("bchs_user_logged_in", "true");
+    localStorage.setItem("bchs_user_data", JSON.stringify(userData));
+    if (sessionToken) {
+      localStorage.setItem("bchs_user_session", sessionToken);
     }
+  } else {
+    state.sessionToken = "";
+    localStorage.removeItem("bchs_user_logged_in");
+    localStorage.removeItem("bchs_user_data");
+    localStorage.removeItem("bchs_user_session");
+  }
 }

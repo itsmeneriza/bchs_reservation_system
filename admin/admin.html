@@ -1,1024 +1,2231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BCHS Facility Reservation Admin Portal</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="/src/styles/forecast.css">
-</head>
-<body>
-    <div class="app-container">
-        <div class="header" >
-            <div>
-                <h1>BCHS Facility Reservation Admin Portal</h1>
-            </div>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/src/styles/forecast.css" />
+  </head>
+  <body>
+    <div id="adminLoginScreen" class="login-wrapper">
+      <div class="login-card" style="padding: 2rem; border-radius: 16px;">
+        <div class="login-header">
+          <h2 style="margin: 0 0 0.5rem; color: #1e293b">Admin Login</h2>
+          <p style="margin: 0; color: #64748b; font-size: 0.9rem;">
+            This page is only for BCHS administrators.
+          </p>
         </div>
 
-        <!-- Tabs Navigation -->
-        <div class="tabs">
-            <div class="tabs-list">
-                <button class="tab-trigger active" data-tab="portal">
-                    Portal
-                </button>
-                <button class="tab-trigger" data-tab="queue">
-                    Reservation Queue <span class="tab-badge" id="queue-badge" style="display:none;"></span>
-                </button>
-                <button class="tab-trigger" data-tab="confirmed">
-                    Confirmed <span class="tab-badge" id="confirmed-badge" style="display:none;"></span>
-                </button>
-                <button class="tab-trigger" data-tab="approved">
-                    Approved <span class="tab-badge" id="approved-badge" style="display:none;"></span>
-                </button>
-                <button class="tab-trigger" data-tab="payments">
-                    Payment Status
-                </button>
-                <button class="tab-trigger" data-tab="cancellations">
-                    Cancellations <span class="tab-badge" id="cancellations-badge" style="display:none;"></span>
-                </button>
-                <button class="tab-trigger" data-tab="forecast">
-                    Forecast
-                </button>
-                <button class="tab-trigger" data-tab="history">
-                    History
-                </button>
-            </div>
+        <form id="adminLoginForm" class="login-form">
+          <div style="margin-bottom: 1rem;">
+            <label for="adminEmail" style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
+              Admin email
+            </label>
+            <input
+              id="adminEmail"
+              type="email"
+              class="input"
+              placeholder="Enter administrator email"
+              autocomplete="username"
+              required
+            />
+          </div>
 
-            <!-- Portal Tab Content -->
-            <div class="tab-content active" id="portal-tab">
+          <div style="margin-bottom: 1rem;">
+            <label for="adminPassword" style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
+              Password
+            </label>
+            <input
+              id="adminPassword"
+              type="password"
+              class="input"
+              placeholder="Enter admin password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
 
+          <button type="submit" class="btn btn-bchs" style="width: 100%; margin-top: 0.25rem;">
+            Login
+          </button>
 
+          <div
+            id="adminLoginError"
+            style="display: none; margin-top: 0.9rem; color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.85rem;"
+          ></div>
 
-                <div class="dashboard-grid">
-                    <div class="calendar-section">
-                        <div class="manual-control-hint">
-                            <div style="background: #1e293b; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            </div>
-                            <div style="font-size: 13px;">
-                                <strong>Manual Availability Control:</strong> Click any day in the calendar to add a new reservation, school event, or block facility availability.
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header" style="margin-bottom: 10px;">
-                                <h2 style="margin-bottom: 0;">Calendar</h2>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <button class="btn btn-outline btn-sm" id="prevMonth">&lt;</button>
-                                    <span id="currentMonthYear" style="font-weight: 600; min-width: 120px; text-align: center;"></span>
-                                    <button class="btn btn-outline btn-sm" id="nextMonth">&gt;</button>
-                                </div>
-                            </div>
-                            <div id="calendar" class="calendar-grid"></div>
-                            <div id="selectedDateEvents" style="margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 15px; display: none;">
-                                <h3 style="font-size: 16px; margin-bottom: 10px;">Details for <span id="selectedDateLabel"></span></h3>
-                                <div id="dayreservationsList"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="reservations-section">
-                        <div class="card filter-card" style="margin-bottom: 16px;">
-                            <div class="filter-header">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <h3 style="margin: 0; font-size: 14px; font-weight: 500;">Quick Filters</h3>
-                                </div>
-                            </div>
-                            <div class="filter-grid">
-                                <div class="input-wrapper" style="grid-column: span 2;">
-                                    <input type="text" id="searchFilter" placeholder="Search reservations..." class="filter-input">
-                                </div>
-                                <select id="roomFilter" class="filter-select" style="grid-column: span 2;">
-                                    <option value="all">Filter: All Rooms</option>
-                                    <option value="auditorium">Auditorium</option>
-                                    <option value="library">Library</option>
-                                    <option value="grounds">Grounds</option>
-                                    <option value="avr">AVR</option>
-                                    <option value="gym">Gym</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h2>Upcoming Schedule</h2>
-                                <span class="badge badge-secondary" id="upcomingCount">0 entries</span>
-                            </div>
-                            <div class="scroll-area" id="upcomingreservations"></div>
-                        </div>
+        </form>
+      </div>
+    </div>
 
+    <div id="adminApp" class="app-container" style="display: none;">
+      <div class="header">
+        <div>
+          <h1>BCHS Facility Reservation Admin Portal</h1>
+        </div>
+        <button
+          id="logoutAdminBtn"
+          class="btn btn-outline btn-sm"
+          type="button"
+          style="margin-left: auto;"
+        >
+          Logout
+        </button>
+      </div>
 
-                    </div>
+      <!-- Tabs Navigation -->
+      <div class="tabs">
+        <div class="tabs-list">
+          <button class="tab-trigger active" data-tab="portal">Portal</button>
+          <button class="tab-trigger" data-tab="queue">
+            Reservation Queue
+            <span
+              class="tab-badge"
+              id="queue-badge"
+              style="display: none"
+            ></span>
+          </button>
+          <button class="tab-trigger" data-tab="confirmed">
+            Confirmed
+            <span
+              class="tab-badge"
+              id="confirmed-badge"
+              style="display: none"
+            ></span>
+          </button>
+          <button class="tab-trigger" data-tab="approved">
+            Approved
+            <span
+              class="tab-badge"
+              id="approved-badge"
+              style="display: none"
+            ></span>
+          </button>
+          <button class="tab-trigger" data-tab="payments">
+            Payment Status
+          </button>
+          <button class="tab-trigger" data-tab="cancellations">
+            Cancellations
+            <span
+              class="tab-badge"
+              id="cancellations-badge"
+              style="display: none"
+            ></span>
+          </button>
+          <button class="tab-trigger" data-tab="forecast">Forecast</button>
+          <button class="tab-trigger" data-tab="history">History</button>
+        </div>
+
+        <!-- Portal Tab Content -->
+        <div class="tab-content active" id="portal-tab">
+          <div class="dashboard-grid">
+            <div class="calendar-section">
+              <div class="manual-control-hint">
+                <div
+                  style="
+                    background: #1e293b;
+                    color: white;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
                 </div>
-            </div>
-
-            <!-- Queue Tab Content -->
-            <div class="tab-content" id="queue-tab">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>New Requests</h2>
-                        <span class="badge badge-secondary" id="pendingCount">0 pending</span>
-                    </div>
-                    <div class="scroll-area">
-                        <table class="table" id="queueTable">
-                            <thead>
-                                <tr>
-                                    <th>Submitted</th>
-                                    <th>Name</th>
-                                    <th>Room</th>
-                                    <th>Requested Date</th>
-                                    <th>Purpose</th>
-                                    <th>Payment</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="queueTableBody"></tbody>
-                        </table>
-                    </div>
+                <div style="font-size: 13px">
+                  <strong>Manual Availability Control:</strong> Click any day in
+                  the calendar to add a new reservation, school event, or block
+                  facility availability.
                 </div>
-            </div>
-
-            <!-- Confirmed Tab Content -->
-            <div class="tab-content" id="confirmed-tab">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Confirmed Appointments</h2>
-                        <span class="badge badge-secondary" id="confirmedCount">0 confirmed</span>
-                    </div>
-                    <div style="display:flex;align-items:flex-start;gap:0.6rem;background:#fffbeb;border:1px solid #fbbf24;border-radius:0.5rem;padding:0.75rem 1rem;margin:0 0 1rem 0;font-size:0.82rem;color:#92400e;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" style="flex-shrink:0;margin-top:1px;">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
-                        <span> Requests can be edited <strong> during the visiting date and time, and giving 1 hour and 30 minutes</strong>  to be able to edit the request. When time is up, the request can be rescheduled.</span>
-                    </div>
-                    <div class="scroll-area">
-                        <table class="table" id="confirmedTable">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Room</th>
-                                    <th>Event Date</th>
-                                    <th>Confirmation Date</th>
-                                    <th>Reservation Details</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="confirmedTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Approved Tab Content -->
-            <div class="tab-content" id="approved-tab">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Approved Requests</h2>
-                        <span class="badge badge-secondary" id="approvedCount">0 approved</span>
-                    </div>
-                    <div class="scroll-area">
-                        <table class="table" id="approvedTable">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Facility</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Purpose</th>
-                                    <th>Payment</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="approvedTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Payments Tab Content -->
-            <div class="tab-content" id="payments-tab">
-                <div class="payment-summary-bar">
-                    <div class="payment-summary-card">
-                        <h4>Total Collected</h4>
-                        <div class="value" id="totalCollectedValue" style="color: #166534;">&#8369;0.00</div>
-                    </div>
-                    <div class="payment-summary-card">
-                        <h4>Pending Collection</h4>
-                        <div class="value" id="totalPendingValue" style="color: #92400e;">&#8369;0.00</div>
-                    </div>
-                    <div class="payment-summary-card">
-                        <h4>Collection Rate</h4>
-                        <div class="value" id="collectionRateValue" style="color: #1e293b;">0%</div>
-                    </div>
-                </div>
-
-                <!-- Payment Filters -->
-                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem;">
-                    <input type="text" id="payment-search-name" placeholder="Search by name..."
-                        oninput="filterPayments()"
-                        style="flex: 1; min-width: 160px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.875rem;">
-                    <select id="payment-filter-room" onchange="filterPayments()"
-                        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.875rem; background: white;">
-                        <option value="">All Facilities</option>
-                        <option value="auditorium">Auditorium</option>
-                        <option value="library">Library</option>
-                        <option value="grounds">Grounds</option>
-                        <option value="avr">AVR</option>
-                        <option value="gym">Gym</option>
-                    </select>
-                    <select id="payment-filter-status" onchange="filterPayments()"
-                        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.875rem; background: white;">
-                        <option value="">All Statuses</option>
-                        <option value="paid">Paid</option>
-                        <option value="pending">Pending</option>
-                        <option value="unpaid">Unpaid</option>
-                    </select>
-                    <button onclick="clearPaymentFilters()"
-                        style="padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.875rem; background: white; cursor: pointer; color: #64748b;">
-                        Clear
+              </div>
+              <div class="card">
+                <div class="card-header" style="margin-bottom: 10px">
+                  <h2 style="margin-bottom: 0">Calendar</h2>
+                  <div style="display: flex; gap: 10px; align-items: center">
+                    <button class="btn btn-outline btn-sm" id="prevMonth">
+                      &lt;
                     </button>
+                    <span
+                      id="currentMonthYear"
+                      style="
+                        font-weight: 600;
+                        min-width: 120px;
+                        text-align: center;
+                      "
+                    ></span>
+                    <button class="btn btn-outline btn-sm" id="nextMonth">
+                      &gt;
+                    </button>
+                  </div>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Direct Payment Management</h2>
-                        <div style="font-size: 12px; color: #64748b;">Click status badges to toggle or adjust amounts inline.</div>
-                    </div>
-                    <div id="paidTableContainer">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Booker Name</th>
-                                    <th>Facility</th>
-                                    <th>Date</th>
-                                    <th>Amount (&#8369;)</th>
-                                    <th>Payment Tracking</th>
-                                    <th>Payment Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="paidTableBody"></tbody>
-                        </table>
-                    </div>
+                <div id="calendar" class="calendar-grid"></div>
+                <div
+                  id="selectedDateEvents"
+                  style="
+                    margin-top: 20px;
+                    border-top: 1px solid #e5e7eb;
+                    padding-top: 15px;
+                    display: none;
+                  "
+                >
+                  <h3 style="font-size: 16px; margin-bottom: 10px">
+                    Details for <span id="selectedDateLabel"></span>
+                  </h3>
+                  <div id="dayreservationsList"></div>
                 </div>
+              </div>
             </div>
-
-            <!-- Cancellations Tab Content -->
-            <div id="cancellations-tab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Cancellation Requests</h2>
-                        <span class="badge badge-secondary" id="cancellationsCount">0 requests</span>
-                    </div>
-                    <div class="scroll-area">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Requested</th>
-                                    <th>Name</th>
-                                    <th>Room</th>
-                                    <th>Event Date</th>
-                                    <th>Cancellation Reason</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cancellationsTableBody"></tbody>
-                        </table>
-                    </div>
+            <div class="reservations-section">
+              <div class="card filter-card" style="margin-bottom: 16px">
+                <div class="filter-header">
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <h3 style="margin: 0; font-size: 14px; font-weight: 500">
+                      Quick Filters
+                    </h3>
+                  </div>
                 </div>
-            </div>
-
-            <!-- Forecast Tab Content -->
-            <div class="tab-content" id="forecast-tab">
-                <div id="admin-forecast-content" class="forecast-container"></div>
-            </div>
-
-            <!-- History Tab Content -->
-            <div id="history-tab" class="tab-content">
-                <div class="card filter-card" style="margin-bottom: 16px;">
-                    <div class="filter-header">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <h3 style="margin: 0; font-size: 14px; font-weight: 500;">Quick Filters</h3>
-                        </div>
-                        <button class="btn btn-outline btn-sm" onclick="clearHistoryFilters()">Clear</button>
-                    </div>
-                    <div class="filter-grid">
-                        <div class="input-wrapper" style="grid-column: span 2;">
-                            <input type="text" id="historySearchFilter" placeholder="Search by name..." class="filter-input" oninput="filterHistory()">
-                        </div>
-                        <select id="historyRoomFilter" class="filter-select" onchange="filterHistory()">
-                            <option value="all">Filter: All Rooms</option>
-                            <option value="auditorium">Auditorium</option>
-                            <option value="library">Library</option>
-                            <option value="grounds">Grounds</option>
-                            <option value="avr">AVR</option>
-                            <option value="gym">Gym</option>
-                        </select>
-                        <select id="historyStatusFilter" class="filter-select" onchange="filterHistory()">
-                            <option value="all">All Statuses</option>
-                            <option value="Cancelled">Cancelled</option>
-                            <option value="Confirmed">Confirmed</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Past Block">Past Block</option>
-                        </select>
-                    </div>
+                <div class="filter-grid">
+                  <div class="input-wrapper" style="grid-column: span 2">
+                    <input
+                      type="text"
+                      id="searchFilter"
+                      placeholder="Search reservations..."
+                      class="filter-input"
+                    />
+                  </div>
+                  <select
+                    id="facilityFilter"
+                    class="filter-select"
+                    style="grid-column: span 2"
+                  >
+                    <option value="all">Filter: All Facilities</option>
+                    <option value="auditorium">Auditorium</option>
+                    <option value="library">Library</option>
+                    <option value="grounds">Grounds</option>
+                    <option value="avr">AVR</option>
+                    <option value="gym">Gym</option>
+                  </select>
                 </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Record History</h2>
-                        <span class="badge badge-secondary" id="historyCount">0 records</span>
-                    </div>
-                    <div class="scroll-area">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Name</th>
-                                    <th>Room</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody"></tbody>
-                        </table>
-                    </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h2>Upcoming Schedule</h2>
+                  <span class="badge badge-secondary" id="upcomingCount"
+                    >0 entries</span
+                  >
                 </div>
+                <div class="scroll-area" id="upcomingreservations"></div>
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- Queue Tab Content -->
+        <div class="tab-content" id="queue-tab">
+          <div class="card">
+            <div class="card-header">
+              <h2>New Requests</h2>
+              <span class="badge badge-secondary" id="pendingCount"
+                >0 pending</span
+              >
+            </div>
+            <div class="scroll-area">
+              <table class="table" id="queueTable">
+                <thead>
+                  <tr>
+                    <th>Submitted</th>
+                    <th>Name</th>
+                    <th>Facility</th>
+                    <th>Requested Date</th>
+                    <th>Purpose</th>
+                    <th>Payment</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="queueTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmed Tab Content -->
+        <div class="tab-content" id="confirmed-tab">
+          <div class="card">
+            <div class="card-header">
+              <h2>Confirmed Appointments</h2>
+              <span class="badge badge-secondary" id="confirmedCount"
+                >0 confirmed</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                gap: 0.6rem;
+                background: #fffbeb;
+                border: 1px solid #fbbf24;
+                border-radius: 0.5rem;
+                padding: 0.75rem 1rem;
+                margin: 0 0 1rem 0;
+                font-size: 0.82rem;
+                color: #92400e;
+              "
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#d97706"
+                stroke-width="2"
+                style="flex-shrink: 0; margin-top: 1px"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>
+                Requests can be edited
+                <strong>
+                  during the visiting date and time, and giving 1 hour and 30
+                  minutes</strong
+                >
+                to be able to edit the request. When time is up, the request can
+                be rescheduled.</span
+              >
+            </div>
+            <div class="scroll-area">
+              <table class="table" id="confirmedTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Facility</th>
+                    <th>Event Date</th>
+                    <th>Confirmation Date</th>
+                    <th>Reservation Details</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="confirmedTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approved Tab Content -->
+        <div class="tab-content" id="approved-tab">
+          <div class="card">
+            <div class="card-header">
+              <h2>Approved Requests</h2>
+              <span class="badge badge-secondary" id="approvedCount"
+                >0 approved</span
+              >
+            </div>
+            <div class="scroll-area">
+              <table class="table" id="approvedTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Facility</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Purpose</th>
+                    <th>Payment</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="approvedTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payments Tab Content -->
+        <div class="tab-content" id="payments-tab">
+          <div class="payment-summary-bar">
+            <div class="payment-summary-card">
+              <h4>Total Collected</h4>
+              <div
+                class="value"
+                id="totalCollectedValue"
+                style="color: #166534"
+              >
+                &#8369;0.00
+              </div>
+            </div>
+            <div class="payment-summary-card">
+              <h4>Pending Collection</h4>
+              <div class="value" id="totalPendingValue" style="color: #92400e">
+                &#8369;0.00
+              </div>
+            </div>
+            <div class="payment-summary-card">
+              <h4>Collection Rate</h4>
+              <div
+                class="value"
+                id="collectionRateValue"
+                style="color: #1e293b"
+              >
+                0%
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Filters -->
+          <div
+            style="
+              display: flex;
+              gap: 0.75rem;
+              flex-wrap: wrap;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <input
+              type="text"
+              id="payment-search-name"
+              placeholder="Search by name..."
+              oninput="filterPayments()"
+              style="
+                flex: 1;
+                min-width: 160px;
+                padding: 8px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 0.875rem;
+              "
+            />
+            <select
+              id="payment-filter-facility"
+              onchange="filterPayments()"
+              style="
+                padding: 8px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                background: white;
+              "
+            >
+              <option value="">All Facilities</option>
+              <option value="auditorium">Auditorium</option>
+              <option value="library">Library</option>
+              <option value="grounds">Grounds</option>
+              <option value="avr">AVR</option>
+              <option value="gym">Gym</option>
+            </select>
+            <select
+              id="payment-filter-status"
+              onchange="filterPayments()"
+              style="
+                padding: 8px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                background: white;
+              "
+            >
+              <option value="">All Statuses</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="unpaid">Unpaid</option>
+            </select>
+            <button
+              onclick="clearPaymentFilters()"
+              style="
+                padding: 8px 14px;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                background: white;
+                cursor: pointer;
+                color: #64748b;
+              "
+            >
+              Clear
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Direct Payment Management</h2>
+              <div style="font-size: 12px; color: #64748b">
+                Click status badges to toggle or adjust amounts inline.
+              </div>
+            </div>
+            <div id="paidTableContainer">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Booker Name</th>
+                    <th>Facility</th>
+                    <th>Date</th>
+                    <th>Amount (&#8369;)</th>
+                    <th>Payment Tracking</th>
+                    <th>Payment Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="paidTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cancellations Tab Content -->
+        <div id="cancellations-tab" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h2>Cancellation Requests</h2>
+              <span class="badge badge-secondary" id="cancellationsCount"
+                >0 requests</span
+              >
+            </div>
+            <div class="scroll-area">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Requested</th>
+                    <th>Name</th>
+                    <th>Facility</th>
+                    <th>Event Date</th>
+                    <th>Cancellation Reason</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="cancellationsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forecast Tab Content -->
+        <div class="tab-content" id="forecast-tab">
+          <div id="admin-forecast-content" class="forecast-container"></div>
+        </div>
+
+        <!-- History Tab Content -->
+        <div id="history-tab" class="tab-content">
+          <div class="card filter-card" style="margin-bottom: 16px">
+            <div class="filter-header">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <h3 style="margin: 0; font-size: 14px; font-weight: 500">
+                  Quick Filters
+                </h3>
+              </div>
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="clearHistoryFilters()"
+              >
+                Clear
+              </button>
+            </div>
+            <div class="filter-grid">
+              <div class="input-wrapper" style="grid-column: span 2">
+                <input
+                  type="text"
+                  id="historySearchFilter"
+                  placeholder="Search by name..."
+                  class="filter-input"
+                  oninput="filterHistory()"
+                />
+              </div>
+              <select
+                id="historyFacilityFilter"
+                class="filter-select"
+                onchange="filterHistory()"
+              >
+                <option value="all">Filter: All Facilities</option>
+                <option value="auditorium">Auditorium</option>
+                <option value="library">Library</option>
+                <option value="grounds">Grounds</option>
+                <option value="avr">AVR</option>
+                <option value="gym">Gym</option>
+              </select>
+              <select
+                id="historyStatusFilter"
+                class="filter-select"
+                onchange="filterHistory()"
+              >
+                <option value="all">All Statuses</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Past Block">Past Block</option>
+              </select>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Record History</h2>
+              <span class="badge badge-secondary" id="historyCount"
+                >0 records</span
+              >
+            </div>
+            <div class="scroll-area">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Facility</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Add Event Modal -->
     <div class="modal" id="addEventModal">
-        <div class="modal-content modal-medium">
-            <div class="modal-header">
-                <h2>Post New School Event</h2>
-                <button class="modal-close" onclick="closeAddEventModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Event Title *</label>
-                        <input type="text" class="input" id="eventTitle" placeholder="e.g., Annual Science Fair">
-                    </div>
-                    <div class="form-group">
-                        <label>Date *</label>
-                        <input type="date" class="input" id="eventDate" onchange="(function(){const to=buildTimeOptions();const s=document.getElementById('eventStartTime');const e=document.getElementById('eventEndTime');const sv=s.value,ev=e.value;s.innerHTML=to;e.innerHTML=to;s.value=sv;e.value=ev;refreshEventConflicts();})()">
-                    </div>
-                    <div class="form-group">
-                        <label>Start Time *</label>
-                        <select class="select" id="eventStartTime"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>End Time *</label>
-                        <select class="select" id="eventEndTime"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Location *</label>
-                        <select class="select" id="eventLocation" onchange="(function(){const to=buildTimeOptions();const s=document.getElementById('eventStartTime');const e=document.getElementById('eventEndTime');const sv=s.value,ev=e.value;s.innerHTML=to;e.innerHTML=to;s.value=sv;e.value=ev;refreshEventConflicts();})()">
-                            <option value="Auditorium">Auditorium</option>
-                            <option value="Library">Library</option>
-                            <option value="Grounds">Grounds</option>
-                            <option value="AVR">AVR</option>
-                            <option value="Gym">Gym</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group full-width" id="event-conflict-warning" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 14px;font-size:13px;color:#991b1b;">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Description *</label>
-                        <textarea class="textarea" id="eventDescription" rows="3" placeholder="Briefly describe the event..."></textarea>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Image URL (Optional)</label>
-                        <input type="text" class="input" id="eventImageUrl" placeholder="https://images.unsplash.com/...">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAddEventModal()">Cancel</button>
-                <button class="btn btn-primary" id="saveEventBtn" type="button">Post Event</button>
-            </div>
+      <div class="modal-content modal-medium">
+        <div class="modal-header">
+          <h2>Post New School Event</h2>
+          <button class="modal-close" onclick="closeAddEventModal()">
+            &times;
+          </button>
         </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Event Title *</label>
+              <input
+                type="text"
+                class="input"
+                id="eventTitle"
+                placeholder="e.g., Annual Science Fair"
+              />
+            </div>
+            <div class="form-group">
+              <label>Date *</label>
+              <input
+                type="date"
+                class="input"
+                id="eventDate"
+                onchange="
+                  (function () {
+                    const to = buildTimeOptions();
+                    const s = document.getElementById('eventStartTime');
+                    const e = document.getElementById('eventEndTime');
+                    const sv = s.value,
+                      ev = e.value;
+                    s.innerHTML = to;
+                    e.innerHTML = to;
+                    s.value = sv;
+                    e.value = ev;
+                    refreshEventConflicts();
+                  })()
+                "
+              />
+            </div>
+            <div class="form-group">
+              <label>Start Time *</label>
+              <select class="select" id="eventStartTime"></select>
+            </div>
+            <div class="form-group">
+              <label>End Time *</label>
+              <select class="select" id="eventEndTime"></select>
+            </div>
+            <div class="form-group">
+              <label>Location *</label>
+              <select
+                class="select"
+                id="eventLocation"
+                onchange="
+                  (function () {
+                    const to = buildTimeOptions();
+                    const s = document.getElementById('eventStartTime');
+                    const e = document.getElementById('eventEndTime');
+                    const sv = s.value,
+                      ev = e.value;
+                    s.innerHTML = to;
+                    e.innerHTML = to;
+                    s.value = sv;
+                    e.value = ev;
+                    refreshEventConflicts();
+                  })()
+                "
+              >
+                <option value="">Loading facilities...</option>
+              </select>
+            </div>
+
+            <div
+              class="form-group full-width"
+              id="event-conflict-warning"
+              style="
+                display: none;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 6px;
+                padding: 10px 14px;
+                font-size: 13px;
+                color: #991b1b;
+              "
+            ></div>
+
+            <div class="form-group full-width">
+              <label>Description *</label>
+              <textarea
+                class="textarea"
+                id="eventDescription"
+                rows="3"
+                placeholder="Briefly describe the event..."
+              ></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>Image URL (Optional)</label>
+              <input
+                type="text"
+                class="input"
+                id="eventImageUrl"
+                placeholder="https://images.unsplash.com/..."
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeAddEventModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="saveEventBtn" type="button">
+            Post Event
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Day Action Choice Modal -->
     <div class="modal" id="dayActionModal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Manage Day</h2>
-                <button class="modal-close" onclick="closeDayActionModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size: 14px; color: #475569; margin-bottom: 16px;">
-                    <strong id="dayActionDateLabel" style="color:#0f172a;"></strong>
-                </p>
-
-                <!-- Existing events on this day -->
-                <div id="dayActionExisting" style="display:none; margin-bottom: 16px;">
-                    <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">On this day</div>
-                    <div id="dayActionExistingList" style="display:flex; flex-direction:column; gap:8px;"></div>
-                </div>
-
-                <!-- Add actions -->
-                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Add</div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-outline" id="dayActionEventBtn" style="justify-content: flex-start; gap: 12px; padding: 12px 14px; font-size: 13px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <div style="text-align:left;">
-                            <div style="font-weight:600;">Add School Event</div>
-                            <div style="font-size:11px; color:#64748b; font-weight:400;">Post a public event visible to users</div>
-                        </div>
-                    </button>
-                    <button class="btn" id="dayActionBlockBtn" style="justify-content:flex-start; gap:12px; padding:12px 14px; font-size:13px; background:white; color:#b91c1c; border:1px solid #fca5a5;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <div style="text-align:left;">
-                            <div style="font-weight:600;">Block Facility</div>
-                            <div style="font-size:11px; color:#64748b; font-weight:400;">Cancel availability for one or all facilities</div>
-                        </div>
-                    </button>
-                    <button class="btn btn-bchs" id="openAddReservationBtn" style="justify-content:flex-start; gap:12px; padding:12px 14px; font-size:13px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        <div style="text-align:left;">
-                            <div style="font-weight:600;">New Reservation</div>
-                            <div style="font-size:11px; color:rgba(255,255,255,0.75); font-weight:400;">Manually add a reservation entry</div>
-                        </div>
-                    </button>
-                </div>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Manage Day</h2>
+          <button class="modal-close" onclick="closeDayActionModal()">
+            &times;
+          </button>
         </div>
+        <div class="modal-body">
+          <p style="font-size: 14px; color: #475569; margin-bottom: 16px">
+            <strong id="dayActionDateLabel" style="color: #0f172a"></strong>
+          </p>
+
+          <!-- Existing events on this day -->
+          <div
+            id="dayActionExisting"
+            style="display: none; margin-bottom: 16px"
+          >
+            <div
+              style="
+                font-size: 12px;
+                font-weight: 700;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 8px;
+              "
+            >
+              On this day
+            </div>
+            <div
+              id="dayActionExistingList"
+              style="display: flex; flex-direction: column; gap: 8px"
+            ></div>
+          </div>
+
+          <!-- Add actions -->
+          <div
+            style="
+              font-size: 12px;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 8px;
+            "
+          >
+            Add
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <button
+              class="btn btn-outline"
+              id="dayActionEventBtn"
+              style="
+                justify-content: flex-start;
+                gap: 12px;
+                padding: 12px 14px;
+                font-size: 13px;
+              "
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <div style="text-align: left">
+                <div style="font-weight: 600">Add School Event</div>
+                <div style="font-size: 11px; color: #64748b; font-weight: 400">
+                  Post a public event visible to users
+                </div>
+              </div>
+            </button>
+            <button
+              class="btn"
+              id="dayActionBlockBtn"
+              style="
+                justify-content: flex-start;
+                gap: 12px;
+                padding: 12px 14px;
+                font-size: 13px;
+                background: white;
+                color: #b91c1c;
+                border: 1px solid #fca5a5;
+              "
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+              <div style="text-align: left">
+                <div style="font-weight: 600">Block Facility</div>
+                <div style="font-size: 11px; color: #64748b; font-weight: 400">
+                  Cancel availability for one or all facilities
+                </div>
+              </div>
+            </button>
+            <button
+              class="btn btn-bchs"
+              id="openAddReservationBtn"
+              style="
+                justify-content: flex-start;
+                gap: 12px;
+                padding: 12px 14px;
+                font-size: 13px;
+              "
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <div style="text-align: left">
+                <div style="font-weight: 600">New Reservation</div>
+                <div
+                  style="
+                    font-size: 11px;
+                    color: rgba(255, 255, 255, 0.75);
+                    font-weight: 400;
+                  "
+                >
+                  Manually add a reservation entry
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Facility Manager Modal (Enhanced Day Toggle) -->
     <div class="modal" id="quickBlockModal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Cancel Facility Availability</h2>
-                <button class="modal-close" onclick="closeQuickBlock()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 15px; font-size: 14px; color: #475569;">
-                    Manage facility availability for <strong id="quickBlockDateLabel" style="color:#0f172a;"></strong>.
-                </p>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="font-weight: 600;">Select Facilities to BLOCK</label>
-                    <div id="roomCheckboxList" class="room-checkbox-grid">
-                        <label class="room-checkbox-item"><input type="checkbox" name="roomBlock" value="all"> <strong>ALL FACILITIES</strong></label>
-                        <label class="room-checkbox-item"><input type="checkbox" name="roomBlock" value="Auditorium"> Auditorium</label>
-                        <label class="room-checkbox-item"><input type="checkbox" name="roomBlock" value="Library"> Library</label>
-                        <label class="room-checkbox-item"><input type="checkbox" name="roomBlock" value="Grounds"> Grounds</label>
-                        <label class="room-checkbox-item"><input type="checkbox" name="roomBlock" value="AVR"> AVR</label>
-                        <label class="room-checkbox-item"><input type="checkbox" name="roomBlock" value="Gym"> Gym</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label style="font-weight: 600;">Reason for Cancellation *</label>
-                    <textarea class="textarea" id="quickBlockReason" rows="3" placeholder="e.g., General Maintenance, School Holiday, Event Prep"></textarea>
-                    <p style="font-size: 11px; color: #64748b; margin-top: 4px;">This reason will be visible to users in the calendar.</p>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-weight: 600;">Start Time</label>
-                        <select class="select" id="quickBlockStartTime"></select>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-weight: 600;">End Time</label>
-                        <select class="select" id="quickBlockEndTime"></select>
-                    </div>
-                </div>
-
-                <div id="existingBlocksList" class="existing-blocks-section" style="display:none;">
-                    <label style="font-weight: 600; color: #b91c1c; display: block; margin-bottom: 8px;">Active Blocks (Already Cancelled)</label>
-                    <div id="blocksContainer"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeQuickBlock()">Close</button>
-                <button class="btn btn-destructive" id="confirmQuickBlockBtn">Apply Blocks</button>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Cancel Facility Availability</h2>
+          <button class="modal-close" onclick="closeQuickBlock()">
+            &times;
+          </button>
         </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 15px; font-size: 14px; color: #475569">
+            Manage facility availability for
+            <strong id="quickBlockDateLabel" style="color: #0f172a"></strong>.
+          </p>
+
+          <div class="form-group" style="margin-bottom: 16px">
+            <label style="font-weight: 600">Select Facilities to BLOCK</label>
+            <div id="facilityCheckboxList" class="facility-checkbox-grid">
+              <label class="facility-checkbox-item"
+                ><input type="checkbox" name="facilityBlock" value="all" />
+                <strong>ALL FACILITIES</strong></label
+              >
+              <label class="facility-checkbox-item"
+                ><input
+                  type="checkbox"
+                  name="facilityBlock"
+                  value="Auditorium"
+                />
+                Auditorium</label
+              >
+              <label class="facility-checkbox-item"
+                ><input type="checkbox" name="facilityBlock" value="Library" />
+                Library</label
+              >
+              <label class="facility-checkbox-item"
+                ><input type="checkbox" name="facilityBlock" value="Grounds" />
+                Grounds</label
+              >
+              <label class="facility-checkbox-item"
+                ><input type="checkbox" name="facilityBlock" value="AVR" />
+                AVR</label
+              >
+              <label class="facility-checkbox-item"
+                ><input type="checkbox" name="facilityBlock" value="Gym" />
+                Gym</label
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600">Reason for Cancellation *</label>
+            <textarea
+              class="textarea"
+              id="quickBlockReason"
+              rows="3"
+              placeholder="e.g., General Maintenance, School Holiday, Event Prep"
+            ></textarea>
+            <p style="font-size: 11px; color: #64748b; margin-top: 4px">
+              This reason will be visible to users in the calendar.
+            </p>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 12px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="form-group" style="margin-bottom: 0">
+              <label style="font-weight: 600">Start Time</label>
+              <select class="select" id="quickBlockStartTime"></select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0">
+              <label style="font-weight: 600">End Time</label>
+              <select class="select" id="quickBlockEndTime"></select>
+            </div>
+          </div>
+
+          <div
+            id="existingBlocksList"
+            class="existing-blocks-section"
+            style="display: none"
+          >
+            <label
+              style="
+                font-weight: 600;
+                color: #b91c1c;
+                display: block;
+                margin-bottom: 8px;
+              "
+              >Active Blocks (Already Cancelled)</label
+            >
+            <div id="blocksContainer"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeQuickBlock()">
+            Close
+          </button>
+          <button class="btn btn-destructive" id="confirmQuickBlockBtn">
+            Apply Blocks
+          </button>
+        </div>
+      </div>
     </div>
 
-        <!-- Manual Reservation Modal -->
+    <!-- Manual Reservation Modal -->
     <div class="modal" id="addReservationModal">
-        <div class="modal-content modal-medium">
-            <div class="modal-header">
-                <h2>Add Manual Reservation</h2>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="display:flex;align-items:center;gap:10px;padding-right:12px;">
-                        <span style="font-size:12px;font-weight:600;color:#94a3b8;letter-spacing:0.05em;text-transform:uppercase;">Requester</span>
-                        <div id="staffToggleTrack"
-                             onclick="document.getElementById('manualIsStaff').checked=!document.getElementById('manualIsStaff').checked;updateManualPricing();"
-                             style="position:relative;display:flex;align-items:center;width:160px;height:36px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;overflow:hidden;user-select:none;transition:border-color .2s;">
-                            <!-- sliding pill -->
-                            <div id="staffTogglePill" style="position:absolute;top:3px;left:3px;width:76px;height:28px;background:white;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .25s cubic-bezier(.4,0,.2,1);z-index:0;"></div>
-                            <!-- labels -->
-                            <span id="staffToggleLabel" style="position:relative;z-index:1;flex:1;text-align:center;font-size:12px;font-weight:700;color:#475569;transition:color .2s;">Community</span>
-                            <span id="staffToggleLabelOn" style="position:relative;z-index:1;flex:1;text-align:center;font-size:12px;font-weight:700;color:#94a3b8;transition:color .2s;">Staff</span>
-                        </div>
-                        <input type="checkbox" id="manualIsStaff" onchange="updateManualPricing()" style="display:none;">
-                    </div>
-                    <button class="modal-close" onclick="closeAddReservationModal()">&times;</button>
-                </div>
+      <div class="modal-content modal-medium">
+        <div class="modal-header">
+          <h2>Add Manual Reservation</h2>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding-right: 12px;
+              "
+            >
+              <span
+                style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: #94a3b8;
+                  letter-spacing: 0.05em;
+                  text-transform: uppercase;
+                "
+                >Requester</span
+              >
+              <div
+                id="staffToggleTrack"
+                onclick="
+                  document.getElementById('manualIsStaff').checked =
+                    !document.getElementById('manualIsStaff').checked;
+                  updateManualPricing();
+                "
+                style="
+                  position: relative;
+                  display: flex;
+                  align-items: center;
+                  width: 160px;
+                  height: 36px;
+                  background: #f1f5f9;
+                  border: 1.5px solid #e2e8f0;
+                  border-radius: 10px;
+                  cursor: pointer;
+                  overflow: hidden;
+                  user-select: none;
+                  transition: border-color 0.2s;
+                "
+              >
+                <!-- sliding pill -->
+                <div
+                  id="staffTogglePill"
+                  style="
+                    position: absolute;
+                    top: 3px;
+                    left: 3px;
+                    width: 76px;
+                    height: 28px;
+                    background: white;
+                    border-radius: 7px;
+                    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+                    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                    z-index: 0;
+                  "
+                ></div>
+                <!-- labels -->
+                <span
+                  id="staffToggleLabel"
+                  style="
+                    position: relative;
+                    z-index: 1;
+                    flex: 1;
+                    text-align: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #475569;
+                    transition: color 0.2s;
+                  "
+                  >Community</span
+                >
+                <span
+                  id="staffToggleLabelOn"
+                  style="
+                    position: relative;
+                    z-index: 1;
+                    flex: 1;
+                    text-align: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #94a3b8;
+                    transition: color 0.2s;
+                  "
+                  >Staff</span
+                >
+              </div>
+              <input
+                type="checkbox"
+                id="manualIsStaff"
+                onchange="updateManualPricing()"
+                style="display: none"
+              />
             </div>
-            <div class="modal-body">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Event Name / Organization Name *</label>
-                        <input type="text" class="input" id="manualName" placeholder="e.g., Science Dept. Conference">
-                    </div>
-                    <div class="form-group">
-                        <label>Contact Person *</label>
-                        <input type="text" class="input" id="manualContact" placeholder="e.g., Juan Dela Cruz">
-                    </div>
-                    <div class="form-group">
-                        <label>Contact Number</label>
-                        <input type="tel" class="input" id="manualContactNumber" placeholder="e.g., 09123456789">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" class="input" id="manualEmail" placeholder="e.g., contact@example.com">
-                    </div>
-
-                    <div class="form-group full-width" style="margin: 0.25rem 0;">
-                        <hr style="border: none; border-top: 1px solid #e2e8f0;">
-                        <p style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-top: 0.75rem;">Reservation Details</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Select Room *</label>
-                        <div id="admin-facility-row" class="admin-facility-row"></div>
-                        <!-- hidden input keeps the selected value for JS reads -->
-                        <input type="hidden" id="manualRoom">
-                    </div>
-                    <div class="form-group">
-                        <label>Date *</label>
-                        <input type="date" class="input" id="manualDate" onchange="refreshManualConflicts()">
-                    </div>
-                    <div class="form-group">
-                        <label>Start Time *</label>
-                        <select class="select" id="manualStartTime">
-                            <option value="07:00">7:00 AM</option>
-                            <option value="07:30">7:30 AM</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="08:30">8:30 AM</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="09:30">9:30 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="10:30">10:30 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="11:30">11:30 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="12:30">12:30 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="13:30">1:30 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="14:30">2:30 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="15:30">3:30 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="16:30">4:30 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                            <option value="17:30">5:30 PM</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>End Time *</label>
-                        <select class="select" id="manualEndTime">
-                            <option value="07:30">7:30 AM</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="08:30">8:30 AM</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="09:30">9:30 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="10:30">10:30 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="11:30">11:30 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="12:30">12:30 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="13:30">1:30 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="14:30">2:30 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="15:30">3:30 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="16:30">4:30 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                            <option value="17:30">5:30 PM</option>
-                            <option value="18:00">6:00 PM</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width" id="manual-conflict-warning" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 14px;font-size:13px;color:#991b1b;margin-top:-8px;">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Purpose / Type of Activity *</label>
-                        <select class="select" id="manualPurpose" onchange="updateAdminRoomSuggestion();document.getElementById('purposeOtherBox').style.display=this.value==='Other'?'block':'none';document.getElementById('adminPaxRow').style.display=this.value?'':'none';">
-                            <option value="">-- Select a purpose --</option>
-                            <optgroup label="Academic Activities">
-                                <option value="Seminar/Workshop">Seminar/Workshop</option>
-                                <option value="Training Session">Training Session</option>
-                                <option value="Conference">Conference</option>
-                                <option value="Lecture/Presentation">Lecture/Presentation</option>
-                                <option value="Study Group">Study Group</option>
-                                <option value="Research Activity">Research Activity</option>
-                                <option value="Examination">Examination</option>
-                            </optgroup>
-                            <optgroup label="Sports & Recreation">
-                                <option value="Basketball Practice">Basketball Practice</option>
-                                <option value="Volleyball Practice">Volleyball Practice</option>
-                                <option value="Sports Tournament">Sports Tournament</option>
-                                <option value="Physical Education">Physical Education</option>
-                                <option value="Team Building">Team Building</option>
-                                <option value="Outdoor Activity">Outdoor Activity</option>
-                            </optgroup>
-                            <optgroup label="Events & Ceremonies">
-                                <option value="Graduation Ceremony">Graduation Ceremony</option>
-                                <option value="Awards Ceremony">Awards Ceremony</option>
-                                <option value="Cultural Event">Cultural Event</option>
-                                <option value="Performance/Concert">Performance/Concert</option>
-                                <option value="Film Screening">Film Screening</option>
-                                <option value="Exhibition">Exhibition</option>
-                            </optgroup>
-                            <optgroup label="Meetings & Organizations">
-                                <option value="Club Meeting">Club Meeting</option>
-                                <option value="Organization Meeting">Organization Meeting</option>
-                                <option value="Committee Meeting">Committee Meeting</option>
-                                <option value="Parent-Teacher Meeting">Parent-Teacher Meeting</option>
-                                <option value="Board Meeting">Board Meeting</option>
-                            </optgroup>
-                            <optgroup label="Other">
-                                <option value="Other">Other</option>
-                            </optgroup>
-                        </select>
-                        <input type="text" id="purposeOtherBox" class="input" placeholder="Please specify your purpose..." style="display:none;margin-top:8px;">
-                    </div>
-                    <div class="form-group" id="adminPaxRow" style="display:none;">
-                        <label>Estimated Attendees *</label>
-                        <input type="number" class="input" id="manualAttendees" value="0" min="0" oninput="updateAdminRoomSuggestion();renderAdminFacilityPicker();checkAdminMinPax()">
-                        <div id="admin-min-pax-warning" style="font-size:0.78rem;color:#dc2626;font-weight:600;margin-top:0.25rem;display:none;"></div>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Equipment Needed (Optional)</label>
-                        <div style="display:flex;flex-wrap:wrap;gap:0.5rem 1.25rem;margin-top:0.4rem;" id="manualUtilities">
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Tables"> Tables
-                            </label>
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Chairs"> Chairs
-                            </label>
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Whiteboard"> Whiteboard
-                            </label>
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Net"> Net
-                            </label>
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Mat"> Mat
-                            </label>
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Podium"> Podium
-                            </label>
-                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.875rem;font-weight:400;cursor:pointer;">
-                                <input type="checkbox" value="Others" onchange="document.getElementById('utilitiesOtherBox').style.display=this.checked?'block':'none';"> Others
-                            </label>
-                        </div>
-                        <input type="text" id="utilitiesOtherBox" placeholder="Please specify..." style="display:none;margin-top:0.5rem;width:100%;padding:0.5rem 0.75rem;border:1px solid #cbd5e1;border-radius:0.5rem;font-size:0.875rem;">
-                    </div>
-                    <div class="form-group full-width" id="admin-room-suggestion" style="display:none;">
-                        <div id="admin-suggestion-text" style="background:#fdf4ff;border:1px solid #d946ef;padding:10px 12px;border-radius:6px;font-size:12px;color:#701a75;"></div>
-                    </div>
-                    <div class="form-group">
-                        <label>Payment Status</label>
-                        <select class="select" id="manualPaymentStatus">
-                            <option value="paid">Paid</option>
-                            <option value="pending">Pending</option>
-                            <option value="unpaid">Unpaid</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width" id="manualPricingPreview" style="display:none;">
-                        <div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:8px;padding:12px;">
-                            <div style="font-size:12px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Pricing Summary</div>
-                            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-                                <span style="color:#64748b;">Facility Rate:</span>
-                                <span id="manualPriceRate" style="font-weight:600;">â‚±0/hr</span>
-                            </div>
-                            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-                                <span style="color:#64748b;">Duration:</span>
-                                <span id="manualPriceDuration" style="font-weight:600;">0 hrs</span>
-                            </div>
-                            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-                                <span style="color:#64748b;">Facility Subtotal:</span>
-                                <span id="manualPriceSubtotal" style="font-weight:600;">â‚±0.00</span>
-                            </div>
-                            <div id="manualUtilityFeeRow" style="display:none;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-                                <span style="color:#64748b;">Utility Fee (8+ hrs):</span>
-                                <span id="manualUtilityFeeAmount" style="font-weight:600;color:#92400e;">â‚±800.00</span>
-                            </div>
-                            <div style="height:1px;background:#e2e8f0;margin:6px 0;"></div>
-                            <div style="display:flex;justify-content:space-between;font-size:14px;">
-                                <span style="font-weight:700;color:#1e293b;">Total Amount:</span>
-                                <span id="manualPriceTotal" style="font-weight:700;color:#800020;">â‚±0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAddReservationModal()">Cancel</button>
-                <button class="btn btn-primary" id="saveManualReservationBtn">Save Reservation</button>
-            </div>
+            <button class="modal-close" onclick="closeAddReservationModal()">
+              &times;
+            </button>
+          </div>
         </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Event Name / Organization Name *</label>
+              <input
+                type="text"
+                class="input"
+                id="manualName"
+                placeholder="e.g., Science Dept. Conference"
+              />
+            </div>
+            <div class="form-group">
+              <label>Contact Person *</label>
+              <input
+                type="text"
+                class="input"
+                id="manualContact"
+                placeholder="e.g., Juan Dela Cruz"
+              />
+            </div>
+            <div class="form-group">
+              <label>Contact Number</label>
+              <input
+                type="tel"
+                class="input"
+                id="manualContactNumber"
+                placeholder="e.g., 09123456789"
+              />
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input
+                type="email"
+                class="input"
+                id="manualEmail"
+                placeholder="e.g., contact@example.com"
+              />
+            </div>
+
+            <div class="form-group full-width" style="margin: 0.25rem 0">
+              <hr style="border: none; border-top: 1px solid #e2e8f0" />
+              <p
+                style="
+                  font-size: 0.72rem;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 0.08em;
+                  color: #94a3b8;
+                  margin-top: 0.75rem;
+                "
+              >
+                Reservation Details
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label>Select Facility *</label>
+              <div id="admin-facility-row" class="admin-facility-row"></div>
+              <!-- hidden input keeps the selected value for JS reads -->
+              <input type="hidden" id="manualFacility" />
+            </div>
+            <div class="form-group">
+              <label>Date *</label>
+              <input
+                type="date"
+                class="input"
+                id="manualDate"
+                onchange="refreshManualConflicts()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Start Time *</label>
+              <select class="select" id="manualStartTime">
+                <option value="07:00">7:00 AM</option>
+                <option value="07:30">7:30 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="08:30">8:30 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="09:30">9:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="13:30">1:30 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="16:30">4:30 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="17:30">5:30 PM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>End Time *</label>
+              <select class="select" id="manualEndTime">
+                <option value="07:30">7:30 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="08:30">8:30 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="09:30">9:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="13:30">1:30 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="16:30">4:30 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="17:30">5:30 PM</option>
+                <option value="18:00">6:00 PM</option>
+              </select>
+            </div>
+            <div
+              class="form-group full-width"
+              id="manual-conflict-warning"
+              style="
+                display: none;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 6px;
+                padding: 10px 14px;
+                font-size: 13px;
+                color: #991b1b;
+                margin-top: -8px;
+              "
+            ></div>
+            <div class="form-group full-width">
+              <label>Purpose / Type of Activity *</label>
+              <select
+                class="select"
+                id="manualPurpose"
+                onchange="
+                  updateAdminFacilitySuggestion();
+                  document.getElementById('purposeOtherBox').style.display =
+                    this.value === 'Other' ? 'block' : 'none';
+                  document.getElementById('adminPaxRow').style.display = this
+                    .value
+                    ? ''
+                    : 'none';
+                "
+              >
+                <option value="">-- Select a purpose --</option>
+                <optgroup label="Academic Activities">
+                  <option value="Seminar/Workshop">Seminar/Workshop</option>
+                  <option value="Training Session">Training Session</option>
+                  <option value="Conference">Conference</option>
+                  <option value="Lecture/Presentation">
+                    Lecture/Presentation
+                  </option>
+                  <option value="Study Group">Study Group</option>
+                  <option value="Research Activity">Research Activity</option>
+                  <option value="Examination">Examination</option>
+                </optgroup>
+                <optgroup label="Sports & Recreation">
+                  <option value="Basketball Practice">
+                    Basketball Practice
+                  </option>
+                  <option value="Volleyball Practice">
+                    Volleyball Practice
+                  </option>
+                  <option value="Sports Tournament">Sports Tournament</option>
+                  <option value="Physical Education">Physical Education</option>
+                  <option value="Team Building">Team Building</option>
+                  <option value="Outdoor Activity">Outdoor Activity</option>
+                </optgroup>
+                <optgroup label="Events & Ceremonies">
+                  <option value="Graduation Ceremony">
+                    Graduation Ceremony
+                  </option>
+                  <option value="Awards Ceremony">Awards Ceremony</option>
+                  <option value="Cultural Event">Cultural Event</option>
+                  <option value="Performance/Concert">
+                    Performance/Concert
+                  </option>
+                  <option value="Film Screening">Film Screening</option>
+                  <option value="Exhibition">Exhibition</option>
+                </optgroup>
+                <optgroup label="Meetings & Organizations">
+                  <option value="Club Meeting">Club Meeting</option>
+                  <option value="Organization Meeting">
+                    Organization Meeting
+                  </option>
+                  <option value="Committee Meeting">Committee Meeting</option>
+                  <option value="Parent-Teacher Meeting">
+                    Parent-Teacher Meeting
+                  </option>
+                  <option value="Board Meeting">Board Meeting</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="Other">Other</option>
+                </optgroup>
+              </select>
+              <input
+                type="text"
+                id="purposeOtherBox"
+                class="input"
+                placeholder="Please specify your purpose..."
+                style="display: none; margin-top: 8px"
+              />
+            </div>
+            <div class="form-group" id="adminPaxRow" style="display: none">
+              <label>Estimated Attendees *</label>
+              <input
+                type="number"
+                class="input"
+                id="manualAttendees"
+                value="0"
+                min="0"
+                oninput="
+                  updateAdminFacilitySuggestion();
+                  renderAdminFacilityPicker();
+                  checkAdminMinPax();
+                "
+              />
+              <div
+                id="admin-min-pax-warning"
+                style="
+                  font-size: 0.78rem;
+                  color: #dc2626;
+                  font-weight: 600;
+                  margin-top: 0.25rem;
+                  display: none;
+                "
+              ></div>
+            </div>
+            <div class="form-group full-width">
+              <label>Equipment Needed (Optional)</label>
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 0.5rem 1.25rem;
+                  margin-top: 0.4rem;
+                "
+                id="manualUtilities"
+              >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input type="checkbox" value="Tables" /> Tables
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input type="checkbox" value="Chairs" /> Chairs
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input type="checkbox" value="Whiteboard" /> Whiteboard
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input type="checkbox" value="Net" /> Net
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input type="checkbox" value="Mat" /> Mat
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input type="checkbox" value="Podium" /> Podium
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.875rem;
+                    font-weight: 400;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    value="Others"
+                    onchange="
+                      document.getElementById(
+                        'utilitiesOtherBox',
+                      ).style.display = this.checked ? 'block' : 'none'
+                    "
+                  />
+                  Others
+                </label>
+              </div>
+              <input
+                type="text"
+                id="utilitiesOtherBox"
+                placeholder="Please specify..."
+                style="
+                  display: none;
+                  margin-top: 0.5rem;
+                  width: 100%;
+                  padding: 0.5rem 0.75rem;
+                  border: 1px solid #cbd5e1;
+                  border-radius: 0.5rem;
+                  font-size: 0.875rem;
+                "
+              />
+            </div>
+            <div
+              class="form-group full-width"
+              id="admin-facility-suggestion"
+              style="display: none"
+            >
+              <div
+                id="admin-suggestion-text"
+                style="
+                  background: #fdf4ff;
+                  border: 1px solid #d946ef;
+                  padding: 10px 12px;
+                  border-radius: 6px;
+                  font-size: 12px;
+                  color: #701a75;
+                "
+              ></div>
+            </div>
+            <div class="form-group" id="manualPaymentStatusGroup">
+                <label>Payment Status</label>
+                <select class="select" id="manualPaymentStatus">
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="unpaid">Unpaid</option>
+                </select>
+            </div>
+            <div
+                class="form-group full-width"
+                id="manualPricingPreview"
+                style="display: none"
+            >
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 12px;
+                  "
+                >
+                  <div
+                    style="
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #1e293b;
+                      text-transform: uppercase;
+                      letter-spacing: 0.05em;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    Pricing Summary
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
+                  >
+                    <span style="color: #64748b">Facility Rate:</span>
+                    <span id="manualPriceRate" style="font-weight: 600"
+                      >₱0/hr</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
+                  >
+                    <span style="color: #64748b">Duration:</span>
+                    <span id="manualPriceDuration" style="font-weight: 600"
+                      >0 hrs</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
+                  >
+                    <span style="color: #64748b">Facility Subtotal:</span>
+                    <span id="manualPriceSubtotal" style="font-weight: 600"
+                      >₱0.00</span
+                    >
+                  </div>
+                  <div
+                    id="manualUtilityFeeRow"
+                    style="
+                      display: none;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 4px;
+                    "
+                  >
+                    <span style="color: #64748b">Utility Fee (8+ hrs):</span>
+                    <span
+                      id="manualUtilityFeeAmount"
+                      style="font-weight: 600; color: #92400e"
+                      >₱800.00</span
+                    >
+                  </div>
+                  <div
+                    style="height: 1px; background: #e2e8f0; margin: 6px 0"
+                  ></div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 14px;
+                    "
+                  >
+                    <span style="font-weight: 700; color: #1e293b"
+                      >Total Amount:</span
+                    >
+                    <span
+                      id="manualPriceTotal"
+                      style="font-weight: 700; color: #800020"
+                      >₱0.00</span
+                    >
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="closeAddReservationModal()"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="saveManualReservationBtn">
+            Save Reservation
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Manage reservation Modal (Unified Context-Aware Editor) -->
     <div class="modal" id="editModal">
-        <div class="modal-content modal-medium">
-            <div class="modal-header">
-                <h2 id="editModalTitle">Manage reservation Entry</h2>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <button id="modal-reject-btn" style="display:none;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:0.35rem 0.9rem;border-radius:0.375rem;font-size:0.8rem;font-weight:600;cursor:pointer;"
-                        onclick="setTimeout(()=>selectReservationStatus('rejected'),50)">
-                        Reject
-                    </button>
-                    <button class="modal-close" id="closeEditModal">&times;</button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <div id="edit-summary" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:10px;"></div>
-                
-                <div class="modal-section-title">Schedule Details</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Facility *</label>
-                        <select class="select edit-field-locked" id="editRoomId">
-                            <!-- Populated by JS -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Event Date *</label>
-                        <input type="date" class="input edit-field-locked" id="editDate">
-                    </div>
-                    <div class="form-group">
-                        <label>Start Time *</label>
-                        <select class="select edit-field-locked" id="editStartTime">
-                            <option value="07:00">7:00 AM</option>
-                            <option value="07:30">7:30 AM</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="08:30">8:30 AM</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="09:30">9:30 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="10:30">10:30 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="11:30">11:30 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="12:30">12:30 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="13:30">1:30 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="14:30">2:30 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="15:30">3:30 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="16:30">4:30 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                            <option value="17:30">5:30 PM</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>End Time *</label>
-                        <select class="select edit-field-locked" id="editEndTime">
-                            <option value="07:30">7:30 AM</option>
-                            <option value="08:00">8:00 AM</option>
-                            <option value="08:30">8:30 AM</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="09:30">9:30 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="10:30">10:30 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="11:30">11:30 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="12:30">12:30 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="13:30">1:30 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="14:30">2:30 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="15:30">3:30 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="16:30">4:30 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                            <option value="17:30">5:30 PM</option>
-                            <option value="18:00">6:00 PM</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="modal-section-title">Financials & Status</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Total Amount (&#8369;)</label>
-                        <input type="number" class="input" id="editAmount" step="0.01">
-                    </div>
-                    
-                    <div class="form-group" style="display: flex; flex-direction: column;">
-                        <label>Payment Status</label>
-                        <div class="status-button-group" id="paymentStatusGroup">
-                            <button type="button" class="status-btn" data-value="paid">Paid</button>
-                            <button type="button" class="status-btn" data-value="pending">Pending</button>
-                            <button type="button" class="status-btn" data-value="unpaid">Unpaid</button>
-                        </div>
-                        <input type="hidden" id="editPaymentStatus" value="pending">
-                    </div>
-                    
-                    <!-- Down Payment Tracking - Right Side -->
-                    <div class="form-group" id="downPaymentSection" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0;">
-                        <label style="font-weight: 700; color: #1e293b; margin-bottom: 8px; display: block;">
-                             Payment Breakdown
-                        </label>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
-                            <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                <div id="downPaymentAmountLabel" style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Down Payment (&#8369;2,000)</div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="checkbox" id="downPaymentPaid" style="width: 18px; height: 18px; cursor: pointer;">
-                                    <label for="downPaymentPaid" style="font-size: 13px; font-weight: 600; cursor: pointer; margin: 0;" id="downPaymentLabel">Not Paid</label>
-                                </div>
-                            </div>
-                            
-                            <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                <div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Remaining Balance</div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="checkbox" id="remainingBalancePaid" style="width: 18px; height: 18px; cursor: pointer;">
-                                    <label for="remainingBalancePaid" style="font-size: 13px; font-weight: 600; cursor: pointer; margin: 0;" id="remainingBalanceLabel">Not Paid</label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="paymentSummary" style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="color: #64748b;">Total Amount:</span>
-                                <span style="font-weight: 600;" id="summaryTotal">&#8369;0.00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="color: #64748b;">Down Payment:</span>
-                                <span style="font-weight: 600;" id="summaryDown">&#8369;0.00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="color: #64748b;">Remaining:</span>
-                                <span style="font-weight: 600;" id="summaryRemaining">&#8369;0.00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 2px solid #e2e8f0; margin-top: 8px;">
-                                <span style="color: #1e293b; font-weight: 700;">Amount Paid:</span>
-                                <span style="font-weight: 700; color: #800020;" id="summaryPaid">&#8369;0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group full-width" style="display:none;">
-                        <input type="hidden" class="edit-field-locked" id="editStatus" value="pending">
-                    </div>
-                </div>
-
-                <div class="modal-section-title" id="visitSectionTitle">Confirmation Visit</div>
-
-                <!-- Multi-slot builder (shown in QUEUE_REVIEW mode) -->
-                <div id="visitSlotBuilder" style="display:none;">
-                    <p id="visitSlotInstructions" style="font-size:12px;color:#64748b;margin:0 0 10px 0;">Select up to 5 dates and up to 9 time slots. Adding them creates a separate option for each date and time combination.</p>
-                    <div class="visit-builder-selections">
-                        <section class="visit-builder-section" aria-labelledby="visitCalendarTitle">
-                            <div class="visit-builder-section-heading">
-                                <strong id="visitCalendarTitle">Dates</strong>
-                                <span id="visitDateSelectionCount">0 / 5 selected</span>
-                            </div>
-                            <div id="visitCalendar"></div>
-                        </section>
-                        <section class="visit-builder-section" aria-labelledby="visitTimesTitle">
-                            <div class="visit-builder-section-heading">
-                                <strong id="visitTimesTitle">Time slots</strong>
-                                <span id="visitTimeSelectionCount">0 / 9 selected</span>
-                            </div>
-                            <div id="visitTimeOptions" class="visit-time-options"></div>
-                        </section>
-                    </div>
-                    <button type="button" class="btn btn-bchs btn-sm" id="addVisitSlotButton" onclick="addVisitSlot()" style="margin:10px 0;">+ Add Selected Date &amp; Time Options</button>
-                    <div id="visitSlotList" style="display:flex;flex-direction:column;gap:6px;"></div>
-                    <div id="adminRescheduleNoteSection" class="form-group" style="display:none;margin-top:12px;">
-                        <label for="adminRescheduleNote" style="font-weight:600;">Admin Note for the requester</label>
-                        <textarea class="textarea" id="adminRescheduleNote" rows="3" placeholder="Add a note the requester should see with this reschedule update. This note will be visible to the requester."></textarea>
-                    </div>
-                </div>
-
-                <!-- Single-slot fields (shown in CONFIRMED_EDIT / RESCHEDULE_OR_REJECT modes) -->
-                <div id="visitSingleSlot" class="form-grid">
-                    <div class="form-group">
-                        <label>Appointment Date</label>
-                        <input type="date" class="input edit-field-locked edit-field-appointment" id="editAppointmentDate">
-                    </div>
-                    <div class="form-group">
-                        <label>Appointment Time</label>
-                        <select class="select edit-field-locked edit-field-appointment" id="editAppointmentTime">
-                            <option value="">-- Select Time --</option>
-                            <option value="7:00 AM â€“ 8:00 AM">7:00 AM â€“ 8:00 AM</option>
-                            <option value="8:00 AM â€“ 9:00 AM">8:00 AM â€“ 9:00 AM</option>
-                            <option value="9:00 AM â€“ 10:00 AM">9:00 AM â€“ 10:00 AM</option>
-                            <option value="10:00 AM â€“ 11:00 AM">10:00 AM â€“ 11:00 AM</option>
-                            <option value="11:00 AM â€“ 12:00 PM">11:00 AM â€“ 12:00 PM</option>
-                            <option value="1:00 PM â€“ 2:00 PM">1:00 PM â€“ 2:00 PM</option>
-                            <option value="2:00 PM â€“ 3:00 PM">2:00 PM â€“ 3:00 PM</option>
-                            <option value="3:00 PM â€“ 4:00 PM">3:00 PM â€“ 4:00 PM</option>
-                            <option value="4:00 PM â€“ 5:00 PM">4:00 PM â€“ 5:00 PM</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer" style="flex-direction:column;align-items:stretch;gap:0.75rem;">
-                <div id="reservationStatusSection">
-                    <div class="modal-section-title" style="margin:0 0 0.6rem 0;">Current Status</div>
-                    <div class="status-button-group" id="reservationStatusGroup">
-                        <button type="button" class="status-btn reservation-status" data-value="pending" onclick="selectReservationStatus('pending')">Pending</button>
-                        <button type="button" class="status-btn queue-only-btn" data-value="read" onclick="selectReservationStatus('read')">Read</button>
-                        <button type="button" class="status-btn" data-value="approved" onclick="selectReservationStatus('approved')">Approved</button>
-                        <button type="button" class="status-btn" data-value="rejected" onclick="selectReservationStatus('rejected')">Reject</button>
-                    </div>
-                </div>
-                <div style="display:flex;justify-content:flex-end;gap:0.75rem;">
-                    <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
-                    <button class="btn btn-destructive" id="rejectEditBtn" style="display:none;" onclick="setTimeout(()=>selectReservationStatus('rejected'),50)">Reject</button>
-                    <button class="btn btn-primary" id="saveEdit">Update & Save</button>
-                </div>
-            </div>
+      <div class="modal-content modal-medium">
+        <div class="modal-header">
+          <h2 id="editModalTitle">Manage reservation Entry</h2>
+          <div style="display: flex; align-items: center; gap: 0.5rem">
+            <button
+              id="modal-reject-btn"
+              style="
+                display: none;
+                background: #fee2e2;
+                color: #991b1b;
+                border: 1px solid #fecaca;
+                padding: 0.35rem 0.9rem;
+                border-radius: 0.375rem;
+                font-size: 0.8rem;
+                font-weight: 600;
+                cursor: pointer;
+              "
+              onclick="
+                setTimeout(() => selectReservationStatus('rejected'), 50)
+              "
+            >
+              Reject
+            </button>
+            <button class="modal-close" id="closeEditModal">&times;</button>
+          </div>
         </div>
+        <div class="modal-body">
+          <div
+            id="edit-summary"
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              padding: 15px;
+              margin-bottom: 10px;
+            "
+          ></div>
+
+          <div class="modal-section-title">Schedule Details</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Facility *</label>
+              <select class="select edit-field-locked" id="editFacilityId">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Event Date *</label>
+              <input
+                type="date"
+                class="input edit-field-locked"
+                id="editDate"
+              />
+            </div>
+            <div class="form-group">
+              <label>Start Time *</label>
+              <select class="select edit-field-locked" id="editStartTime">
+                <option value="07:00">7:00 AM</option>
+                <option value="07:30">7:30 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="08:30">8:30 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="09:30">9:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="13:30">1:30 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="16:30">4:30 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="17:30">5:30 PM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>End Time *</label>
+              <select class="select edit-field-locked" id="editEndTime">
+                <option value="07:30">7:30 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="08:30">8:30 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="09:30">9:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="13:30">1:30 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="16:30">4:30 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="17:30">5:30 PM</option>
+                <option value="18:00">6:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-section-title">Financials & Status</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Total Amount (&#8369;)</label>
+              <input type="number" class="input" id="editAmount" step="0.01" />
+            </div>
+
+            <div
+              class="form-group"
+              style="display: flex; flex-direction: column"
+            >
+              <label>Payment Status</label>
+              <div class="status-button-group" id="paymentStatusGroup">
+                <button type="button" class="status-btn" data-value="paid">
+                  Paid
+                </button>
+                <button type="button" class="status-btn" data-value="pending">
+                  Pending
+                </button>
+                <button type="button" class="status-btn" data-value="unpaid">
+                  Unpaid
+                </button>
+              </div>
+              <input type="hidden" id="editPaymentStatus" value="pending" />
+            </div>
+
+            <!-- Down Payment Tracking - Right Side -->
+            <div
+              class="form-group"
+              id="downPaymentSection"
+              style="
+                background: #f8fafc;
+                padding: 12px;
+                border-radius: 8px;
+                border: 2px solid #e2e8f0;
+              "
+            >
+              <label
+                style="
+                  font-weight: 700;
+                  color: #1e293b;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+              >
+                Payment Breakdown
+              </label>
+
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 10px;
+                  margin-bottom: 12px;
+                "
+              >
+                <div
+                  style="
+                    background: white;
+                    padding: 10px;
+                    border-radius: 6px;
+                    border: 1px solid #e2e8f0;
+                  "
+                >
+                  <div
+                    id="downPaymentAmountLabel"
+                    style="font-size: 11px; color: #64748b; margin-bottom: 4px"
+                  >
+                    Down Payment
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <input
+                      type="checkbox"
+                      id="downPaymentPaid"
+                      style="width: 18px; height: 18px; cursor: pointer"
+                    />
+                    <label
+                      for="downPaymentPaid"
+                      style="
+                        font-size: 13px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin: 0;
+                      "
+                      id="downPaymentLabel"
+                      >Not Paid</label
+                    >
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    background: white;
+                    padding: 10px;
+                    border-radius: 6px;
+                    border: 1px solid #e2e8f0;
+                  "
+                >
+                  <div
+                    style="font-size: 11px; color: #64748b; margin-bottom: 4px"
+                  >
+                    Remaining Balance
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <input
+                      type="checkbox"
+                      id="remainingBalancePaid"
+                      style="width: 18px; height: 18px; cursor: pointer"
+                    />
+                    <label
+                      for="remainingBalancePaid"
+                      style="
+                        font-size: 13px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin: 0;
+                      "
+                      id="remainingBalanceLabel"
+                      >Not Paid</label
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div
+                id="paymentSummary"
+                style="
+                  background: white;
+                  padding: 10px;
+                  border-radius: 6px;
+                  border: 1px solid #e2e8f0;
+                  font-size: 12px;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 4px;
+                  "
+                >
+                  <span style="color: #64748b">Total Amount:</span>
+                  <span style="font-weight: 600" id="summaryTotal"
+                    >&#8369;0.00</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 4px;
+                  "
+                >
+                  <span style="color: #64748b">Down Payment:</span>
+                  <span style="font-weight: 600" id="summaryDown"
+                    >&#8369;0.00</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 4px;
+                  "
+                >
+                  <span style="color: #64748b">Remaining:</span>
+                  <span style="font-weight: 600" id="summaryRemaining"
+                    >&#8369;0.00</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding-top: 8px;
+                    border-top: 2px solid #e2e8f0;
+                    margin-top: 8px;
+                  "
+                >
+                  <span style="color: #1e293b; font-weight: 700"
+                    >Amount Paid:</span
+                  >
+                  <span
+                    style="font-weight: 700; color: #800020"
+                    id="summaryPaid"
+                    >&#8369;0.00</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group full-width" style="display: none">
+              <input
+                type="hidden"
+                class="edit-field-locked"
+                id="editStatus"
+                value="pending"
+              />
+            </div>
+          </div>
+
+          <div class="modal-section-title" id="visitSectionTitle">
+            Confirmation Visit
+          </div>
+
+          <!-- Multi-slot builder (shown in QUEUE_REVIEW mode) -->
+          <div id="visitSlotBuilder" style="display: none">
+            <p
+              id="visitSlotInstructions"
+              style="font-size: 12px; color: #64748b; margin: 0 0 10px 0"
+            >
+              Select up to 5 dates and up to 9 time slots. Adding them creates a
+              separate option for each date and time combination.
+            </p>
+            <div class="visit-builder-selections">
+              <section
+                class="visit-builder-section"
+                aria-labelledby="visitCalendarTitle"
+              >
+                <div class="visit-builder-section-heading">
+                  <strong id="visitCalendarTitle">Dates</strong>
+                  <span id="visitDateSelectionCount">0 / 5 selected</span>
+                </div>
+                <div id="visitCalendar"></div>
+              </section>
+              <section
+                class="visit-builder-section"
+                aria-labelledby="visitTimesTitle"
+              >
+                <div class="visit-builder-section-heading">
+                  <strong id="visitTimesTitle">Time slots</strong>
+                  <span id="visitTimeSelectionCount">0 / 9 selected</span>
+                </div>
+                <div id="visitTimeOptions" class="visit-time-options"></div>
+              </section>
+            </div>
+            <button
+              type="button"
+              class="btn btn-bchs btn-sm"
+              id="addVisitSlotButton"
+              onclick="addVisitSlot()"
+              style="margin: 10px 0"
+            >
+              + Add Selected Date &amp; Time Options
+            </button>
+            <div
+              id="visitSlotList"
+              style="display: flex; flex-direction: column; gap: 6px"
+            ></div>
+            <div
+              id="adminRescheduleNoteSection"
+              class="form-group"
+              style="display: none; margin-top: 12px"
+            >
+              <label for="adminRescheduleNote" style="font-weight: 600"
+                >Admin Note for the requester</label
+              >
+              <textarea
+                class="textarea"
+                id="adminRescheduleNote"
+                rows="3"
+                placeholder="Add a note the requester should see with this reschedule update. This note will be visible to the requester."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Single-slot fields (shown in CONFIRMED_EDIT / RESCHEDULE_OR_REJECT modes) -->
+          <div id="visitSingleSlot" class="form-grid">
+            <div class="form-group">
+              <label>Appointment Date</label>
+              <input
+                type="date"
+                class="input edit-field-locked edit-field-appointment"
+                id="editAppointmentDate"
+              />
+            </div>
+            <div class="form-group">
+              <label>Appointment Time</label>
+              <select
+                class="select edit-field-locked edit-field-appointment"
+                id="editAppointmentTime"
+              >
+                <option value="">-- Select Time --</option>
+                <option value="7:00 AM â€“ 8:00 AM">7:00 AM â€“ 8:00 AM</option>
+                <option value="8:00 AM â€“ 9:00 AM">8:00 AM â€“ 9:00 AM</option>
+                <option value="9:00 AM â€“ 10:00 AM">
+                  9:00 AM â€“ 10:00 AM
+                </option>
+                <option value="10:00 AM â€“ 11:00 AM">
+                  10:00 AM â€“ 11:00 AM
+                </option>
+                <option value="11:00 AM â€“ 12:00 PM">
+                  11:00 AM â€“ 12:00 PM
+                </option>
+                <option value="1:00 PM â€“ 2:00 PM">1:00 PM â€“ 2:00 PM</option>
+                <option value="2:00 PM â€“ 3:00 PM">2:00 PM â€“ 3:00 PM</option>
+                <option value="3:00 PM â€“ 4:00 PM">3:00 PM â€“ 4:00 PM</option>
+                <option value="4:00 PM â€“ 5:00 PM">4:00 PM â€“ 5:00 PM</option>
+              </select>
+            </div>
+          </div>
+          <div
+            id="adminRevisionReasonSection"
+            class="form-group full-width"
+            style="display: none; margin-top: 12px"
+          >
+            <label for="adminRevisionReason" style="font-weight: 600"
+              >Reason for this revision</label
+            >
+            <textarea
+              class="textarea"
+              id="adminRevisionReason"
+              rows="3"
+              placeholder="Explain why this reservation was revised during the visit."
+            ></textarea>
+          </div>
+        </div>
+        <div
+          class="modal-footer"
+          style="flex-direction: column; align-items: stretch; gap: 0.75rem"
+        >
+          <div id="reservationStatusSection">
+            <div class="modal-section-title" style="margin: 0 0 0.6rem 0">
+              Current Status
+            </div>
+            <div class="status-button-group" id="reservationStatusGroup">
+              <button
+                type="button"
+                class="status-btn reservation-status"
+                data-value="pending"
+                onclick="selectReservationStatus('pending')"
+              >
+                Pending
+              </button>
+              <button
+                type="button"
+                class="status-btn queue-only-btn"
+                data-value="read"
+                onclick="selectReservationStatus('read')"
+              >
+                Read
+              </button>
+              <button
+                type="button"
+                class="status-btn"
+                data-value="approved"
+                onclick="selectReservationStatus('approved')"
+              >
+                Approved
+              </button>
+              <button
+                type="button"
+                class="status-btn"
+                data-value="rejected"
+                onclick="selectReservationStatus('rejected')"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem">
+            <button
+              class="btn btn-destructive"
+              id="rejectEditBtn"
+              style="display: none"
+              onclick="
+                setTimeout(() => selectReservationStatus('rejected'), 50)
+              "
+            >
+              Reject
+            </button>
+            <button class="btn btn-primary" id="saveEdit">Update & Save</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 12px;"></div>
+    <div
+      id="toastContainer"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      "
+    ></div>
 
     <!-- Rejection Reason Modal -->
     <div class="modal" id="rejectionReasonModal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Rejection Reason Required</h2>
-                <button class="modal-close" onclick="closeRejectionModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 15px; font-size: 14px; color: #475569;">
-                    Please provide a reason for rejecting this reservation request. This will be sent to the requester via email and SMS.
-                </p>
-                
-                <div class="form-group">
-                    <label style="font-weight: 600;">Rejection Reason *</label>
-                    <textarea class="textarea" id="rejectionReasonText" rows="4" placeholder="e.g., Facility already booked for that date, Does not meet requirements, etc."></textarea>
-                </div>
-
-                <div style="background: #fef3c7; border: 1px solid #fde047; border-radius: 6px; padding: 12px; margin-top: 12px;">
-                    <div style="display: flex; gap: 8px; align-items: start;">
-                        <span style="font-size: 18px;">??</span>
-                        <div style="font-size: 12px; color: #92400e;">
-                            <strong>Note:</strong> The requester will be notified at:<br>
-                            <span id="rejectionContactInfo" style="font-weight: 600;"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeRejectionModal()">Cancel</button>
-                <button class="btn btn-destructive" id="confirmRejectionBtn" onclick="confirmRejection()">Send Rejection</button>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Rejection Reason Required</h2>
+          <button class="modal-close" onclick="closeRejectionModal()">
+            &times;
+          </button>
         </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 15px; font-size: 14px; color: #475569">
+            Please provide a reason for rejecting this reservation request. This
+            will be sent to the requester via email and SMS.
+          </p>
+
+          <div class="form-group">
+            <label style="font-weight: 600">Rejection Reason *</label>
+            <textarea
+              class="textarea"
+              id="rejectionReasonText"
+              rows="4"
+              placeholder="e.g., Facility already booked for that date, Does not meet requirements, etc."
+            ></textarea>
+          </div>
+
+          <div
+            style="
+              background: #fef3c7;
+              border: 1px solid #fde047;
+              border-radius: 6px;
+              padding: 12px;
+              margin-top: 12px;
+            "
+          >
+            <div style="display: flex; gap: 8px; align-items: start">
+              <span style="font-size: 18px">??</span>
+              <div style="font-size: 12px; color: #92400e">
+                <strong>Note:</strong> The requester will be notified at:<br />
+                <span id="rejectionContactInfo" style="font-weight: 600"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeRejectionModal()">
+            Cancel
+          </button>
+          <button
+            class="btn btn-destructive"
+            id="confirmRejectionBtn"
+            onclick="confirmRejection()"
+          >
+            Send Rejection
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Cancellation Review Modal -->
     <div class="modal" id="cancellationReviewModal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Cancellation Request</h2>
-                <button class="modal-close" onclick="closeCancellationReview()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <!-- Reservation details -->
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
-                    <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Reservation Details</div>
-                    <div id="cr-details" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#1e293b;"></div>
-                </div>
-                <!-- Cancellation reason -->
-                <div style="background:#fff5f7;border:1px solid #fca5a5;border-radius:8px;padding:14px;">
-                    <div style="font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Reason for Cancellation</div>
-                    <p id="cr-reason" style="font-size:13px;color:#7f1d1d;line-height:1.6;margin:0;"></p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeCancellationReview()">Cancel</button>
-                <button class="btn btn-destructive" onclick="confirmCancellationDelete()">Approve Cancellation</button>
-            </div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Cancellation Request</h2>
+          <button class="modal-close" onclick="closeCancellationReview()">
+            &times;
+          </button>
         </div>
+        <div class="modal-body">
+          <!-- Reservation details -->
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              padding: 14px;
+              margin-bottom: 16px;
+            "
+          >
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 700;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin-bottom: 10px;
+              "
+            >
+              Reservation Details
+            </div>
+            <div
+              id="cr-details"
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                font-size: 13px;
+                color: #1e293b;
+              "
+            ></div>
+          </div>
+          <!-- Cancellation reason -->
+          <div
+            style="
+              background: #fff5f7;
+              border: 1px solid #fca5a5;
+              border-radius: 8px;
+              padding: 14px;
+            "
+          >
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 700;
+                color: #991b1b;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin-bottom: 8px;
+              "
+            >
+              Reason for Cancellation
+            </div>
+            <p
+              id="cr-reason"
+              style="
+                font-size: 13px;
+                color: #7f1d1d;
+                line-height: 1.6;
+                margin: 0;
+              "
+            ></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeCancellationReview()">
+            Cancel
+          </button>
+          <button
+            class="btn btn-destructive"
+            onclick="confirmCancellationDelete()"
+          >
+            Approve Cancellation
+          </button>
+        </div>
+      </div>
     </div>
 
     <script src="/scripts/DateUtils.js"></script>
-    <script src="/scripts/RoomUtils.js"></script>
+    <script src="/scripts/FacilityUtils.js"></script>
     <script src="js/state.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/data.js"></script>
@@ -1029,6 +2236,7 @@
     <script src="js/payments.js"></script>
     <script src="js/editModal.js"></script>
     <script src="js/app.js"></script>
+    <script type="module" src="/admin/js/adminAuth.js"></script>
     <script type="module" src="/admin/js/forecast.js"></script>
-</body>
+  </body>
 </html>

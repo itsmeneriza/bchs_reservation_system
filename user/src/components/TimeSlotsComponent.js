@@ -3,109 +3,127 @@
  * Shows Daily Schedule and Facility Visual Preview.
  */
 
-import { state } from '../core/state.js';
-import { formatDate, getLocalISODate, convertTo12Hour } from '../utils/dateUtils.js';
-import { getReservationsForDate } from '../services/reservationService.js';
-import { dataService } from '../services/dataService.js';
+import { state } from "../core/state.js";
+import {
+  formatDate,
+  getLocalISODate,
+  convertTo12Hour,
+} from "../utils/dateUtils.js";
+import { getReservationsForDate } from "../services/reservationService.js";
+import { dataService } from "../services/dataService.js";
 
 export class TimeSlots {
-    constructor() {
-        this.container = document.getElementById('timeslots-container');
-        this.previewWrapper = document.getElementById('facility-preview-wrapper');
-        this.dateText = document.getElementById('selected-date-text');
-        
-        // Viewer Modal elements
-        this.viewerModal = document.getElementById('image-viewer-modal');
-        this.viewerImage = document.getElementById('viewer-image');
-        this.viewerCaption = document.getElementById('viewer-caption');
-        this.viewerClose = document.getElementById('viewer-close');
-        this.viewerPrevBtn = document.getElementById('viewer-prev-btn');
-        this.viewerNextBtn = document.getElementById('viewer-next-btn');
-        this.viewerCounter = document.getElementById('viewer-image-counter');
-        
-        // Image navigation
-        this.currentImageIndex = 0;
-        
-        this.setupViewer();
+  constructor() {
+    this.container = document.getElementById("timeslots-container");
+    this.previewWrapper = document.getElementById("facility-preview-wrapper");
+    this.dateText = document.getElementById("selected-date-text");
+
+    // Viewer Modal elements
+    this.viewerModal = document.getElementById("image-viewer-modal");
+    this.viewerImage = document.getElementById("viewer-image");
+    this.viewerCaption = document.getElementById("viewer-caption");
+    this.viewerClose = document.getElementById("viewer-close");
+    this.viewerPrevBtn = document.getElementById("viewer-prev-btn");
+    this.viewerNextBtn = document.getElementById("viewer-next-btn");
+    this.viewerCounter = document.getElementById("viewer-image-counter");
+
+    // Image navigation
+    this.currentImageIndex = 0;
+
+    this.setupViewer();
+  }
+
+  setupViewer() {
+    if (!this.viewerClose) return;
+    this.viewerClose.onclick = () =>
+      this.viewerModal.classList.remove("active");
+    this.viewerModal.onclick = (e) => {
+      if (e.target === this.viewerModal) {
+        this.viewerModal.classList.remove("active");
+      }
+    };
+
+    // Setup viewer navigation buttons
+    if (this.viewerPrevBtn) {
+      this.viewerPrevBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.navigateViewerImage(-1);
+      };
+    }
+    if (this.viewerNextBtn) {
+      this.viewerNextBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.navigateViewerImage(1);
+      };
+    }
+  }
+
+  render() {
+    if (!this.container || !state.selectedFacility) return;
+
+    // 1. Render Facility Preview Image
+    this.renderFacilityPreview();
+
+    // 2. Update Header Date
+    if (this.dateText) {
+      this.dateText.textContent = formatDate(state.selectedDate);
     }
 
-    setupViewer() {
-        if (!this.viewerClose) return;
-        this.viewerClose.onclick = () => this.viewerModal.classList.remove('active');
-        this.viewerModal.onclick = (e) => {
-            if (e.target === this.viewerModal) {
-                this.viewerModal.classList.remove('active');
-            }
-        };
-        
-        // Setup viewer navigation buttons
-        if (this.viewerPrevBtn) {
-            this.viewerPrevBtn.onclick = (e) => {
-                e.stopPropagation();
-                this.navigateViewerImage(-1);
-            };
-        }
-        if (this.viewerNextBtn) {
-            this.viewerNextBtn.onclick = (e) => {
-                e.stopPropagation();
-                this.navigateViewerImage(1);
-            };
-        }
-    }
+    const dateStr = getLocalISODate(state.selectedDate);
+    const dayreservations = getReservationsForDate(
+      state.selectedFacility.id,
+      dateStr,
+    );
 
-    render() {
-        if (!this.container || !state.selectedRoom) return;
+    // Sort entries by start time
+    dayreservations.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-        // 1. Render Facility Preview Image
-        this.renderFacilityPreview();
+    let html = "";
 
-        // 2. Update Header Date
-        if (this.dateText) {
-            this.dateText.textContent = formatDate(state.selectedDate);
-        }
-
-        const dateStr = getLocalISODate(state.selectedDate);
-        const dayreservations = getReservationsForDate(state.selectedRoom.id, dateStr);
-
-        // Sort entries by start time
-        dayreservations.sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-        let html = '';
-
-        // --- SCHEDULE LIST ---
-        html += `<div class="timeslot-section">
+    // --- SCHEDULE LIST ---
+    html += `<div class="timeslot-section">
                     <div class="timeslot-header">Daily Schedule (${dayreservations.length})</div>
                     <div class="timeslot-list">`;
 
-        if (dayreservations.length > 0) {
-            dayreservations.forEach(reservation => {
-                const start12 = convertTo12Hour(reservation.startTime);
-                const end12 = convertTo12Hour(reservation.endTime);
-                const isPending = reservation.status === 'pending';
-                const isBlocked = reservation.status === 'blocked';
-                const isSchoolEvent = reservation.isSchoolEvent === true;
+    if (dayreservations.length > 0) {
+      dayreservations.forEach((reservation) => {
+        const start12 = convertTo12Hour(reservation.startTime);
+        const end12 = convertTo12Hour(reservation.endTime);
+        const isPending = reservation.status === "pending";
+        const isBlocked = reservation.status === "blocked";
+        const isSchoolEvent = reservation.isSchoolEvent === true;
 
-                let styleClass = 'timeslot-booked';
-                if (isPending) styleClass = 'timeslot-pending';
-                if (isBlocked) styleClass = 'timeslot-blocked-admin';
-                if (isSchoolEvent) styleClass = 'timeslot-school-event';
+        let styleClass = "timeslot-booked";
+        if (isPending) styleClass = "timeslot-pending";
+        if (isBlocked) styleClass = "timeslot-blocked-admin";
+        if (isSchoolEvent) styleClass = "timeslot-school-event";
 
-                const icon = isBlocked
-                    ? '<circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>'
-                    : isSchoolEvent
-                        ? '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>'
-                        : isPending
-                            ? '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>'
-                            : '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+        const icon = isBlocked
+          ? '<circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>'
+          : isSchoolEvent
+            ? '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>'
+            : isPending
+              ? '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>'
+              : '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
 
-                const statusLabel = isBlocked ? 'Unavailable' : isSchoolEvent ? 'School Event' : isPending ? 'Pending' : 'Approved';
-                const purposeText = isBlocked
-                    ? reservation.purpose.replace('FACILITY UNAVAILABLE: ', '')
-                    : reservation.purpose || '';
-                const nameText = reservation.name ? `<span class="ts-name">${reservation.name}</span>` : '';
-                const attendeesText = reservation.attendees ? `<span class="ts-pax">${reservation.attendees} pax</span>` : '';
+        const statusLabel = isBlocked
+          ? "Unavailable"
+          : isSchoolEvent
+            ? "School Event"
+            : isPending
+              ? "Pending"
+              : "Approved";
+        const purposeText = isBlocked
+          ? reservation.purpose.replace("FACILITY UNAVAILABLE: ", "")
+          : reservation.purpose || "";
+        const nameText = reservation.name
+          ? `<span class="ts-name">${reservation.name}</span>`
+          : "";
+        const attendeesText = reservation.attendees
+          ? `<span class="ts-pax">${reservation.attendees} pax</span>`
+          : "";
 
-                html += `
+        html += `
                     <div class="timeslot ts-card ${styleClass}" data-reservation-id="${reservation.id}">
                         <div class="ts-icon-wrap">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${icon}</svg>
@@ -118,29 +136,32 @@ export class TimeSlots {
                         <span class="ts-badge">${statusLabel}</span>
                     </div>
                 `;
-            });
-        } else {
-            html += `<div class="empty-slots">No reservations for this date</div>`;
-        }
-        html += `</div></div>`;
-
-        this.container.innerHTML = html;
-        this.attachEventListeners();
+      });
+    } else {
+      html += `<div class="empty-slots">No reservations for this date</div>`;
     }
+    html += `</div></div>`;
 
-    renderFacilityPreview() {
-        if (!this.previewWrapper) return;
+    this.container.innerHTML = html;
+    this.attachEventListeners();
+  }
 
-        this.currentImageIndex = 0;
-        const imageUrl = dataService.getFacilityImage(state.selectedRoom.id, this.currentImageIndex);
-        const roomName = state.selectedRoom.name;
-        const capacity = state.selectedRoom.capacity;
+  renderFacilityPreview() {
+    if (!this.previewWrapper) return;
 
-        this.previewWrapper.innerHTML = `
+    this.currentImageIndex = 0;
+    const imageUrl = dataService.getFacilityImage(
+      state.selectedFacility.id,
+      this.currentImageIndex,
+    );
+    const facilityName = state.selectedFacility.name;
+    const capacity = state.selectedFacility.capacity;
+
+    this.previewWrapper.innerHTML = `
             <div class="facility-preview-card" title="Click to enlarge view">
-                <img src="${imageUrl}" alt="${roomName}" class="preview-img" id="facility-preview-img" loading="lazy">
+                <img src="${imageUrl}" alt="${facilityName}" class="preview-img" id="facility-preview-img" loading="lazy">
                 <div class="preview-overlay">
-                    <span class="preview-name">${roomName}</span>
+                    <span class="preview-name">${facilityName}</span>
                     <span class="preview-pax">${capacity} Pax Max</span>
                 </div>
                 <div class="zoom-indicator">
@@ -151,46 +172,54 @@ export class TimeSlots {
             </div>
         `;
 
-        this.previewWrapper.querySelector('.facility-preview-card').onclick = () => {
-            this.openViewer();
-        };
+    this.previewWrapper.querySelector(".facility-preview-card").onclick =
+      () => {
+        this.openViewer();
+      };
+  }
+
+  openViewer() {
+    const imageCount = dataService.getFacilityImageCount(state.selectedFacility.id);
+    const imageUrl = dataService.getFacilityImage(
+      state.selectedFacility.id,
+      this.currentImageIndex,
+    );
+    const facilityName = state.selectedFacility.name;
+    const capacity = state.selectedFacility.capacity;
+
+    this.viewerImage.src = imageUrl;
+    this.viewerCaption.textContent = `${facilityName} - School Facility (Max ${capacity} Pax)`;
+
+    // Show/hide navigation buttons based on image count
+    if (imageCount > 1) {
+      this.viewerPrevBtn.style.display = "flex";
+      this.viewerNextBtn.style.display = "flex";
+      this.viewerCounter.style.display = "block";
+      this.viewerCounter.textContent = `${this.currentImageIndex + 1} / ${imageCount}`;
+    } else {
+      this.viewerPrevBtn.style.display = "none";
+      this.viewerNextBtn.style.display = "none";
+      this.viewerCounter.style.display = "none";
     }
 
-    openViewer() {
-        const imageCount = dataService.getFacilityImageCount(state.selectedRoom.id);
-        const imageUrl = dataService.getFacilityImage(state.selectedRoom.id, this.currentImageIndex);
-        const roomName = state.selectedRoom.name;
-        const capacity = state.selectedRoom.capacity;
+    this.viewerModal.classList.add("active");
+  }
 
-        this.viewerImage.src = imageUrl;
-        this.viewerCaption.textContent = `${roomName} - School Facility (Max ${capacity} Pax)`;
-        
-        // Show/hide navigation buttons based on image count
-        if (imageCount > 1) {
-            this.viewerPrevBtn.style.display = 'flex';
-            this.viewerNextBtn.style.display = 'flex';
-            this.viewerCounter.style.display = 'block';
-            this.viewerCounter.textContent = `${this.currentImageIndex + 1} / ${imageCount}`;
-        } else {
-            this.viewerPrevBtn.style.display = 'none';
-            this.viewerNextBtn.style.display = 'none';
-            this.viewerCounter.style.display = 'none';
-        }
-        
-        this.viewerModal.classList.add('active');
-    }
+  navigateViewerImage(direction) {
+    const imageCount = dataService.getFacilityImageCount(state.selectedFacility.id);
+    this.currentImageIndex =
+      (this.currentImageIndex + direction + imageCount) % imageCount;
 
-    navigateViewerImage(direction) {
-        const imageCount = dataService.getFacilityImageCount(state.selectedRoom.id);
-        this.currentImageIndex = (this.currentImageIndex + direction + imageCount) % imageCount;
-        
-        const imageUrl = dataService.getFacilityImage(state.selectedRoom.id, this.currentImageIndex);
-        
-        this.viewerImage.src = imageUrl;
-        this.viewerCounter.textContent = `${this.currentImageIndex + 1} / ${imageCount}`;
-    }
+    const imageUrl = dataService.getFacilityImage(
+      state.selectedFacility.id,
+      this.currentImageIndex,
+    );
 
-    attachEventListeners() {
-        // Cancellation feature removed - all slots are now non-interactive
-    }
+    this.viewerImage.src = imageUrl;
+    this.viewerCounter.textContent = `${this.currentImageIndex + 1} / ${imageCount}`;
+  }
+
+  attachEventListeners() {
+    // Cancellation feature removed - all slots are now non-interactive
+  }
 }

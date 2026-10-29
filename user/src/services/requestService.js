@@ -1,6 +1,6 @@
 ﻿/**
  * Request Service
- * Handles saving reservation requests via server API (data/requests.json)
+ * Handles reservation requests via the server's Supabase-backed API.
  */
 
 export class RequestService {
@@ -23,21 +23,25 @@ export class RequestService {
                 body: JSON.stringify(newRequest)
             });
 
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) {
                 if (res.status === 429) {
-                    const data = await res.json();
                     const error = new Error(data.message || 'Weekly reservation limit reached.');
                     error.status = res.status;
                     throw error;
                 }
-                console.error('Server returned error:', res.status);
+                console.error(data.message || `Server returned error: ${res.status}`);
                 return null;
             }
-            console.log('[SUCCESS] Request saved to server:', newRequest.id);
-            return newRequest;
+            const savedRequest = data.request;
+            if (!savedRequest) {
+                throw new Error('The server response did not contain the saved request.');
+            }
+            console.log('[SUCCESS] Request saved to Supabase:', savedRequest.id);
+            return savedRequest;
         } catch (e) {
             if (e.status === 429) throw e;
-            console.error('Failed to reach server:', e);
+            console.error('Failed to save request:', e);
             return null;
         }
     }

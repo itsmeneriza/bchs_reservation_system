@@ -1,9 +1,0 @@
-{
-  "staff": [
-    {"id":"STF001","name":"Dr. Aris Ramos","email":"aris.ramos@bchs.edu.ph","phone":"09171234567"},
-    {"id":"STF002","name":"Ms. Elena Garcia","email":"elena.garcia@bchs.edu.ph","phone":"09181234568"},
-    {"id":"STF003","name":"Mr. Roberto Santos","email":"roberto.santos@bchs.edu.ph","phone":"09191234569"},
-    {"id":"STF004","name":"Prof. Linda Cruz","email":"linda.cruz@bchs.edu.ph","phone":"09201234570"},
-    {"id":"STF005","name":"Mr. Jason Fernandez","email":"linda.cruz@bchs.edu.ph","phone":"09992988671"}
-  ]
-}

@@ -2,11 +2,10 @@
  * Login Component
  * Handles portal authentication with phone and optional staff validation.
  */
-
+import { loginUser } from '../services/authService.js';
 import { state, setLoginState } from '../core/state.js';
 import { showToast } from './NotificationComponent.js';
 import { isValidPHPhone, normalizePHPhone } from '../utils/dateUtils.js';
-import { loadStaffData as fetchStaffData, findStaffById } from '/scripts/AuthService.js';
 
 export class LoginHandler {
     constructor() {
@@ -22,18 +21,12 @@ export class LoginHandler {
         this.loggedContainer = document.getElementById('auth-logged');
         this.navUserName = document.getElementById('nav-user-name');
         
-        this.staffData = [];
         this.init();
     }
 
-    async init() {
-        await this.loadStaffData();
+    init() {
         this.attachEventListeners();
         this.syncUI();
-    }
-
-    async loadStaffData() {
-        this.staffData = await fetchStaffData();
     }
 
     attachEventListeners() {
@@ -134,16 +127,7 @@ export class LoginHandler {
                 return;
             }
 
-            const staffMember = findStaffById(this.staffData, staffId);
-            if (!staffMember) {
-                this.showError("Staff ID not found in directory. Please check with Admin.");
-                return;
-            }
-
             userData.staffId = staffId;
-            userData.name = staffMember.name;
-            userData.email = staffMember.email || null;
-            userData.phone = staffMember.phone || staffId;
         } else {
             // Community member login - use phone number
             const raw = phoneInput ? phoneInput.value.trim() : "";
@@ -159,10 +143,17 @@ export class LoginHandler {
             userData.name = normalized;
         }
 
-        setLoginState(true, userData);
-        this.syncUI();
-        this.close();
-        showToast(`Welcome, ${userData.isStaff ? userData.name : 'User'}!`, 'success');
+        // Login new: Call loginUser service and update app state with response
+        try {
+            userData = await loginUser(userData);
+
+            setLoginState(true, userData);
+            this.syncUI();
+            this.close();
+            showToast(`Welcome, ${userData.isStaff ? userData.name : 'User'}!`, 'success');
+        } catch (error) {
+            this.showError(error.message || "Authentication failed. Please try again");
+        }
     }
 
     handleLogout() {
