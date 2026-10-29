@@ -14,6 +14,7 @@ export const state = {
   // Auth state
   isLoggedIn: localStorage.getItem("bchs_user_logged_in") === "true",
   user: JSON.parse(localStorage.getItem("bchs_user_data") || "null"),
+  sessionToken: localStorage.getItem("bchs_user_session") || "",
 };
 
 export function setSelectedFacility(facility) {
@@ -45,10 +46,17 @@ export function setLoginState(isLoggedIn, userData = null) {
   state.isLoggedIn = isLoggedIn;
   state.user = userData;
   if (isLoggedIn) {
+    const sessionToken = userData?.sessionToken || localStorage.getItem("bchs_user_session") || "";
+    state.sessionToken = sessionToken;
     localStorage.setItem("bchs_user_logged_in", "true");
     localStorage.setItem("bchs_user_data", JSON.stringify(userData));
+    if (sessionToken) {
+      localStorage.setItem("bchs_user_session", sessionToken);
+    }
   } else {
+    state.sessionToken = "";
     localStorage.removeItem("bchs_user_logged_in");
     localStorage.removeItem("bchs_user_data");
+    localStorage.removeItem("bchs_user_session");
   }
 }

@@ -31,7 +31,7 @@ function escapeAdminText(value) {
 }
 
 async function sendAdminReservationNotification(path, payload) {
-  const response = await fetch(path, {
+  const response = await window.adminFetch(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -986,7 +986,7 @@ window.confirmRejection = async () => {
 
   if (r.email) {
     try {
-      const response = await fetch("/api/notify-rejection", {
+      const response = await window.adminFetch("/api/notify-rejection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

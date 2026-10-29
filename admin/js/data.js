@@ -63,7 +63,7 @@ async function loadStaff() {
 // ─── Requests ─────────────────────────────────────────────────────────────────
 
 async function loadRequests() {
-  const response = await fetch("/api/requests");
+  const response = await window.adminFetch("/api/requests");
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(

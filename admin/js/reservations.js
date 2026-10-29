@@ -412,7 +412,7 @@ async function saveManualReservation() {
   };
 
   try {
-    const res = await fetch("/api/requests", {
+    const res = await window.adminFetch("/api/requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newEntry),
@@ -815,7 +815,7 @@ window.confirmCancellationDelete = async () => {
   const now = new Date().toISOString();
 
   try {
-    const response = await fetch(`/api/requests/${_cancellationReviewId}`, {
+    const response = await window.adminFetch(`/api/requests/${_cancellationReviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "refused", cancellationApprovedAt: now }),

@@ -1,5 +1,9 @@
 import express from "express";
-import { createServiceRoleSupabaseClient } from "../services/supabaseClient.js";
+import { verifySessionToken } from "./auth.js";
+import {
+  createServiceRoleSupabaseClient,
+  createSupabaseClient,
+} from "../services/supabaseClient.js";
 
 const INTERNAL_FIELDS = new Set([
   "_editedByUser",
@@ -201,6 +205,12 @@ function toDbReservationPatch(existing, changes) {
 
 function handleSupabaseError(res, error, action) {
   console.error(`Could not ${action} reservation in Supabase:`, error);
+  if (error.code === "P0001" && error.message === "reservation_time_conflict") {
+    return res.status(409).json({
+      success: false,
+      message: "That facility and time are already reserved. Choose another time.",
+    });
+  }
   const status =
     error.code === "23505" ? 409 : error.code === "23503" ? 400 : 500;
   return res.status(error.status || status).json({
@@ -222,19 +232,193 @@ function getCurrentIsoWeekRange() {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+const ACTIVE_RESERVATION_STATUSES = ["pending", "approved", "accepted", "blocked"];
+
+function timeToMinutes(value) {
+  if (typeof value !== "string") return null;
+  const match = value.match(/^([01]\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
+async function findReservationConflict(client, candidate, excludeCode = null) {
+  if (!ACTIVE_RESERVATION_STATUSES.includes(candidate.status)) return null;
+  if (candidate.status === "blocked") return null;
+
+  let query = client
+    .from("reservations")
+    .select("reservation_code,facility_id,start_time,end_time")
+    .eq("date", candidate.date)
+    .in("status", ACTIVE_RESERVATION_STATUSES);
+  if (excludeCode) query = query.neq("reservation_code", excludeCode);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const start = timeToMinutes(candidate.start_time);
+  const end = timeToMinutes(candidate.end_time);
+  if (start === null || end === null) return null;
+
+  const reservationConflict = (data || []).find((row) => {
+    const sameFacility =
+      candidate.facility_id === null ||
+      row.facility_id === null ||
+      row.facility_id === candidate.facility_id;
+    const rowStart = timeToMinutes(row.start_time);
+    const rowEnd = timeToMinutes(row.end_time);
+    return sameFacility && rowStart < end && rowEnd > start;
+  }) || null;
+  if (reservationConflict) return reservationConflict;
+
+  const { data: events, error: eventError } = await client
+    .from("events")
+    .select("id,facility_id,start_time,end_time")
+    .eq("event_date", candidate.date);
+  if (eventError) throw eventError;
+
+  return (events || []).find((event) => {
+    const sameFacility =
+      candidate.facility_id === null ||
+      event.facility_id === candidate.facility_id;
+    const eventStart = timeToMinutes(event.start_time);
+    const eventEnd = timeToMinutes(event.end_time);
+    return sameFacility && eventStart < end && eventEnd > start;
+  }) || null;
+}
+
+function getRequestOwnerMatches(actor) {
+  if (!actor || actor.kind !== "user") return null;
+
+  const user = actor.user || {};
+  const matches = new Set();
+  if (user.sub) matches.add(user.sub);
+  if (user.id) matches.add(user.id);
+  if (user.phone) matches.add(user.phone);
+  if (user.mobile_number) matches.add(user.mobile_number);
+  if (user.email) matches.add(user.email);
+  return [...matches].filter(Boolean);
+}
+
+export function isRequestOwnedByUser(actor, row) {
+  const matches = getRequestOwnerMatches(actor);
+  if (!matches || !row) return false;
+
+  const normalizedMatches = matches.map((value) => String(value));
+  const contactValue = row.contact ? String(row.contact) : "";
+  const emailValue = row.email ? String(row.email) : "";
+  const staffId = row.staff_id ? String(row.staff_id) : "";
+  const guestId = row.guest_id ? String(row.guest_id) : "";
+
+  return (
+    normalizedMatches.includes(staffId) ||
+    normalizedMatches.includes(guestId) ||
+    normalizedMatches.includes(contactValue) ||
+    normalizedMatches.includes(emailValue)
+  );
+}
+
+export async function getRequestActor(req) {
+  const authHeader = req.get("authorization") || "";
+  const accessToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length).trim()
+    : "";
+
+  if (!accessToken) {
+    return { ok: false, status: 401, message: "Authentication is required." };
+  }
+
+  const appSession = verifySessionToken(accessToken);
+  if (appSession) {
+    return {
+      ok: true,
+      kind: "user",
+      user: appSession,
+    };
+  }
+
+  try {
+    const { data, error } = await createSupabaseClient(accessToken)
+      .auth.getUser(accessToken);
+    if (error || !data?.user) {
+      return { ok: false, status: 401, message: "Your sign-in is invalid or expired." };
+    }
+    if (data.user.app_metadata?.role !== "admin") {
+      return { ok: false, status: 403, message: "User access is required." };
+    }
+    return {
+      ok: true,
+      kind: "admin",
+      user: data.user,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 401,
+      message: "Your sign-in is invalid or expired.",
+    };
+  }
+}
+
+function requireRequestAuth() {
+  return async function (req, res, next) {
+    if (req.method === "GET" && req.path === "/availability") {
+      return next();
+    }
+    const actor = await getRequestActor(req);
+    if (!actor.ok) {
+      return res.status(actor.status || 401).json({
+        success: false,
+        message: actor.message || "Authentication is required.",
+      });
+    }
+    req.auth = actor;
+    req.sessionUser = actor.user;
+    return next();
+  };
+}
+
 export function createRequestsRouter() {
   const router = express.Router();
 
-  router.get("/", async (_req, res) => {
+  router.use(requireRequestAuth());
+
+  router.get("/", async (req, res) => {
     try {
       const { data, error } = await createServiceRoleSupabaseClient()
         .from("reservations")
         .select(RESERVATION_SELECT)
         .order("submitted_at", { ascending: false });
       if (error) throw error;
-      return res.json({ requests: (data || []).map(fromDbReservation) });
+
+      const isUserScoped = req.auth.kind === "user";
+      const visible = isUserScoped
+        ? (data || []).filter((row) => isRequestOwnedByUser(req.auth, row))
+        : data || [];
+
+      return res.json({ requests: visible.map(fromDbReservation) });
     } catch (error) {
       return handleSupabaseError(res, error, "load");
+    }
+  });
+
+  router.get("/availability", async (_req, res) => {
+    try {
+      const { data, error } = await createServiceRoleSupabaseClient()
+        .from("reservations")
+        .select("reservation_code,facility_id,date,start_time,end_time,status,request_data")
+        .in("status", ACTIVE_RESERVATION_STATUSES);
+      if (error) throw error;
+      const reservations = (data || []).map((row) => ({
+        id: row.reservation_code,
+        facilityId: row.request_data?.facilityId || row.facility_id || "global",
+        date: row.date,
+        startTime: row.start_time,
+        endTime: row.end_time,
+        status: row.status,
+        isFullDayBlock: row.request_data?.isFullDayBlock === true,
+      }));
+      return res.json({ reservations });
+    } catch (error) {
+      return handleSupabaseError(res, error, "load public availability");
     }
   });
 
@@ -249,6 +433,9 @@ export function createRequestsRouter() {
       if (!data) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, data)) {
+        return res.status(403).json({ success: false, message: "You do not have access to this request." });
+      }
       return res.json({ request: fromDbReservation(data) });
     } catch (error) {
       return handleSupabaseError(res, error, "load");
@@ -258,6 +445,36 @@ export function createRequestsRouter() {
   router.post("/", async (req, res) => {
     try {
       const payload = toDbReservation(req.body || {});
+      if (req.auth.kind === "user") {
+        if (payload.request_data.facilityId === "global") {
+          return res.status(403).json({
+            success: false,
+            message: "Only administrators can create facility blocks.",
+          });
+        }
+        const isStaff = req.auth.user.isStaff === true;
+        payload.source = isStaff ? "staff" : "guest";
+        payload.user_type = payload.source;
+        payload.is_staff = isStaff;
+        payload.staff_id = isStaff ? req.auth.user.sub : null;
+        payload.guest_id = isStaff ? null : req.auth.user.sub;
+        payload.status = "pending";
+        payload.payment_status = isStaff ? "paid" : "pending";
+        payload.down_payment_paid = false;
+        payload.remaining_balance_paid = false;
+        payload.appointment_date = null;
+        payload.appointment_time = null;
+        payload.block_reschedule_pending = false;
+        payload.block_reschedule_reason = null;
+        payload.admin_edit_snapshot = null;
+        payload.submitted_at = new Date().toISOString();
+        if (isStaff && req.body?.status === "blocked") {
+          return res.status(403).json({
+            success: false,
+            message: "Only administrators can create facility blocks.",
+          });
+        }
+      }
       if (!payload.facility_id && payload.request_data.facilityId !== "global") {
         return res.status(400).json({
           success: false,
@@ -289,6 +506,13 @@ export function createRequestsRouter() {
       }
 
       const client = createServiceRoleSupabaseClient();
+      const conflict = await findReservationConflict(client, payload);
+      if (conflict) {
+        return res.status(409).json({
+          success: false,
+          message: "That facility and time are already reserved. Choose another time.",
+        });
+      }
       if (payload.source !== "walk_in") {
         const { start, end } = getCurrentIsoWeekRange();
         let countQuery = client
@@ -350,13 +574,155 @@ export function createRequestsRouter() {
       if (!existing) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
+        return res.status(403).json({ success: false, message: "You do not have permission to update this request." });
+      }
 
       const changes = req.body || {};
-      const payload = toDbReservationPatch(existing, changes);
-      if (Object.hasOwn(changes, "date") && !payload.date) {
+      let authorizedChanges = changes;
+      if (req.auth.kind === "user") {
+        const allowedFields = new Set([
+          "_editedByUser",
+          "_isEdit",
+          "rescheduleOptionIndex",
+          "date",
+          "startTime",
+          "endTime",
+          "attendees",
+          "purpose",
+          "additionalNotes",
+          "appointmentDate",
+          "appointmentTime",
+          "status",
+          "visitOptions",
+          "rescheduleOptions",
+          "rescheduleReason",
+          "rescheduleRequestedAt",
+          "rescheduledDate",
+          "rescheduledStartTime",
+          "rescheduledEndTime",
+          "userEditReason",
+          "cancellationReason",
+          "cancellationRequestedAt",
+        ]);
+        authorizedChanges = Object.fromEntries(
+          Object.entries(changes).filter(([key]) => allowedFields.has(key)),
+        );
+        if (authorizedChanges.status && authorizedChanges.status !== "cancelled") {
+          authorizedChanges.status = existing.status;
+        }
+      }
+      let effectiveChanges = authorizedChanges;
+      if (Object.hasOwn(authorizedChanges, "rescheduleOptionIndex")) {
+        if (req.auth.kind !== "user") {
+          return res.status(403).json({
+            success: false,
+            message: "Only the requester can choose an alternate schedule.",
+          });
+        }
+        const optionIndex = Number(changes.rescheduleOptionIndex);
+        const options = existing.request_data?.rescheduleOptions;
+        if (
+          !Number.isInteger(optionIndex) ||
+          !Array.isArray(options) ||
+          optionIndex < 0 ||
+          optionIndex >= options.length
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Choose a valid alternate schedule.",
+          });
+        }
+
+        const option = options[optionIndex];
+        const startTime = option.startTime || option.time;
+        const endTime =
+          option.endTime ||
+          (timeToMinutes(startTime) === null
+            ? null
+            : (() => {
+                const end = timeToMinutes(startTime) + 60;
+                return `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+              })());
+        if (
+          typeof option.date !== "string" ||
+          timeToMinutes(startTime) === null ||
+          timeToMinutes(endTime) === null ||
+          timeToMinutes(startTime) >= timeToMinutes(endTime)
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "The selected alternate schedule is invalid.",
+          });
+        }
+
+        const requestData = { ...(existing.request_data || {}) };
+        delete requestData.rescheduleOptions;
+        effectiveChanges = {
+          date: option.date,
+          startTime,
+          endTime,
+          rescheduleOptions: [],
+          ...authorizedChanges,
+        };
+        delete effectiveChanges.rescheduleOptionIndex;
+        effectiveChanges.rescheduleOptions = undefined;
+        const payload = toDbReservationPatch(existing, effectiveChanges);
+        payload.request_data = requestData;
+        const conflict = await findReservationConflict(
+          client,
+          {
+            date: payload.date || existing.date,
+            start_time: payload.start_time || existing.start_time,
+            end_time: payload.end_time || existing.end_time,
+            facility_id: payload.facility_id ?? existing.facility_id,
+            status: payload.status || existing.status,
+          },
+          req.params.id,
+        );
+        if (conflict) {
+          return res.status(409).json({
+            success: false,
+            message: "That alternate schedule is no longer available. Please contact the administration office.",
+          });
+        }
+
+        const { data, error } = await client
+          .from("reservations")
+          .update(payload)
+          .eq("reservation_code", req.params.id)
+          .select(RESERVATION_SELECT)
+          .single();
+        if (error) throw error;
+        return res.json({
+          success: true,
+          message: "Alternate schedule selected successfully.",
+          request: fromDbReservation(data),
+        });
+      }
+
+      const payload = toDbReservationPatch(existing, authorizedChanges);
+      if (Object.hasOwn(authorizedChanges, "date") && !payload.date) {
         return res.status(400).json({
           success: false,
           message: "Choose a valid reservation date.",
+        });
+      }
+      const conflict = await findReservationConflict(
+        client,
+        {
+          date: payload.date || existing.date,
+          start_time: payload.start_time || existing.start_time,
+          end_time: payload.end_time || existing.end_time,
+          facility_id: payload.facility_id ?? existing.facility_id,
+          status: payload.status || existing.status,
+        },
+        req.params.id,
+      );
+      if (conflict) {
+        return res.status(409).json({
+          success: false,
+          message: "That facility and time are already reserved. Choose another time.",
         });
       }
       const { data, error } = await client
@@ -378,7 +744,21 @@ export function createRequestsRouter() {
 
   router.delete("/:id", async (req, res) => {
     try {
-      const { data, error } = await createServiceRoleSupabaseClient()
+      const client = createServiceRoleSupabaseClient();
+      const { data: existing, error: findError } = await client
+        .from("reservations")
+        .select("reservation_code, staff_id, guest_id, contact, email")
+        .eq("reservation_code", req.params.id)
+        .maybeSingle();
+      if (findError) throw findError;
+      if (!existing) {
+        return res.status(404).json({ success: false, message: "Request not found." });
+      }
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
+        return res.status(403).json({ success: false, message: "You do not have permission to delete this request." });
+      }
+
+      const { data, error } = await client
         .from("reservations")
         .delete()
         .eq("reservation_code", req.params.id)

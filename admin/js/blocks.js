@@ -4,7 +4,7 @@
  */
 
 async function requestBlockApi(url, options, fallbackMessage) {
-  const response = await fetch(url, options);
+  const response = await window.adminFetch(url, options);
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(

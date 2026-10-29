@@ -63,7 +63,7 @@ export class DataService {
 
   async loadReservations() {
     const [requestsRes, eventsRes] = await Promise.all([
-      fetch("/api/requests"),
+      fetch("/api/requests/availability"),
       fetch("/api/events"),
     ]);
 
@@ -72,12 +72,12 @@ export class DataService {
     let apiRequests = [];
     if (requestsRes.ok) {
       const data = await requestsRes.json();
-      apiRequests = (data.requests || []).filter((r) => {
+      apiRequests = (data.reservations || []).filter((r) => {
         const id = typeof r?.id === "string" ? r.id : "";
         return !id.startsWith("event_") && !id.startsWith("evt_");
       });
     } else {
-      throw new Error(`Requests API returned ${requestsRes.status}.`);
+      throw new Error(`Availability API returned ${requestsRes.status}.`);
     }
 
     // Events
