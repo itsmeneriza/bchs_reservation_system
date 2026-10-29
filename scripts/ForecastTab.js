@@ -76,7 +76,7 @@ export class Forecast {
         const stats = {
             totalreservations: filtered.length,
             totalRevenue: 0,
-            byRoom: {},
+            byFacility: {},
             byMonth: {},
             byDayOfWeek: {},
             totalAttendees: 0,
@@ -86,14 +86,14 @@ export class Forecast {
         filtered.forEach(reservation => {
             stats.totalRevenue += Number(reservation.totalAmount) || 0;
 
-            if (!stats.byRoom[reservation.roomId]) {
-                stats.byRoom[reservation.roomId] = {
+            if (!stats.byFacility[reservation.facilityId]) {
+                stats.byFacility[reservation.facilityId] = {
                     count: 0,
                     attendees: 0
                 };
             }
-            stats.byRoom[reservation.roomId].count++;
-            stats.byRoom[reservation.roomId].attendees += reservation.attendees || 0;
+            stats.byFacility[reservation.facilityId].count++;
+            stats.byFacility[reservation.facilityId].attendees += reservation.attendees || 0;
 
       const month = new Date(reservation.date).toLocaleString("default", {
         month: "long",
@@ -402,7 +402,7 @@ export class Forecast {
             totalreservations: summary.totalreservations || 0,
             totalRevenue: summary.totalRevenue || 0,
             averageAttendees: summary.averageAttendees || 0,
-            mostPopularRoom: summary.mostPopularRoom || 'N/A'
+            mostPopularFacility: summary.mostPopularFacility || 'N/A'
         };
         const isAdminView = this.container?.id === 'admin-forecast-content';
         const totalRevenue = Number(currentSummary.totalRevenue || summary.totalRevenue || 0);
@@ -1252,8 +1252,8 @@ export class Forecast {
     return `
             <div class="facility-performance-ranking">
                 <div class="facility-ranking-header">
-                    <button type="button" class="facility-ranking-featured" data-activity-facility="${top.roomId}" aria-pressed="false">
-                        Top Facility: ${top.roomName}
+                    <button type="button" class="facility-ranking-featured" data-activity-facility="${top.facilityId}" aria-pressed="false">
+                        Top Facility: ${top.facilityName}
                     </button>
                     <span class="facility-ranking-summary">${top.utilizationRate} utilization · ${top.totalreservations} bookings</span>
                 </div>

@@ -1,32 +1,6 @@
 /**
-<<<<<<< HEAD
  * ForecastService — shared forecast algorithm used by both forecast functions
  * in server.js.
-=======
- * ForecastService — shared forecast algorithm used by the Supabase forecast route.
- *
- * Methodology (v4):
- *
- *  UTILIZATION
- *    Fixed: measures total booked hours against available hours only during
- *    the weeks the facility was actually active (instead of the full date span,
- *    which inflated the denominator and produced misleadingly low percentages).
- *
- *  PREDICTION — two methods
- *    Seasonal baseline – Average the reservation counts for the matching ISO
- *              week across available years, adjusted by a recent trend factor.
- *              The seasonal/trend weights are 0.6/0.4.
- *    4-week Weighted Moving Average – Used when there is no same-week history.
- *              Weights: [0.4, 0.3, 0.2, 0.1] most-recent-first.
- *
- *  CONFIDENCE
- *    high   — seasonal baseline with at least 2 years of same-week data
- *    medium — seasonal baseline with 1 year of same-week data
- *    low    — WMA fallback used (no same-week history)
- *
- * ES module — server-side.
- *
->>>>>>> 25926f6bb898f0de7b45dff2fc6c0a775e86382c
  * Usage:
  *   import { computeFacilityAnalytics, computeSummary, computeRecommendations,
  *            computeMonthlyTrends } from './scripts/ForecastService.js';
@@ -267,20 +241,10 @@ function computeFacilityAnalytics(
  * @param {Object<string,string>} facilityNames
  * @returns {object}
  */
-<<<<<<< HEAD
-function computeSummary(allData, roomNames) {
+function computeSummary(allData, facilityNames) {
     const totalAttendees = allData.reduce((s, r) => s + (parseInt(r.attendees) || 0), 0);
     const avgAttendees = allData.length > 0 ? Math.round(totalAttendees / allData.length) : 0;
     const totalRevenue = allData.reduce((s, r) => s + (Number(r.totalAmount) || 0), 0);
-=======
-function computeSummary(allData, facilityNames) {
-  const totalAttendees = allData.reduce(
-    (s, r) => s + (parseInt(r.attendees) || 0),
-    0,
-  );
-  const avgAttendees =
-    allData.length > 0 ? Math.round(totalAttendees / allData.length) : 0;
->>>>>>> 25926f6bb898f0de7b45dff2fc6c0a775e86382c
 
   // Most popular facility
   const facilityCounts = {};
@@ -308,22 +272,13 @@ function computeSummary(allData, facilityNames) {
       ? `${topHours[0]} - ${topHours[1]}`
       : topHours[0] || "N/A";
 
-<<<<<<< HEAD
     return {
         totalreservations: allData.length,
         totalRevenue,
-        mostPopularRoom,
+        mostPopularFacility,
         peakHours,
         averageAttendees: avgAttendees
     };
-=======
-  return {
-    totalreservations: allData.length,
-    mostPopularFacility,
-    peakHours,
-    averageAttendees: avgAttendees,
-  };
->>>>>>> 25926f6bb898f0de7b45dff2fc6c0a775e86382c
 }
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
