@@ -1,3 +1,0 @@
-2026-10-22: Use mobile_number for guest login and account creation.
-2026-10-22: Store reservation requests in Supabase; add API, schema, and setup guide.
-2026-10-22: Persist only changed reservation fields during admin updates.
