@@ -16,18 +16,23 @@ import {
   getBookedSlots,
 } from "../services/reservationService.js";
 
-const escapeHtml = (value) =>
-  String(value ?? "").replace(
-    /[&<>"']/g,
-    (character) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[character],
-  );
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+}[character]));
+
+const getVisitEndTime = (startTime) => {
+    if (!startTime || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime)) return null;
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = (hours * 60) + minutes + 60;
+    if (totalMinutes > (23 * 60) + 59) return null;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+};
 
 export class MyRequests {
   constructor() {
@@ -73,19 +78,36 @@ export class MyRequests {
       }
     };
 
-    window.selectVisitSlot = async (requestId, date, time) => {
-      try {
-        const patchRes = await fetch(`/api/requests/${requestId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            appointmentDate: date,
-            appointmentTime: time,
-            visitOptions: [],
-            _editedByUser: true,
-          }),
-        });
-        if (!patchRes.ok) throw new Error("Patch failed");
+        window.selectVisitSlot = async (requestId, date, time) => {
+            try {
+                const requestRes = await fetch('/api/requests');
+                const requestData = requestRes.ok ? await requestRes.json().catch(() => ({ requests: [] })) : { requests: [] };
+                const currentRequest = (requestData.requests || []).find(r => r.id === requestId);
+                const visitEndTime = getVisitEndTime(time);
+                const hasConflict = (requestData.requests || []).some(r => {
+                    if (!visitEndTime || !currentRequest) return false;
+                    if (r.id === requestId || !['approved', 'accepted', 'pending', 'blocked'].includes(r.status)) return false;
+                    if ((r.roomId !== currentRequest.roomId && !(r.status === 'blocked' && r.roomId === 'global')) || r.date !== date) return false;
+                    if (r.status === 'blocked' && r.isFullDayBlock) return true;
+                    return r.startTime < visitEndTime && r.endTime > time;
+                });
+                if (hasConflict) {
+                    const { showToast } = await import('./NotificationComponent.js');
+                    showToast('This visit time conflicts with an existing reservation or blocked time for this facility. Please choose another slot.', 'error');
+                    return;
+                }
+
+                const patchRes = await fetch(`/api/requests/${requestId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        appointmentDate: date,
+                        appointmentTime: time,
+                        visitOptions: [],
+                        _editedByUser: true
+                    })
+                });
+                if (!patchRes.ok) throw new Error('Patch failed');
 
         // Notify user via email
         const allRes = await fetch("/api/requests");
@@ -1013,12 +1035,15 @@ export class MyRequests {
                         ? `
                     <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:0.375rem;padding:0.45rem 0.6rem;margin-bottom:0.4rem;font-size:0.72rem;">
                         <div style="font-weight:700;color:#475569;margin-bottom:0.2rem;">Admin Note</div>
-                        <div style="color:#334155;white-space:pre-wrap;">${req.adminRescheduleNote}</div>
-                    </div>`
-                        : ""
-                    }
-                    ${req.adminEditSnapshot ? this.renderEditBanner(req.adminEditSnapshot) : ""}
-                    ${req.userEditSnapshot ? this.renderUserEditBanner(req.userEditSnapshot) : ""}
+                        <div style="color:#334155;white-space:pre-wrap;">${escapeHtml(req.adminRescheduleNote)}</div>
+                    </div>` : ''}
+                    ${req.adminRevisionReason ? `
+                    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:0.375rem;padding:0.45rem 0.6rem;margin-bottom:0.4rem;font-size:0.72rem;">
+                        <div style="font-weight:700;color:#6d28d9;margin-bottom:0.2rem;">Reason for Reservation Revision</div>
+                        <div style="color:#4c1d95;white-space:pre-wrap;">${escapeHtml(req.adminRevisionReason)}</div>
+                    </div>` : ''}
+                    ${req.adminEditSnapshot ? this.renderEditBanner(req.adminEditSnapshot) : ''}
+                    ${req.userEditSnapshot  ? this.renderUserEditBanner(req.userEditSnapshot)  : ''}
 
                     <!-- footer -->
                     <div style="padding-top:0.4rem;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;margin-top:0.4rem;">

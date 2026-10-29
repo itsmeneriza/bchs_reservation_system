@@ -50,6 +50,40 @@ function weightedMovingAverage(facilityData, now) {
   return Math.max(0, Math.round(wma));
 }
 
+/**
+ * Estimates the revenue for a reservation using the historical total amount when
+ * available, else deriving it from the room rate and duration. Staff bookings are
+ * treated as zero-charge internal reservations and do not contribute to external
+ * revenue forecasts.
+ *
+ * @param {object} reservation
+ * @returns {number}
+ */
+function calculateReservationRevenue(reservation) {
+    if (!reservation) return 0;
+
+    const explicitRevenue = Number(reservation.totalAmount);
+    if (Number.isFinite(explicitRevenue) && explicitRevenue >= 0) {
+        return explicitRevenue;
+    }
+
+    if (reservation.isStaff) return 0;
+
+    const roomId = reservation.roomId;
+    const pricePerHour = getRoomPrice(roomId) || 0;
+    if (!pricePerHour) return 0;
+
+    const start = reservation.startTime || '00:00';
+    const end = reservation.endTime || start;
+    const [startHour, startMin] = (start || '00:00').split(':').map(Number);
+    const [endHour, endMin] = (end || '00:00').split(':').map(Number);
+    const startMinutes = (startHour || 0) * 60 + (startMin || 0);
+    const endMinutes = (endHour || 0) * 60 + (endMin || 0);
+    const durationHours = Math.max(1, Math.ceil((endMinutes - startMinutes) / 60 || 1));
+    const utilityFee = durationHours >= 8 ? 800 : 0;
+    return Math.round((pricePerHour * durationHours) + utilityFee);
+}
+
 // ─── Utilization (fixed) ──────────────────────────────────────────────────────
 
 /**
@@ -277,7 +311,10 @@ function computeSummary(allData, facilityNames) {
         totalRevenue,
         mostPopularFacility,
         peakHours,
-        averageAttendees: avgAttendees
+        averageAttendees: avgAttendees,
+        totalRevenue,
+        averageRevenuePerReservation: avgRevenuePerReservation,
+        staffRevenue
     };
 }
 

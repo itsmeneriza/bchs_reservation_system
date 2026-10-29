@@ -478,39 +478,32 @@ function renderQueue() {
 // ─── Render Confirmed ─────────────────────────────────────────────────────────
 
 function getConfirmedEditMode(req) {
-  if (!req.appointmentDate || !req.appointmentTime) return "VIEW_ONLY";
-  const timeStr = req.appointmentTime.trim();
-  let hours = 0,
-    minutes = 0;
-  const ampmMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-  const h24Match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
-  if (ampmMatch) {
-    hours = parseInt(ampmMatch[1]);
-    minutes = parseInt(ampmMatch[2]);
-    const period = ampmMatch[3].toUpperCase();
-    if (period === "PM" && hours !== 12) hours += 12;
-    if (period === "AM" && hours === 12) hours = 0;
-  } else if (h24Match) {
-    hours = parseInt(h24Match[1]);
-    minutes = parseInt(h24Match[2]);
-  } else {
-    return "VIEW_ONLY";
-  }
-  const apptDateTime = new Date(
-    `${req.appointmentDate}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`,
-  );
-  const diffHours = (new Date() - apptDateTime) / (1000 * 60 * 60);
-  if (diffHours >= 0 && diffHours < 1.5) return "CONFIRMED_EDIT";
-  if (diffHours >= 1.5) return "RESCHEDULE_OR_REJECT";
-  return "VIEW_ONLY";
+    if (!req.appointmentDate || !req.appointmentTime) return 'VIEW_ONLY';
+    const timeStr   = req.appointmentTime.trim();
+    let hours = 0, minutes = 0;
+    const ampmMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    const h24Match  = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (ampmMatch) {
+        hours = parseInt(ampmMatch[1]); minutes = parseInt(ampmMatch[2]);
+        const period = ampmMatch[3].toUpperCase();
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+    } else if (h24Match) {
+        hours = parseInt(h24Match[1]); minutes = parseInt(h24Match[2]);
+    } else { return 'VIEW_ONLY'; }
+    const apptDateTime = new Date(`${req.appointmentDate}T${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:00`);
+    const diffHours    = (new Date() - apptDateTime) / (1000 * 60 * 60);
+    if (diffHours >= 0 && diffHours < 1.5) return 'CONFIRMED_EDIT';
+    if (diffHours >= 1.5) return 'VISIT_RESCHEDULE_OR_REJECT';
+    return 'VIEW_ONLY';
 }
 
 window.rescheduleConfirmed = (id) => {
-  openEditModal(id, "QUEUE_REVIEW");
-  setTimeout(() => {
-    const titleEl = document.getElementById("editModalTitle");
-    if (titleEl) titleEl.textContent = "Reschedule Confirmation Visit";
-  }, 50);
+    openEditModal(id, 'VISIT_RESCHEDULE_OR_REJECT');
+    setTimeout(() => {
+        const titleEl = document.getElementById('editModalTitle');
+        if (titleEl) titleEl.textContent = 'Reschedule Confirmation Visit';
+    }, 50);
 };
 
 function renderConfirmed() {
@@ -533,20 +526,13 @@ function renderConfirmed() {
     badge.style.display = confirmed.length > 0 ? "inline-flex" : "none";
   }
 
-  body.innerHTML = confirmed.length
-    ? confirmed
-        .map((req) => {
-          const hasVisitOptions =
-            Array.isArray(req.visitOptions) &&
-            req.visitOptions.length > 0 &&
-            (!req.appointmentDate || req.appointmentDate.trim() === "");
-          const editMode = hasVisitOptions
-            ? "VIEW_ONLY"
-            : getConfirmedEditMode(req);
-          const isLive = editMode === "CONFIRMED_EDIT";
-          const isPastWin = editMode === "RESCHEDULE_OR_REJECT";
-          const isViewOnly = editMode === "VIEW_ONLY";
-          const isBlockForced = req.blockReschedulePending === true;
+    body.innerHTML = confirmed.length ? confirmed.map(req => {
+        const hasVisitOptions = Array.isArray(req.visitOptions) && req.visitOptions.length > 0 && (!req.appointmentDate || req.appointmentDate.trim() === '');
+        const editMode      = hasVisitOptions ? 'VIEW_ONLY' : getConfirmedEditMode(req);
+        const isLive        = editMode === 'CONFIRMED_EDIT';
+        const isPastWin     = editMode === 'VISIT_RESCHEDULE_OR_REJECT';
+        const isViewOnly    = editMode === 'VIEW_ONLY';
+        const isBlockForced = req.blockReschedulePending === true;
 
           let visitCell;
           if (hasVisitOptions) {
@@ -566,38 +552,23 @@ function renderConfirmed() {
                <div style="font-size:11px;color:#64748b;">${req.appointmentTime ? formatApptTime(req.appointmentTime) : "Not set"}</div></td>`;
           }
 
-          const btnMode = hasVisitOptions
-            ? "QUEUE_REVIEW"
-            : isBlockForced
-              ? "RESCHEDULE_OR_REJECT"
-              : editMode;
-          const btnLabel = hasVisitOptions
-            ? "Edit Options"
-            : isBlockForced
-              ? "Reschedule"
-              : isLive
-                ? "Edit"
-                : isPastWin
-                  ? "Reschedule"
-                  : isViewOnly
-                    ? "View"
-                    : "Manage";
-          const btnStyle = hasVisitOptions
-            ? "background:#1d4ed8;border-color:#1d4ed8;color:white;"
-            : isBlockForced
-              ? "background:#f59e0b;border-color:#f59e0b;color:white;"
-              : isLive
-                ? "background:#16a34a;border-color:#16a34a;color:white;"
-                : isPastWin
-                  ? "background:#f59e0b;border-color:#f59e0b;color:white;"
-                  : "";
-          const rowStyle = hasVisitOptions
-            ? ' style="background:#eff6ff;"'
-            : isBlockForced
-              ? ' style="background:#fff7ed;"'
-              : isLive
-                ? ' style="background:#f0fdf4;"'
-                : "";
+        const btnMode  = hasVisitOptions ? 'QUEUE_REVIEW'
+                       : isBlockForced   ? 'RESCHEDULE_OR_REJECT'
+                       : isPastWin      ? 'VISIT_RESCHEDULE_OR_REJECT'
+                       : editMode;
+        const btnLabel = hasVisitOptions ? 'Edit Options'
+                       : isBlockForced   ? 'Reschedule'
+                       : isLive          ? 'Edit'
+                       : isPastWin       ? 'Reschedule Visit'
+                       : isViewOnly      ? 'View'
+                       : 'Manage';
+        const btnStyle = hasVisitOptions ? 'background:#1d4ed8;border-color:#1d4ed8;color:white;'
+                       : isBlockForced   ? 'background:#f59e0b;border-color:#f59e0b;color:white;'
+                       : isLive          ? 'background:#16a34a;border-color:#16a34a;color:white;'
+                       : isPastWin       ? 'background:#f59e0b;border-color:#f59e0b;color:white;' : '';
+        const rowStyle = hasVisitOptions ? ' style="background:#eff6ff;"'
+                       : isBlockForced   ? ' style="background:#fff7ed;"'
+                       : isLive          ? ' style="background:#f0fdf4;"' : '';
 
           return `<tr${rowStyle}>
             <td><strong>${req.name}</strong></td>

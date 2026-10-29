@@ -80,7 +80,10 @@ export class Forecast {
             byMonth: {},
             byDayOfWeek: {},
             totalAttendees: 0,
-            averageAttendees: 0
+            averageAttendees: 0,
+            totalRevenue: 0,
+            averageRevenuePerReservation: 0,
+            projectedRevenue: 0
         };
 
         filtered.forEach(reservation => {
@@ -111,12 +114,13 @@ export class Forecast {
       }
       stats.byDayOfWeek[dayOfWeek]++;
 
-      stats.totalAttendees += reservation.attendees || 0;
-    });
+            stats.totalAttendees += reservation.attendees || 0;
 
-    stats.averageAttendees = Math.round(
-      stats.totalAttendees / stats.totalreservations,
-    );
+            stats.totalRevenue += this.estimateReservationRevenue(reservation);
+        });
+
+        stats.averageAttendees = Math.round(stats.totalAttendees / stats.totalreservations);
+        stats.averageRevenuePerReservation = Math.round(stats.totalRevenue / stats.totalreservations);
 
     let maxCount = 0;
     let mostPopular = "";
@@ -150,8 +154,13 @@ export class Forecast {
     stats.busiestDayOfWeek = busiestDay;
     stats.busiestDayCount = maxDayCount;
 
-    return stats;
-  }
+        return stats;
+    }
+
+    timeToMinutes(time) {
+        const [hours, minutes] = (time || '00:00').split(':').map(Number);
+        return (hours || 0) * 60 + (minutes || 0);
+    }
 
   calculateLastYearStats(targetYear) {
     return this.calculateYearStats(this.lastYearData, targetYear);
@@ -398,11 +407,15 @@ export class Forecast {
       lastYearStats,
     );
 
-        const currentSummary = currentYearStats || {
-            totalreservations: summary.totalreservations || 0,
-            totalRevenue: summary.totalRevenue || 0,
-            averageAttendees: summary.averageAttendees || 0,
-            mostPopularFacility: summary.mostPopularFacility || 'N/A'
+        const projectedRevenueTotal = Number(summary?.projectedRevenue ?? roomAnalytics.reduce((sum, room) => sum + (Number(room.projectedRevenue) || 0), 0)) || 0;
+        const currentSummary = {
+            ...(currentYearStats || {
+                totalreservations: summary.totalreservations || 0,
+                averageAttendees: summary.averageAttendees || 0,
+                mostPopularRoom: summary.mostPopularRoom || 'N/A'
+            }),
+            totalRevenue: Number(currentYearStats?.totalRevenue ?? summary.totalRevenue ?? 0),
+            projectedRevenue: projectedRevenueTotal
         };
         const isAdminView = this.container?.id === 'admin-forecast-content';
         const totalRevenue = Number(currentSummary.totalRevenue || summary.totalRevenue || 0);
@@ -465,12 +478,15 @@ export class Forecast {
                             ${comparison ? this.renderChangeIndicator(comparison.totalChange, comparison.totalChangePercent) : ""}
                         </div>
                     </div>
+                    <div class="hero-stat-card info">
+                        <div class="hero-stat-icon"></div>
+                        <div class="hero-stat-content">
+                            <div class="hero-stat-value">${this.formatCurrency(currentSummary.projectedRevenue)}</div>
+                            <div class="hero-stat-label">Projected Revenue</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        ` : '';
-
-        this.container.innerHTML = `
-            ${facilityOverviewMarkup}
 
             <!-- Year Comparison - Prominent Position -->
             ${lastYearStats ? this.renderYearComparison(lastYearStats, currentSummary, forecast.analyzedYear, this.currentYearData) : ""}
@@ -602,12 +618,59 @@ export class Forecast {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "just now";
-    if (diffMins < 60) return `${diffMins} min ago`;
-    if (diffHours < 24)
-      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-  }
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins} min ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    }
+
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+            maximumFractionDigits: 0
+        }).format(Number(amount) || 0);
+    }
+
+    getRoomRate(roomId) {
+        if (typeof window !== 'undefined' && window.RoomUtils && typeof window.RoomUtils.getRoomPrice === 'function') {
+            return Number(window.RoomUtils.getRoomPrice(roomId) || 0);
+        }
+
+        const roomPriceMap = {
+            auditorium: 1800,
+            library: 1000,
+            grounds: 700,
+            avr: 500,
+            gym: 1000
+        };
+
+        return Number(roomPriceMap[roomId] || 0);
+    }
+
+    estimateReservationRevenue(reservation) {
+        if (!reservation) return 0;
+
+        const explicitRevenue = Number(reservation.totalAmount);
+        if (Number.isFinite(explicitRevenue) && explicitRevenue >= 0) {
+            return explicitRevenue;
+        }
+
+        if (reservation.isStaff) return 0;
+
+        const roomRate = Number(reservation.pricePerHour ?? this.getRoomRate(reservation.roomId));
+        if (!roomRate) return 0;
+
+        const startValue = reservation.startTime || '00:00';
+        const endValue = reservation.endTime || startValue;
+        const [startHour, startMin = 0] = String(startValue).split(':').map(Number);
+        const [endHour, endMin = 0] = String(endValue).split(':').map(Number);
+        const startMinutes = (Number(startHour) || 0) * 60 + (Number(startMin) || 0);
+        const endMinutes = (Number(endHour) || 0) * 60 + (Number(endMin) || 0);
+        const durationHours = Math.max(1, Math.ceil((endMinutes - startMinutes) / 60 || 1));
+        const utilityFee = durationHours >= 8 ? 800 : 0;
+        return Math.round((roomRate * durationHours) + utilityFee);
+    }
 
   renderChangeIndicator(change, changePercent) {
     if (change === 0) return '<div class="stat-change neutral">No change</div>';
@@ -1265,21 +1328,11 @@ export class Forecast {
             </div>`;
   }
 
-  renderFacilityAnalytics(facility, comparison, rank = -1) {
-    const trendIcon =
-      facility.trend === "increasing"
-        ? "+"
-        : facility.trend === "decreasing"
-          ? "-"
-          : "=";
-    const trendClass =
-      facility.trend === "increasing"
-        ? "positive"
-        : facility.trend === "decreasing"
-          ? "negative"
-          : "neutral";
-    const facilityComparison =
-      comparison?.facilityComparisons?.[facility.facilityId];
+    renderRoomAnalytics(room, comparison, rank = -1) {
+        const trendIcon = room.trend === 'increasing' ? '+' : room.trend === 'decreasing' ? '-' : '=';
+        const trendClass = room.trend === 'increasing' ? 'positive' : room.trend === 'decreasing' ? 'negative' : 'neutral';
+        const roomComparison = comparison?.roomComparisons?.[room.roomId];
+        const projectedRevenue = Number(room.projectedRevenue || room.averageRevenuePerReservation || 0);
 
     // Get facility icon
     const facilityIcons = {
@@ -1340,9 +1393,14 @@ export class Forecast {
                             <div class="facility-stat-label">Avg Attendees</div>
                             <div class="facility-stat-value">${facility.averageAttendees}</div>
                         </div>
-                        <div class="facility-stat">
-                            <div class="facility-stat-label">Peak Days</div>
-                            <div class="facility-stat-value small">${Array.isArray(facility.peakDays) ? facility.peakDays.join(", ") : facility.peakDays}</div>
+                        <div class="room-stat">
+                            <div class="room-stat-label">Likely Revenue</div>
+                            <div class="room-stat-value">${this.formatCurrency(projectedRevenue)}</div>
+                            <div style="font-size:0.65rem;color:#0f766e;font-weight:600;margin-top:3px;">${this.formatCurrency(room.averageRevenuePerReservation || 0)} avg / booking</div>
+                        </div>
+                        <div class="room-stat">
+                            <div class="room-stat-label">Peak Days</div>
+                            <div class="room-stat-value small">${Array.isArray(room.peakDays) ? room.peakDays.join(', ') : room.peakDays}</div>
                         </div>
                         <div class="facility-stat prediction-stat">
                             <div class="facility-stat-label">

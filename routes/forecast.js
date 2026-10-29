@@ -72,28 +72,99 @@ async function computeForecast() {
         ]),
       );
       return {
-        week: `${month} ${analyzedYear}`,
-        totalreservations: monthReservations.length,
-        ...facilityTotals,
+        lastUpdated: new Date().toISOString(),
+        analyzedYear: lastYear,
+        yearsIncluded,
+        summary: {
+          totalreservations: 0,
+          mostPopularRoom: 'N/A',
+          peakHours: 'N/A',
+          averageAttendees: 0,
+          totalRevenue: 0,
+          averageRevenuePerReservation: 0,
+          staffRevenue: 0,
+          projectedRevenue: 0
+        },
+        roomAnalytics: [],
+        weeklyTrends: [],
+        recommendations: []
       };
-    })
-    .filter((month) => month.totalreservations > 0);
+    }
+  
+    const rooms = ['auditorium', 'library', 'grounds', 'avr', 'gym'];
+    const roomNames = { auditorium: 'Auditorium', library: 'Library', grounds: 'Grounds', avr: 'AVR', gym: 'Gym' };
+  
+    const summary = computeSummary(allData, roomNames);
+  
+    const roomAnalytics = rooms
+      .map(roomId => computeRoomAnalytics(allData.filter(r => r.roomId === roomId), roomId, roomNames))
+      .filter(Boolean);
+    const projectedRevenue = roomAnalytics.reduce((sum, room) => sum + (Number(room.projectedRevenue) || 0), 0);
+    summary.projectedRevenue = projectedRevenue;
 
-  return {
-    lastUpdated: now.toISOString(),
-    analyzedYear,
-    yearsIncluded,
-    summary,
-    facilityAnalytics,
-    weeklyTrends,
-    recommendations: computeRecommendations(facilityAnalytics),
-  };
-}
-
-export function createForecastRouter() {
-  const router = express.Router();
-
-  router.get("/", async (_req, res) => {
+    // Monthly trends (last completed year, all months with data)
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const weeklyTrends = monthNames.map((monthLabel, idx) => {
+      const monthStr = String(idx + 1).padStart(2, '0');
+      const monthData = allData.filter(r => r.date.startsWith(`${lastYear}-${monthStr}`));
+      const byRoom = {};
+      rooms.forEach(id => { byRoom[id] = monthData.filter(r => r.roomId === id).length; });
+      return { week: `${monthLabel} ${lastYear}`, totalreservations: monthData.length, ...byRoom };
+    }).filter(m => m.totalreservations > 0);
+  
+    const recommendations = computeRecommendations(roomAnalytics);
+  
+    return {
+      lastUpdated: new Date().toISOString(),
+      analyzedYear: lastYear,
+      yearsIncluded,
+      summary,
+      roomAnalytics,
+      weeklyTrends,
+      recommendations
+    };
+  }
+  
+  const forecastCachePath = path.join(repoDataDir, 'forecast.json');
+  
+  /**
+   * Load cached forecast from forecast.json, or null if missing/invalid.
+   */
+  function loadCachedForecast() {
+    if (!fs.existsSync(forecastCachePath)) return null;
+    try {
+      const data = JSON.parse(fs.readFileSync(forecastCachePath, 'utf8'));
+      return data.forecast || null;
+    } catch { return null; }
+  }
+  
+  /**
+   * Save forecast to forecast.json with year, schema version, and timestamp.
+   */
+  function saveForecastCache(forecast, analyzedYear) {
+    const payload = {
+      forecast: {
+        ...forecast,
+        analyzedYear,
+        schemaVersion: FORECAST_SCHEMA_VERSION
+      }
+    };
+    fs.writeFileSync(forecastCachePath, JSON.stringify(payload, null, 2), 'utf8');
+  }
+  
+  /**
+   * Returns true if the cached forecast is still valid.
+   */
+  function isCacheValid(cached, lastYear) {
+    if (!cached) return false;
+    if (cached.analyzedYear !== lastYear) return false;
+    if (cached.schemaVersion !== FORECAST_SCHEMA_VERSION) return false;
+    if (!cached.lastUpdated) return false;
+    const age = Date.now() - new Date(cached.lastUpdated).getTime();
+    return age < FORECAST_MAX_CACHE_AGE_MS;
+  }
+  
+  router.get('/api/forecast', (_req, res) => {
     try {
       return res.json({ forecast: await computeForecast() });
     } catch (error) {
