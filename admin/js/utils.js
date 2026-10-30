@@ -3,6 +3,27 @@
  * Pure helpers shared across all admin modules.
  */
 
+function escapeAdminText(value) {
+  const escaped = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    (character) => escaped[character],
+  );
+}
+
+function escapeAdminJsArgument(value) {
+  const encoded = JSON.stringify(String(value))
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+  return escapeAdminText(encoded);
+}
+
 // ─── Facility Helpers ─────────────────────────────────────────────────────────────
 
 function getFacilityName(id) {
@@ -198,7 +219,7 @@ window.refreshManualConflicts = function () {
     const isBlock = conflict.status === "blocked";
     banner.innerHTML = isBlock
       ? `<strong>Facility Unavailable</strong> — The facility is blocked for this time slot.`
-      : `<strong>Time Conflict</strong> — This time overlaps with <em>${conflict.name}</em> (${conflict.startTime}–${conflict.endTime}).`;
+      : `<strong>Time Conflict</strong> — This time overlaps with <em>${escapeAdminText(conflict.name)}</em> (${escapeAdminText(conflict.startTime)}–${escapeAdminText(conflict.endTime)}).`;
     banner.style.display = "block";
   } else {
     banner.style.display = "none";
@@ -236,7 +257,7 @@ window.refreshEventConflicts = function () {
     const isBlock = conflict.status === "blocked";
     banner.innerHTML = isBlock
       ? `<strong>Facility Unavailable</strong> — The facility is blocked for this time slot.`
-      : `<strong>Time Conflict</strong> — This time overlaps with <em>${conflict.name}</em> (${conflict.startTime}–${conflict.endTime}).`;
+      : `<strong>Time Conflict</strong> — This time overlaps with <em>${escapeAdminText(conflict.name)}</em> (${escapeAdminText(conflict.startTime)}–${escapeAdminText(conflict.endTime)}).`;
     banner.style.display = "block";
   } else {
     banner.style.display = "none";

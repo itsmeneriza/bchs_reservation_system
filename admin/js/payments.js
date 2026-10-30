@@ -106,23 +106,27 @@ function renderPayments() {
           const effectiveStatus = isStaff
             ? "paid"
             : b.paymentStatus || "pending";
+          const safeId = escapeAdminJsArgument(b.id);
+          const safeName = escapeAdminText(b.name);
+          const safeFacilityId = escapeAdminText(b.facilityId);
+          const safeStatus = escapeAdminText(effectiveStatus);
 
           return `
-        <tr data-id="${b.id}" data-name="${b.name.toLowerCase()}" data-facility="${b.facilityId}" data-status="${effectiveStatus}">
-            <td><strong>${b.name}</strong></td>
-            <td><span class="badge badge-secondary">${getFacilityName(b.facilityId)}</span></td>
+        <tr data-id="${escapeAdminText(b.id)}" data-name="${escapeAdminText(b.name.toLowerCase())}" data-facility="${safeFacilityId}" data-status="${safeStatus}">
+            <td><strong>${safeName}</strong></td>
+            <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(b.facilityId))}</span></td>
             <td>${formatDateSimple(b.date)}</td>
             <td><strong>₱${totalAmount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
             <td>
                 <div style="display:flex;gap:6px;margin-bottom:6px;">
                     <button class="btn btn-sm ${downPaid ? "btn-success" : "btn-outline"}"
-                            onclick="${isStaff ? "" : `toggleDownPayment('${b.id}',${!downPaid})`}"
+                            onclick="${isStaff ? "" : `toggleDownPayment(${safeId},${!downPaid})`}"
                             ${isStaff ? "disabled" : ""}
                             style="flex:1;font-size:11px;padding:6px 8px;${downPaid ? "background:#22c55e;color:white;border-color:#22c55e;" : ""}">
                         ${downPaid ? "Paid" : "Unpaid"} Down (₱${downPaymentAmount.toLocaleString("en-PH", { minimumFractionDigits: 0 })})
                     </button>
                     <button class="btn btn-sm ${remainingPaid ? "btn-success" : "btn-outline"}"
-                            onclick="${isStaff ? "" : `toggleRemainingBalance('${b.id}',${!remainingPaid})`}"
+                            onclick="${isStaff ? "" : `toggleRemainingBalance(${safeId},${!remainingPaid})`}"
                             ${isStaff ? "disabled" : ""}
                             style="flex:1;font-size:11px;padding:6px 8px;${remainingPaid ? "background:#22c55e;color:white;border-color:#22c55e;" : ""}">
                         ${remainingPaid ? "Paid" : "Unpaid"} Balance (₱${remainingBalance.toLocaleString("en-PH", { minimumFractionDigits: 0 })})
@@ -131,13 +135,13 @@ function renderPayments() {
             </td>
             <td>
                 <span class="badge badge-interactive ${getPaymentBadgeClass(effectiveStatus)}"
-                      onclick="${isStaff ? "" : `cyclePaymentStatus('${b.id}','${effectiveStatus}')`}"
+                      onclick="${isStaff ? "" : `cyclePaymentStatus(${safeId},${escapeAdminJsArgument(effectiveStatus)})`}"
                       style="${isStaff ? "cursor:default;opacity:0.85;" : ""}">
                     ${isStaff ? "PAID (Staff)" : effectiveStatus.toUpperCase()}
                 </span>
             </td>
             <td>
-                <button class="btn btn-outline btn-sm" onclick="openEditModal('${b.id}','VIEW_ONLY')" style="font-size:11px;padding:4px 8px;width:100%;">
+                <button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},'VIEW_ONLY')" style="font-size:11px;padding:4px 8px;width:100%;">
                     View Details
                 </button>
             </td>

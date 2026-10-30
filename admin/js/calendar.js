@@ -57,7 +57,7 @@ function renderCalendar() {
     const allDots = dayEntries
       .map((e) => {
         if (e.isSchoolEvent)
-          return `<span class="dot dot-event" title="${e.name}"></span>`;
+          return `<span class="dot dot-event" title="${escapeAdminText(e.name)}"></span>`;
         if (e.status === "blocked") return `<span class="dot dot-red"></span>`;
         return `<span class="dot"></span>`;
       })
@@ -140,25 +140,28 @@ async function handleDayToggle(dateStr) {
         const badgeText = isEvent ? "Event" : isBlock ? "Block" : "Reserved";
 
         const rawEvId = DateUtils.normalizeEventId(entry.id);
+        const safeEntryId = escapeAdminJsArgument(entry.id);
+        const safeEventId = escapeAdminJsArgument(rawEvId);
+        const safeDate = escapeAdminJsArgument(dateStr);
 
         const editBtn = isEvent
-          ? `<button class="btn btn-outline btn-sm" onclick="closeDayActionModal();setTimeout(()=>openEditEventModal('${rawEvId}'),50)">Edit</button>`
+          ? `<button class="btn btn-outline btn-sm" onclick="closeDayActionModal();setTimeout(()=>openEditEventModal(${safeEventId}),50)">Edit</button>`
           : isBlock
-            ? `<button class="btn btn-outline btn-sm" onclick="closeDayActionModal();setTimeout(()=>openEditBlockModal('${entry.id}','${dateStr}'),50)">Edit</button>`
-            : `<button class="btn btn-outline btn-sm" onclick="closeDayActionModal();setTimeout(()=>openEditModal('${entry.id}','FULL_EDIT'),50)">Manage</button>`;
+            ? `<button class="btn btn-outline btn-sm" onclick="closeDayActionModal();setTimeout(()=>openEditBlockModal(${safeEntryId},${safeDate}),50)">Edit</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="closeDayActionModal();setTimeout(()=>openEditModal(${safeEntryId},'FULL_EDIT'),50)">Manage</button>`;
 
         const removeBtn = isEvent
-          ? `<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;" onclick="closeDayActionModal();deleteEventFromSchedule('${rawEvId}')">Delete</button>`
+          ? `<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;" onclick="closeDayActionModal();deleteEventFromSchedule(${safeEventId})">Delete</button>`
           : isBlock
-            ? `<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;" onclick="closeDayActionModal();quickUnblock('${entry.id}','${dateStr}')">Unblock</button>`
+            ? `<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;" onclick="closeDayActionModal();quickUnblock(${safeEntryId},${safeDate})">Unblock</button>`
             : "";
 
         return `
                 <div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;">
-                    <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;flex-shrink:0;${badgeStyle}">${badgeText}</span>
+                    <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;flex-shrink:0;${badgeStyle}">${escapeAdminText(badgeText)}</span>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:13px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
-                        <div style="font-size:11px;color:#64748b;">${sub}</div>
+                        <div style="font-size:13px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeAdminText(label)}</div>
+                        <div style="font-size:11px;color:#64748b;">${escapeAdminText(sub)}</div>
                     </div>
                     <div style="display:flex;gap:4px;flex-shrink:0;">${editBtn}${removeBtn}</div>
                 </div>`;

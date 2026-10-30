@@ -16,20 +16,6 @@ let visitCalendarMonth = new Date(
   1,
 );
 
-function escapeAdminText(value) {
-  const escaped = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  };
-  return String(value ?? "").replace(
-    /[&<>"']/g,
-    (character) => escaped[character],
-  );
-}
-
 async function sendAdminReservationNotification(path, payload) {
   const response = await window.adminFetch(path, {
     method: "POST",
@@ -480,21 +466,21 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   document.getElementById("edit-summary").innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <div>
-                <div style="font-weight:800;font-size:18px;color:#1e293b;">${r.name}</div>
-                <div style="color:#64748b;font-size:13px;margin-top:2px;">Contact: ${r.contact || "N/A"} | Email: ${r.email || "N/A"}</div>
+                <div style="font-weight:800;font-size:18px;color:#1e293b;">${escapeAdminText(r.name)}</div>
+                <div style="color:#64748b;font-size:13px;margin-top:2px;">Contact: ${escapeAdminText(r.contact || "N/A")} | Email: ${escapeAdminText(r.email || "N/A")}</div>
             </div>
-            <span class="badge badge-secondary">${r.status.toUpperCase()}</span>
+            <span class="badge badge-secondary">${escapeAdminText(r.status.toUpperCase())}</span>
         </div>
         <div style="margin-top:12px;font-size:14px;color:#475569;padding:10px;background:white;border-radius:6px;border:1px dashed #cbd5e1;">
             <strong style="display:block;margin-bottom:4px;font-size:11px;color:#94a3b8;text-transform:uppercase;">Original Request Purpose:</strong>
-            "${r.purpose}"
+            "${escapeAdminText(r.purpose)}"
         </div>
         ${
           r.userEditReason
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">
             <strong style="display:block;margin-bottom:4px;font-size:11px;color:#1d4ed8;text-transform:uppercase;">User's Reason for Editing</strong>
-            <span style="color:#1e40af;">${r.userEditReason}</span>
+            <span style="color:#1e40af;">${escapeAdminText(r.userEditReason)}</span>
         </div>`
             : ""
         }
@@ -512,8 +498,8 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#fffbeb;border:1px solid #fef3c7;border-radius:6px;">
             <strong style="display:block;margin-bottom:4px;font-size:11px;color:#92400e;text-transform:uppercase;">User Requested Reschedule</strong>
-            <div style="color:#92400e;font-weight:700;margin-bottom:6px;">${r.rescheduledDate ? formatDateSimple(r.rescheduledDate) : "Date not specified"} ${r.rescheduledStartTime ? " · " + convertTo12Hour(r.rescheduledStartTime) + "–" + convertTo12Hour(r.rescheduledEndTime) : ""}</div>
-            <div style="color:#7c2d12;">Reason: ${r.rescheduleReason || "No reason provided"}</div>
+            <div style="color:#92400e;font-weight:700;margin-bottom:6px;">${escapeAdminText(r.rescheduledDate ? formatDateSimple(r.rescheduledDate) : "Date not specified")} ${r.rescheduledStartTime ? escapeAdminText(" · " + convertTo12Hour(r.rescheduledStartTime) + "–" + convertTo12Hour(r.rescheduledEndTime)) : ""}</div>
+            <div style="color:#7c2d12;">Reason: ${escapeAdminText(r.rescheduleReason || "No reason provided")}</div>
         </div>`
             : ""
         }

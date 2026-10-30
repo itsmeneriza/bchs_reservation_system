@@ -40,7 +40,7 @@ function populateFacilitySelects() {
   if (editEl)
     editEl.innerHTML = source
       .map(
-        (r) => `<option value="${r.id}">${r.name} (${r.capacity} pax)</option>`,
+        (r) => `<option value="${escapeAdminText(r.id)}">${escapeAdminText(r.name)} (${r.capacity} pax)</option>`,
       )
       .join("");
 
@@ -53,7 +53,7 @@ function populateFacilitySelects() {
       ? source
           .map(
             (facility) =>
-              `<option value="${facility.name}" data-facility-id="${facility.id}">${facility.name}</option>`,
+              `<option value="${escapeAdminText(facility.name)}" data-facility-id="${escapeAdminText(facility.id)}">${escapeAdminText(facility.name)}</option>`,
           )
           .join("")
       : '<option value="">No facilities available</option>';
@@ -92,9 +92,9 @@ window.renderAdminFacilityPicker = function (filterPax) {
       return `<button type="button"
             class="admin-facility-pill${isSelected ? " selected" : ""}${tooSmall ? " disabled" : ""}"
             ${tooSmall ? "disabled" : ""}
-            title="${tooSmall ? `Capacity: ${r.capacity} pax — too small for ${filterPax} attendees` : `${r.name} · up to ${r.capacity} pax`}"
-            onclick="selectAdminFacility('${r.id}')">
-            <span class="facility-pill-name">${r.name}</span>
+            title="${escapeAdminText(tooSmall ? `Capacity: ${r.capacity} pax — too small for ${filterPax} attendees` : `${r.name} · up to ${r.capacity} pax`)}"
+            onclick="selectAdminFacility(${escapeAdminJsArgument(r.id)})">
+            <span class="facility-pill-name">${escapeAdminText(r.name)}</span>
             <span class="facility-pill-cap">${r.capacity} pax</span>
         </button>`;
     })
@@ -279,7 +279,7 @@ window.updateAdminFacilitySuggestion = function () {
       .sort((a, b) => a.capacity - b.capacity);
     suggestionText.innerHTML =
       fits.length > 0
-        ? `<strong>${currentFacility.name}</strong> fits ${currentFacility.capacity} pax. Suggested: <strong>${fits.map((r) => `<a href="#" onclick="document.getElementById('manualFacility').value='${r.id}';updateAdminFacilitySuggestion();return false;" style="color:#800020;">${r.name} (${r.capacity} pax)</a>`).join(", ")}</strong>`
+        ? `<strong>${escapeAdminText(currentFacility.name)}</strong> fits ${currentFacility.capacity} pax. Suggested: <strong>${fits.map((r) => `<a href="#" onclick="document.getElementById('manualFacility').value=${escapeAdminJsArgument(r.id)};updateAdminFacilitySuggestion();return false;" style="color:#800020;">${escapeAdminText(r.name)} (${r.capacity} pax)</a>`).join(", ")}</strong>`
         : `${attendees} pax exceeds all facilities. Contact admin for special arrangements.`;
     suggestionBox.style.display = "block";
     return;
@@ -291,7 +291,7 @@ window.updateAdminFacilitySuggestion = function () {
       )
       .sort((a, b) => a.capacity - b.capacity);
     if (smaller.length > 0) {
-      suggestionText.innerHTML = `Only ${attendees} pax — consider a smaller facility: ${smaller.map((r) => `<a href="#" onclick="document.getElementById('manualFacility').value='${r.id}';updateAdminFacilitySuggestion();return false;" style="color:#800020;">${r.name} (${r.capacity} pax)</a>`).join(", ")}`;
+      suggestionText.innerHTML = `Only ${attendees} pax — consider a smaller facility: ${smaller.map((r) => `<a href="#" onclick="document.getElementById('manualFacility').value=${escapeAdminJsArgument(r.id)};updateAdminFacilitySuggestion();return false;" style="color:#800020;">${escapeAdminText(r.name)} (${r.capacity} pax)</a>`).join(", ")}`;
       suggestionBox.style.display = "block";
       return;
     }
@@ -367,7 +367,7 @@ async function saveManualReservation() {
     showToast(
       isBlock
         ? `Cannot save: facility is blocked for this time slot.`
-        : `Cannot save: time conflicts with "${existingConflict.name}" (${existingConflict.startTime}–${existingConflict.endTime}).`,
+        : `Cannot save: time conflicts with "${escapeAdminText(existingConflict.name)}" (${escapeAdminText(existingConflict.startTime)}–${escapeAdminText(existingConflict.endTime)}).`,
       "error",
     );
     return;
@@ -455,6 +455,7 @@ function renderQueue() {
     ? pending
         .map((req) => {
           const staffReq = isStaffRequest(req);
+          const safeId = escapeAdminJsArgument(req.id);
           const paymentCell = staffReq
             ? `<td><span class="badge badge-paid" style="font-weight:700;">PAID</span></td>`
             : `<td><span style="font-size:12px;color:#94a3b8;">—</span></td>`;
@@ -463,12 +464,12 @@ function renderQueue() {
             : "";
           return `<tr>
             <td>${formatDateSimple(req.submittedAt)}</td>
-            <td><strong>${req.name}</strong>${editedTag}</td>
-            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
+            <td><strong>${escapeAdminText(req.name)}</strong>${editedTag}</td>
+            <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(req.facilityId))}</span></td>
             <td>${formatDateSimple(req.date)}</td>
-            <td><div class="truncate" title="${req.purpose}">${req.purpose}</div></td>
+            <td><div class="truncate" title="${escapeAdminText(req.purpose)}">${escapeAdminText(req.purpose)}</div></td>
             ${paymentCell}
-            <td><button class="btn btn-bchs btn-sm" onclick="openEditModal('${req.id}','QUEUE_REVIEW')">Manage Request</button></td>
+            <td><button class="btn btn-bchs btn-sm" onclick="openEditModal(${safeId},'QUEUE_REVIEW')">Manage Request</button></td>
         </tr>`;
         })
         .join("")
@@ -547,6 +548,7 @@ function renderConfirmed() {
           const isPastWin = editMode === "RESCHEDULE_OR_REJECT";
           const isViewOnly = editMode === "VIEW_ONLY";
           const isBlockForced = req.blockReschedulePending === true;
+          const safeId = escapeAdminJsArgument(req.id);
 
           let visitCell;
           if (hasVisitOptions) {
@@ -556,14 +558,14 @@ function renderConfirmed() {
             </td>`;
           } else if (isBlockForced) {
             visitCell = `<td><span style="font-size:11px;font-weight:700;background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:999px;">Needs Reschedule</span>
-               <div style="font-size:11px;color:#64748b;margin-top:3px;">Blocked: ${req.blockRescheduleReason || "facility unavailable"}</div></td>`;
+               <div style="font-size:11px;color:#64748b;margin-top:3px;">Blocked: ${escapeAdminText(req.blockRescheduleReason || "facility unavailable")}</div></td>`;
           } else if (isLive) {
             visitCell = `<td><strong style="color:#800020;">${formatDateSimple(req.appointmentDate)}</strong>
                <span style="display:inline-block;margin-left:6px;background:#16a34a;color:white;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;vertical-align:middle;animation:pulse 1.5s infinite;">● LIVE</span>
-               <div style="font-size:11px;color:#16a34a;font-weight:600;">${req.appointmentTime ? formatApptTime(req.appointmentTime) : ""}</div></td>`;
+               <div style="font-size:11px;color:#16a34a;font-weight:600;">${escapeAdminText(req.appointmentTime ? formatApptTime(req.appointmentTime) : "")}</div></td>`;
           } else {
             visitCell = `<td><strong style="color:#800020;">${formatDateSimple(req.appointmentDate)}</strong>
-               <div style="font-size:11px;color:#64748b;">${req.appointmentTime ? formatApptTime(req.appointmentTime) : "Not set"}</div></td>`;
+               <div style="font-size:11px;color:#64748b;">${escapeAdminText(req.appointmentTime ? formatApptTime(req.appointmentTime) : "Not set")}</div></td>`;
           }
 
           const btnMode = hasVisitOptions
@@ -600,11 +602,11 @@ function renderConfirmed() {
                 : "";
 
           return `<tr${rowStyle}>
-            <td><strong>${req.name}</strong></td>
-            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
+            <td><strong>${escapeAdminText(req.name)}</strong></td>
+            <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(req.facilityId))}</span></td>
             <td>${formatDateSimple(req.date)}</td>
             ${visitCell}
-            <td><button class="btn btn-bchs btn-sm" style="${btnStyle}" onclick="openEditModal('${req.id}','${btnMode}')">${btnLabel}</button></td>
+            <td><button class="btn btn-bchs btn-sm" style="${btnStyle}" onclick="openEditModal(${safeId},${escapeAdminJsArgument(btnMode)})">${btnLabel}</button></td>
         </tr>`;
         })
         .join("")
@@ -658,22 +660,23 @@ function renderApproved() {
             : needsReschedule
               ? "Review Event Rescheduling"
               : "View";
+          const safeId = escapeAdminJsArgument(req.id);
           const badgeCell = needsReschedule
             ? `<td><span style="font-size:11px;font-weight:700;background:#fff7ed;color:#92400e;padding:2px 8px;border-radius:999px;">${hasAlternateSchedules ? "Awaiting Requester Selection" : "Needs Reschedule"}</span>
-                            <div style="font-size:11px;color:#64748b;margin-top:3px;">${hasAlternateSchedules ? `${req.rescheduleOptions.length} alternate schedule${req.rescheduleOptions.length === 1 ? "" : "s"} offered` : `Requested: ${req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—"} ${req.rescheduledStartTime ? " " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime) : ""}`}</div></td>`
+                            <div style="font-size:11px;color:#64748b;margin-top:3px;">${hasAlternateSchedules ? `${req.rescheduleOptions.length} alternate schedule${req.rescheduleOptions.length === 1 ? "" : "s"} offered` : `Requested: ${req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—"} ${req.rescheduledStartTime ? escapeAdminText(" " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime)) : ""}`}</div></td>`
             : "";
 
           return `
         <tr${rowStyle}>
-            <td><strong>${req.name}</strong></td>
-            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
+            <td><strong>${escapeAdminText(req.name)}</strong></td>
+            <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(req.facilityId))}</span></td>
             <td>${formatDateSimple(req.date)}</td>
-            <td>${convertTo12Hour(req.startTime)}–${convertTo12Hour(req.endTime)}</td>
-            <td><div class="truncate" title="${req.purpose}">${req.purpose}</div>
-                ${needsReschedule ? `<div style="font-size:11px;color:#64748b;margin-top:6px;">${hasAlternateSchedules ? "The requester has alternate event schedules to choose from." : `Requested reschedule: <strong style="color:#92400e;">${req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—"}</strong> ${req.rescheduledStartTime ? "· " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime) : ""}<div style="font-size:11px;color:#7c2d12;margin-top:4px;">Reason: ${req.rescheduleReason || "No reason provided"}</div>`}</div>` : ""}
+            <td>${escapeAdminText(convertTo12Hour(req.startTime))}–${escapeAdminText(convertTo12Hour(req.endTime))}</td>
+            <td><div class="truncate" title="${escapeAdminText(req.purpose)}">${escapeAdminText(req.purpose)}</div>
+                ${needsReschedule ? `<div style="font-size:11px;color:#64748b;margin-top:6px;">${hasAlternateSchedules ? "The requester has alternate event schedules to choose from." : `Requested reschedule: <strong style="color:#92400e;">${escapeAdminText(req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—")}</strong> ${req.rescheduledStartTime ? escapeAdminText("· " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime)) : ""}<div style="font-size:11px;color:#7c2d12;margin-top:4px;">Reason: ${escapeAdminText(req.rescheduleReason || "No reason provided")}</div>`}</div>` : ""}
             </td>
-            <td><span class="badge ${req.paymentStatus === "paid" ? "badge-success" : req.paymentStatus === "pending" ? "badge-warning" : "badge-secondary"}">${req.paymentStatus || "unpaid"}</span></td>
-            <td><button class="btn btn-outline btn-sm" onclick="openEditModal('${req.id}','${actionMode}')">${actionLabel}</button></td>
+            <td><span class="badge ${req.paymentStatus === "paid" ? "badge-success" : req.paymentStatus === "pending" ? "badge-warning" : "badge-secondary"}">${escapeAdminText(req.paymentStatus || "unpaid")}</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},${escapeAdminJsArgument(actionMode)})">${actionLabel}</button></td>
         </tr>`;
         })
         .join("")
@@ -711,6 +714,8 @@ function renderUpcoming() {
         .map((b) => {
           const isBlock = b.status === "blocked";
           const isEvent = b.isSchoolEvent === true;
+          const safeId = escapeAdminJsArgument(b.id);
+          const safeDate = escapeAdminJsArgument(b.date);
           const cardClass = isBlock
             ? "timeslot-admin-blocked"
             : isEvent
@@ -722,19 +727,20 @@ function renderUpcoming() {
           let actions = "";
           if (isEvent) {
             const evId = DateUtils.normalizeEventId(b.id);
+            const safeEventId = escapeAdminJsArgument(evId);
             actions = `<div style="display:flex;gap:6px;flex-shrink:0;">
-                <button onclick="openEditEventModal('${evId}')" class="btn btn-outline btn-sm">Edit</button>
-                <button onclick="deleteEventFromSchedule('${evId}')" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">Delete</button>
+                <button onclick="openEditEventModal(${safeEventId})" class="btn btn-outline btn-sm">Edit</button>
+                <button onclick="deleteEventFromSchedule(${safeEventId})" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">Delete</button>
             </div>`;
           } else if (isBlock) {
-            actions = `<div style="display:flex;gap:6px;flex-shrink:0;"><button onclick="quickUnblock('${b.id}','${b.date}')" class="btn btn-outline btn-sm">Unblock</button></div>`;
+            actions = `<div style="display:flex;gap:6px;flex-shrink:0;"><button onclick="quickUnblock(${safeId},${safeDate})" class="btn btn-outline btn-sm">Unblock</button></div>`;
           } else {
-            actions = `<button onclick="openEditModal('${b.id}','PAYMENT_ONLY')" class="btn btn-outline btn-sm" style="flex-shrink:0;">Manage</button>`;
+            actions = `<button onclick="openEditModal(${safeId},'PAYMENT_ONLY')" class="btn btn-outline btn-sm" style="flex-shrink:0;">Manage</button>`;
           }
           return `<div class="reservation-card ${cardClass}" style="flex-direction:row;align-items:center;gap:8px;">
             <div style="flex:1;min-width:0;">
-                <div class="res-card-row1"><span class="res-card-name">${isBlock ? "UNAVAILABLE" : b.name}</span>${badge}<span style="flex:1;"></span><span class="res-card-facility">${getFacilityName(b.facilityId)}</span></div>
-                <div class="res-card-row2"><span class="res-card-time">${formatDateSimple(b.date)} &nbsp;${convertTo12Hour(b.startTime)}–${convertTo12Hour(b.endTime)}</span><span class="res-card-purpose">${b.purpose}</span></div>
+                <div class="res-card-row1"><span class="res-card-name">${escapeAdminText(isBlock ? "UNAVAILABLE" : b.name)}</span>${badge}<span style="flex:1;"></span><span class="res-card-facility">${escapeAdminText(getFacilityName(b.facilityId))}</span></div>
+                <div class="res-card-row2"><span class="res-card-time">${formatDateSimple(b.date)} &nbsp;${escapeAdminText(convertTo12Hour(b.startTime))}–${escapeAdminText(convertTo12Hour(b.endTime))}</span><span class="res-card-purpose">${escapeAdminText(b.purpose)}</span></div>
             </div>${actions}</div>`;
         })
         .join("")
@@ -761,13 +767,14 @@ function renderCancellations() {
     ? cancellations
         .map((req) => {
           const isBlockCancelled = req.blockCancelled === true;
+          const safeId = escapeAdminJsArgument(req.id);
           return `<tr>
             <td>${req.cancellationRequestedAt ? formatDateSimple(req.cancellationRequestedAt) : "N/A"}</td>
-            <td><strong>${req.name}</strong>${isBlockCancelled ? ' <span style="font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-weight:700;">BLOCK</span>' : ""}</td>
-            <td><span class="badge badge-secondary">${getFacilityName(req.facilityId)}</span></td>
+            <td><strong>${escapeAdminText(req.name)}</strong>${isBlockCancelled ? ' <span style="font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-weight:700;">BLOCK</span>' : ""}</td>
+            <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(req.facilityId))}</span></td>
             <td>${formatDateSimple(req.date)}</td>
-            <td><div class="truncate" title="${req.cancellationReason}" style="max-width:300px;">${req.cancellationReason}</div></td>
-            <td><button class="btn btn-bchs btn-sm" onclick="openCancellationReview('${req.id}')">Review</button></td>
+            <td><div class="truncate" title="${escapeAdminText(req.cancellationReason)}" style="max-width:300px;">${escapeAdminText(req.cancellationReason)}</div></td>
+            <td><button class="btn btn-bchs btn-sm" onclick="openCancellationReview(${safeId})">Review</button></td>
         </tr>`;
         })
         .join("")
@@ -785,14 +792,15 @@ window.openCancellationReview = (id) => {
 
   // Populate reservation details
   const fmt12 = (t) => convertTo12Hour(t);
+  const safeFacility = escapeAdminText(getFacilityName(req.facilityId));
   document.getElementById("cr-details").innerHTML = `
-        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Name</span><strong>${req.name}</strong></div>
-        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Facility</span><strong>${getFacilityName(req.facilityId)}</strong></div>
+        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Name</span><strong>${escapeAdminText(req.name)}</strong></div>
+        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Facility</span><strong>${safeFacility}</strong></div>
         <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Date</span><strong>${formatDateSimple(req.date)}</strong></div>
-        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Time</span><strong>${fmt12(req.startTime)} – ${fmt12(req.endTime)}</strong></div>
-        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Purpose</span><span style="color:#374151;">${req.purpose}</span></div>
-        ${req.contact ? `<div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Contact</span><span>${req.contact}</span></div>` : ""}
-        ${req.email ? `<div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Email</span><span>${req.email}</span></div>` : ""}
+        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Time</span><strong>${escapeAdminText(fmt12(req.startTime))} – ${escapeAdminText(fmt12(req.endTime))}</strong></div>
+        <div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Purpose</span><span style="color:#374151;">${escapeAdminText(req.purpose)}</span></div>
+        ${req.contact ? `<div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Contact</span><span>${escapeAdminText(req.contact)}</span></div>` : ""}
+        ${req.email ? `<div style="display:flex;gap:6px;"><span style="color:#64748b;min-width:80px;">Email</span><span>${escapeAdminText(req.email)}</span></div>` : ""}
     `;
 
   // Populate reason (strip internal prefix if present)
@@ -907,20 +915,21 @@ function filterHistory() {
     ? filtered
         .map((req) => {
           const statusText = _getHistoryStatusLabel(req);
+          const safeId = escapeAdminJsArgument(req.id);
           let statusBadge = "";
           if (statusText === "Cancelled") statusBadge = "badge-destructive";
           else if (statusText === "Confirmed") statusBadge = "badge-success";
           else if (statusText === "Completed") statusBadge = "badge-primary";
           else statusBadge = "badge-secondary";
           const confirmedOn = req.appointmentDate
-            ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Confirmed: ${formatDateSimple(req.appointmentDate)}${req.appointmentTime ? " " + formatApptTime(req.appointmentTime) : ""}</div>`
+            ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Confirmed: ${formatDateSimple(req.appointmentDate)}${req.appointmentTime ? " " + escapeAdminText(formatApptTime(req.appointmentTime)) : ""}</div>`
             : "";
           return `<tr>
             <td>${formatDateSimple(req.date)}</td>
-            <td><strong>${req.name}</strong>${confirmedOn}</td>
-            <td>${getFacilityName(req.facilityId)}</td>
-            <td><span class="badge ${statusBadge}">${statusText}</span></td>
-            <td><button class="btn btn-outline btn-sm" onclick="openHistoryView('${req.id}')">View</button></td>
+            <td><strong>${escapeAdminText(req.name)}</strong>${confirmedOn}</td>
+            <td>${escapeAdminText(getFacilityName(req.facilityId))}</td>
+            <td><span class="badge ${statusBadge}">${escapeAdminText(statusText)}</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openHistoryView(${safeId})">View</button></td>
         </tr>`;
         })
         .join("")
@@ -963,8 +972,8 @@ window.openHistoryView = (id) => {
 
   const row = (label, value) => `
         <div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid #f1f5f9;">
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;text-transform:uppercase;">${label}</span>
-            <span style="font-size:0.82rem;color:#1e293b;font-weight:500;flex:1;word-break:break-word;">${value}</span>
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;text-transform:uppercase;">${escapeAdminText(label)}</span>
+            <span style="font-size:0.82rem;color:#1e293b;font-weight:500;flex:1;word-break:break-word;">${escapeAdminText(value)}</span>
         </div>`;
 
   let rows = `
