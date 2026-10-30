@@ -4,6 +4,7 @@ import {
   createServiceRoleSupabaseClient,
   createSupabaseClient,
 } from "../services/supabaseClient.js";
+import { consumeCancellationOtp } from "../services/cancellationOtpStore.js";
 
 const INTERNAL_FIELDS = new Set([
   "_editedByUser",
@@ -612,6 +613,10 @@ export function createRequestsRouter() {
           authorizedChanges.status = existing.status;
         }
       }
+      const requiresCancellationOtp =
+        req.auth.kind === "user" &&
+        authorizedChanges.status === "cancelled" &&
+        existing.status !== "cancelled";
       let effectiveChanges = authorizedChanges;
       if (Object.hasOwn(authorizedChanges, "rescheduleOptionIndex")) {
         if (req.auth.kind !== "user") {
@@ -687,6 +692,15 @@ export function createRequestsRouter() {
           });
         }
 
+        if (
+          requiresCancellationOtp &&
+          !consumeCancellationOtp(req.params.id, existing.email)
+        ) {
+          return res.status(403).json({
+            success: false,
+            message: "Verify the cancellation code sent to your email before cancelling this request.",
+          });
+        }
         const { data, error } = await client
           .from("reservations")
           .update(payload)
@@ -725,6 +739,15 @@ export function createRequestsRouter() {
           message: "That facility and time are already reserved. Choose another time.",
         });
       }
+      if (
+        requiresCancellationOtp &&
+        !consumeCancellationOtp(req.params.id, existing.email)
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Verify the cancellation code sent to your email before cancelling this request.",
+        });
+      }
       const { data, error } = await client
         .from("reservations")
         .update(payload)
@@ -747,7 +770,7 @@ export function createRequestsRouter() {
       const client = createServiceRoleSupabaseClient();
       const { data: existing, error: findError } = await client
         .from("reservations")
-        .select("reservation_code, staff_id, guest_id, contact, email")
+        .select("reservation_code, staff_id, guest_id, contact, email, date, status")
         .eq("reservation_code", req.params.id)
         .maybeSingle();
       if (findError) throw findError;
@@ -756,6 +779,22 @@ export function createRequestsRouter() {
       }
       if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
         return res.status(403).json({ success: false, message: "You do not have permission to delete this request." });
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isTodayOrFuture =
+        new Date(`${existing.date}T00:00:00`) >= today;
+      if (
+        req.auth.kind === "user" &&
+        isTodayOrFuture &&
+        ACTIVE_RESERVATION_STATUSES.includes(existing.status) &&
+        !consumeCancellationOtp(req.params.id, existing.email)
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Verify the cancellation code sent to your email before cancelling this request.",
+        });
       }
 
       const { data, error } = await client

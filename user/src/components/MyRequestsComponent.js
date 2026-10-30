@@ -34,7 +34,7 @@ export class MyRequests {
     this.container = document.getElementById("my-requests-container");
     this.setupVisitSlotPicker();
     this.setupRescheduleModal();
-    this.setupCancellationModal();
+    this.setupRequestActions();
   }
 
   setupVisitSlotPicker() {
@@ -299,57 +299,14 @@ export class MyRequests {
     renderOptions(endInput, 8, 18, selectedEnd);
   }
 
-  setupCancellationModal() {
-    // Create modal if it doesn't exist
-    if (!document.getElementById("cancellation-modal")) {
-      const modal = document.createElement("div");
-      modal.id = "cancellation-modal";
-      modal.style.cssText =
-        "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;";
-      modal.innerHTML = `
-                <div style="background: white; border-radius: 1rem; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Request Cancellation</h3>
-                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1.5rem;">Please provide a reason for cancelling this reservation request. Your cancellation will be reviewed within 2 business days.</p>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Cancellation Reason *</label>
-                        <textarea 
-                            id="cancellation-reason-input" 
-                            rows="4" 
-                            placeholder="Please explain why you need to cancel this request..."
-                            style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; resize: vertical; font-family: inherit;"
-                            required
-                        ></textarea>
-                    </div>
-
-                    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-                        <button 
-                            onclick="window.closeCancellationModal()" 
-                            style="background: #f1f5f9; color: #475569; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-                            onmouseover="this.style.background='#e2e8f0'" 
-                            onmouseout="this.style.background='#f1f5f9'">
-                            Cancel
-                        </button>
-                        <button 
-                            onclick="window.submitCancellation()" 
-                            style="background: #ef4444; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-                            onmouseover="this.style.background='#dc2626'" 
-                            onmouseout="this.style.background='#ef4444'">
-                            Submit Cancellation
-                        </button>
-                    </div>
-                </div>
-            `;
-      document.body.appendChild(modal);
-    }
-
+  setupRequestActions() {
     // Setup global functions
     window.requestCancellation = (requestId) => {
-      this.currentCancellationId = requestId;
-      const modal = document.getElementById("cancellation-modal");
-      const input = document.getElementById("cancellation-reason-input");
-      input.value = "";
-      modal.style.display = "flex";
+      document.dispatchEvent(
+        new CustomEvent("request-reservation-cancellation", {
+          detail: { reservationId: requestId },
+        }),
+      );
     };
 
     window.removeRequest = async (requestId) => {
@@ -361,26 +318,6 @@ export class MyRequests {
       this.render();
     };
 
-    window.closeCancellationModal = () => {
-      const modal = document.getElementById("cancellation-modal");
-      modal.style.display = "none";
-      this.currentCancellationId = null;
-    };
-
-    window.submitCancellation = () => {
-      const reason = document
-        .getElementById("cancellation-reason-input")
-        .value.trim();
-
-      if (!reason) {
-        alert("Please provide a reason for cancellation.");
-        return;
-      }
-
-      if (this.currentCancellationId) {
-        this.processCancellation(this.currentCancellationId, reason);
-      }
-    };
   }
 
   async processReschedule(requestId, data) {
@@ -423,39 +360,6 @@ export class MyRequests {
         "Something went wrong while submitting the reschedule request.",
         "error",
       );
-    }
-  }
-
-  async processCancellation(requestId, reason) {
-    const update = {
-      status: "cancelled",
-      cancellationReason: reason,
-      cancellationRequestedAt: new Date().toISOString(),
-    };
-
-    try {
-      const res = await fetch(`/api/requests/${requestId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(update),
-      });
-      const data = await res.json();
-      const { showToast } = await import("./NotificationComponent.js");
-      if (!res.ok) {
-        showToast(data.message || "Failed to submit cancellation.", "error");
-        return;
-      }
-
-      window.closeCancellationModal();
-      showToast(
-        "Cancellation request submitted successfully. Please wait 2 business days for a reply.",
-        "success",
-      );
-      this.render();
-    } catch (error) {
-      console.error("Failed to submit cancellation:", error);
-      const { showToast } = await import("./NotificationComponent.js");
-      showToast("Failed to submit cancellation. Please try again.", "error");
     }
   }
 

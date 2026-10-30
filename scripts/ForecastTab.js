@@ -4,11 +4,12 @@
  */
 
 export class Forecast {
-  constructor(container = "forecast-container") {
+  constructor(container = "forecast-container", { includeRevenue = false } = {}) {
     this.container =
       typeof container === "string"
         ? document.getElementById(container)
         : container;
+    this.includeRevenue = includeRevenue;
     this.lastYearData = null;
     this.currentYearData = null;
     this._cachedForecast = null;
@@ -16,13 +17,15 @@ export class Forecast {
     this.busyPatternSelection = "all";
     this.facilityActivitySelection = null;
 
-    // Pre-warm the cache immediately on construction
-    fetch("/api/forecast")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.forecast) this._cachedForecast = data.forecast;
-      })
-      .catch(() => {});
+    // Pre-warm only the public forecast; admin data is fetched after sign-in.
+    if (!this.includeRevenue) {
+      fetch("/api/forecast")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.forecast) this._cachedForecast = data.forecast;
+        })
+        .catch(() => {});
+    }
   }
 
   async loadData() {
@@ -57,6 +60,19 @@ export class Forecast {
   }
   async loadCurrentYearData() {
     /* already loaded by loadData() */
+  }
+
+  fetchForecast() {
+    return this.includeRevenue
+      ? window.adminFetch("/api/forecast/admin")
+      : fetch("/api/forecast");
+  }
+
+  formatCurrency(amount) {
+    return `₱${(Number(amount) || 0).toLocaleString("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
   }
 
   calculateYearStats(records, targetYear) {
@@ -336,7 +352,7 @@ export class Forecast {
       const timeout = new Promise((resolve) =>
         setTimeout(() => resolve(null), 3000),
       );
-      const fetchForecast = fetch("/api/forecast")
+      const fetchForecast = this.fetchForecast()
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => data?.forecast || null)
         .catch(() => null);
@@ -454,6 +470,8 @@ export class Forecast {
                 </div>
             </div>
 
+            ${this.includeRevenue ? this.renderRevenueForecast(summary) : ""}
+
             <!-- Year Comparison - Prominent Position -->
             ${lastYearStats ? this.renderYearComparison(lastYearStats, currentSummary, forecast.analyzedYear, this.currentYearData) : ""}
 
@@ -524,6 +542,32 @@ export class Forecast {
     this.bindYoYFilters();
     this.bindBusyPatternFilters();
     this.bindFacilityActivityFilters();
+  }
+
+  renderRevenueForecast(summary) {
+    return `
+            <div class="forecast-section admin-revenue-section">
+                <div class="section-header">
+                    <h3 class="section-title">Revenue Forecast</h3>
+                    <span class="section-badge">Based on approved bookings</span>
+                </div>
+                <div class="revenue-forecast-grid">
+                    <div class="revenue-forecast-card">
+                        <div class="revenue-forecast-label">Historical Booked Revenue</div>
+                        <div class="revenue-forecast-value">${this.formatCurrency(summary.totalRevenue)}</div>
+                    </div>
+                    <div class="revenue-forecast-card">
+                        <div class="revenue-forecast-label">Average Revenue per Reservation</div>
+                        <div class="revenue-forecast-value">${this.formatCurrency(summary.averageRevenuePerReservation)}</div>
+                    </div>
+                    <div class="revenue-forecast-card prediction">
+                        <div class="revenue-forecast-label">Projected Revenue Next Week</div>
+                        <div class="revenue-forecast-value">${this.formatCurrency(summary.predictedNextWeekRevenue)}</div>
+                    </div>
+                </div>
+                <p class="revenue-forecast-note">Projection applies each facility's average booked revenue per reservation to its predicted bookings.</p>
+            </div>
+        `;
   }
 
   bindFacilityActivityFilters() {
@@ -1326,6 +1370,20 @@ export class Forecast {
                             <div class="facility-stat-label">Peak Days</div>
                             <div class="facility-stat-value small">${Array.isArray(facility.peakDays) ? facility.peakDays.join(", ") : facility.peakDays}</div>
                         </div>
+                        ${
+                          this.includeRevenue
+                            ? `
+                        <div class="facility-stat">
+                            <div class="facility-stat-label">Booked Revenue</div>
+                            <div class="facility-stat-value small">${this.formatCurrency(facility.totalRevenue)}</div>
+                        </div>
+                        <div class="facility-stat prediction-stat">
+                            <div class="facility-stat-label">Next-Week Revenue</div>
+                            <div class="facility-stat-value small">${this.formatCurrency(facility.predictedNextWeekRevenue)}</div>
+                        </div>
+                        `
+                            : ""
+                        }
                         <div class="facility-stat prediction-stat">
                             <div class="facility-stat-label">
                                 <span></span> Next Week

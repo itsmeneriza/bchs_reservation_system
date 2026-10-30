@@ -1,7 +1,9 @@
 import express from "express";
+import { requireAdmin } from "../middleware/requireAdmin.js";
 import { createServiceRoleSupabaseClient } from "../services/supabaseClient.js";
 import {
   computeFacilityAnalytics,
+  computeRevenueForecast,
   computeSummary,
   computeRecommendations,
 } from "../scripts/ForecastService.js";
@@ -15,7 +17,7 @@ const FACILITIES = {
   gym: "Gym",
 };
 
-async function computeForecast() {
+async function computeForecast({ includeRevenue = false } = {}) {
   const now = new Date();
   const analyzedYear = now.getFullYear() - 1;
   const yearsToInclude = [analyzedYear];
@@ -79,7 +81,7 @@ async function computeForecast() {
     })
     .filter((month) => month.totalreservations > 0);
 
-  return {
+  const forecast = {
     lastUpdated: now.toISOString(),
     analyzedYear,
     yearsIncluded,
@@ -88,10 +90,34 @@ async function computeForecast() {
     weeklyTrends,
     recommendations: computeRecommendations(facilityAnalytics),
   };
+
+  if (includeRevenue) {
+    const {
+      facilityAnalytics: revenueFacilities,
+      ...revenueSummary
+    } = computeRevenueForecast(reservations, facilityAnalytics);
+    forecast.summary = { ...summary, ...revenueSummary };
+    forecast.facilityAnalytics = revenueFacilities;
+  }
+
+  return forecast;
 }
 
 export function createForecastRouter() {
   const router = express.Router();
+
+  router.get("/admin", requireAdmin, async (_req, res) => {
+    try {
+      return res.json({ forecast: await computeForecast({ includeRevenue: true }) });
+    } catch (error) {
+      console.error("Could not compute admin forecast from Supabase:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Could not compute admin forecast.",
+        error: error.message,
+      });
+    }
+  });
 
   router.get("/", async (_req, res) => {
     try {

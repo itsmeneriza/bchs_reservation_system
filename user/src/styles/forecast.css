@@ -807,6 +807,43 @@
   color: #dc2626;
 }
 
+.revenue-forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.revenue-forecast-card {
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.revenue-forecast-card.prediction {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.revenue-forecast-label {
+  margin-bottom: 0.5rem;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.revenue-forecast-value {
+  color: #1f2937;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.revenue-forecast-note {
+  margin: 0.75rem 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
 /* Weekly Trends */
 .trends-grid {
   display: grid;

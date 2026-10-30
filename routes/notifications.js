@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import express from "express";
 import {
   convertTo12Hour,
@@ -10,12 +11,16 @@ import {
 } from "../scripts/EmailBuilder.js";
 import transporter from "../services/mailer.js";
 import { createServiceRoleSupabaseClient } from "../services/supabaseClient.js";
+import {
+  clearCancellationOtp,
+  storeCancellationOtp,
+  verifyCancellationOtp,
+} from "../services/cancellationOtpStore.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { getRequestActor, isRequestOwnedByUser } from "./requests.js";
 
 export function createNotificationRouter() {
   const router = express.Router();
-  const otpStore = new Map();
   // --- Email Reminder Logic ----------------------------------------------------
 
   const formatDateOnly = (date) => formatDate(date) || date;
@@ -419,13 +424,8 @@ export function createNotificationRouter() {
       });
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore.set(requestId, {
-      code,
-      email,
-      expiresAt: Date.now() + 10 * 60 * 1000,
-      attempts: 0,
-    });
+    const code = randomInt(100000, 1000000).toString();
+    clearCancellationOtp(requestId);
 
     try {
       await transporter.sendMail({
@@ -440,6 +440,7 @@ export function createNotificationRouter() {
            <p>This code expires in <strong>10 minutes</strong>. If you did not request this, please ignore this email.</p>`,
         ),
       });
+      storeCancellationOtp(requestId, code, email);
       console.log(`? OTP sent to ${email} for request ${requestId}`);
       res.status(200).json({ success: true });
     } catch (err) {
@@ -478,19 +479,10 @@ export function createNotificationRouter() {
     ) {
       return res.status(403).json({ valid: false, message: "You do not have permission to cancel this request." });
     }
-    const stored = otpStore.get(requestId);
-
-    if (!stored || Date.now() > stored.expiresAt || stored.email !== reservation.email || stored.code !== code) {
-      if (stored) {
-        stored.attempts += 1;
-        if (stored.attempts >= 5 || Date.now() > stored.expiresAt) {
-          otpStore.delete(requestId);
-        }
-      }
+    if (!verifyCancellationOtp(requestId, code, reservation.email)) {
       return res.status(200).json({ valid: false });
     }
 
-    otpStore.delete(requestId);
     res.status(200).json({ valid: true });
   });
 

@@ -304,6 +304,44 @@ function computeSummary(allData, facilityNames) {
   };
 }
 
+function computeRevenueForecast(allData, facilityAnalytics) {
+  const getRevenue = (records) =>
+    records.reduce((total, reservation) => {
+      if (reservation.isStaff || reservation.source === "staff") return total;
+      const amount = Number(reservation.totalAmount);
+      return total + (Number.isFinite(amount) ? Math.max(0, amount) : 0);
+    }, 0);
+
+  const revenueFacilities = facilityAnalytics.map((facility) => {
+    const facilityData = allData.filter(
+      (reservation) => reservation.facilityId === facility.facilityId,
+    );
+    const totalRevenue = getRevenue(facilityData);
+    const averageRevenuePerReservation =
+      facilityData.length > 0 ? totalRevenue / facilityData.length : 0;
+
+    return {
+      ...facility,
+      totalRevenue,
+      averageRevenuePerReservation,
+      predictedNextWeekRevenue:
+        facility.predictedNextWeek * averageRevenuePerReservation,
+    };
+  });
+  const totalRevenue = getRevenue(allData);
+
+  return {
+    totalRevenue,
+    averageRevenuePerReservation:
+      allData.length > 0 ? totalRevenue / allData.length : 0,
+    predictedNextWeekRevenue: revenueFacilities.reduce(
+      (total, facility) => total + facility.predictedNextWeekRevenue,
+      0,
+    ),
+    facilityAnalytics: revenueFacilities,
+  };
+}
+
 // ─── Recommendations ──────────────────────────────────────────────────────────
 
 /**
@@ -372,6 +410,7 @@ function computeMonthlyTrends(allData, facilityIds, sliceLastN) {
 export {
   computeFacilityAnalytics,
   computeSummary,
+  computeRevenueForecast,
   computeRecommendations,
   computeMonthlyTrends,
 };
