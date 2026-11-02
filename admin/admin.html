@@ -615,13 +615,14 @@
               />
             </div>
             <div class="form-group">
-              <label>Date *</label>
+              <label>Start Date *</label>
               <input
                 type="date"
                 class="input"
-                id="eventDate"
+                id="eventStartDate"
                 onchange="
                   (function () {
+                    document.getElementById('eventEndDate').min = document.getElementById('eventStartDate').value;
                     const to = buildTimeOptions();
                     const s = document.getElementById('eventStartTime');
                     const e = document.getElementById('eventEndTime');
@@ -634,6 +635,15 @@
                     refreshEventConflicts();
                   })()
                 "
+              />
+            </div>
+            <div class="form-group">
+              <label>End Date *</label>
+              <input
+                type="date"
+                class="input"
+                id="eventEndDate"
+                onchange="refreshEventConflicts()"
               />
             </div>
             <div class="form-group">

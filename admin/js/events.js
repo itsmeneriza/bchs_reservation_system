@@ -12,8 +12,10 @@ function openAddEventModal(date) {
   }
   const modal = document.getElementById("addEventModal");
   const timeOptions = buildTimeOptions();
-  document.getElementById("eventDate").value =
-    date || new Date().toISOString().split("T")[0];
+  const startDate = date || new Date().toISOString().split("T")[0];
+  document.getElementById("eventStartDate").value = startDate;
+  document.getElementById("eventEndDate").value = startDate;
+  document.getElementById("eventEndDate").min = startDate;
   document.getElementById("eventStartTime").innerHTML = timeOptions;
   document.getElementById("eventEndTime").innerHTML = timeOptions;
   document.getElementById("eventStartTime").value = "08:00";
@@ -43,17 +45,22 @@ window.closeAddEventModal = () => {
 
 async function saveNewEvent() {
   const title = document.getElementById("eventTitle").value.trim();
-  const date = document.getElementById("eventDate").value;
+  const startDate = document.getElementById("eventStartDate").value;
+  const endDate = document.getElementById("eventEndDate").value;
   const startVal = document.getElementById("eventStartTime").value;
   const endVal = document.getElementById("eventEndTime").value;
   const location = document.getElementById("eventLocation").value;
   const description = document.getElementById("eventDescription").value.trim();
   const imageUrl = document.getElementById("eventImageUrl").value.trim();
 
-  if (!title || !date || !startVal || !endVal || !description) {
+  if (!title || !startDate || !endDate || !startVal || !endVal || !description) {
     alert(
-      "Please fill in all required fields (Title, Date, Time, Description).",
+      "Please fill in all required fields (Title, Start Date, End Date, Time, Description).",
     );
+    return;
+  }
+  if (endDate < startDate) {
+    alert("End date cannot be before start date.");
     return;
   }
   if (startVal >= endVal) {
@@ -67,7 +74,7 @@ async function saveNewEvent() {
   const excludeId = saveBtn._editingId ? "evt_" + saveBtn._editingId : null;
   const existingConflict = adminCheckConflict(
     facilityId,
-    date,
+    startDate,
     startVal,
     endVal,
     excludeId,
@@ -90,7 +97,8 @@ async function saveNewEvent() {
   if (editingId) {
     const saved = await _updateEvent(editingId, {
       title,
-      date,
+      startDate,
+      endDate,
       time,
       location,
       description,
@@ -100,7 +108,8 @@ async function saveNewEvent() {
   } else {
     const saved = await _createEvent({
       title,
-      date,
+      startDate,
+      endDate,
       time,
       location,
       description,
@@ -122,11 +131,12 @@ async function saveNewEvent() {
 
 async function _updateEvent(
   editingId,
-  { title, date, time, location, description, imageUrl },
+  { title, startDate, endDate, time, location, description, imageUrl },
 ) {
   const updatedEvent = {
     title,
-    date,
+    date: startDate,
+    endDate,
     time,
     location,
     description,
@@ -155,7 +165,9 @@ async function _updateEvent(
     adminEvents[idx] = {
       ...adminEvents[idx],
       title,
-      date,
+      date: startDate,
+      startDate,
+      endDate,
       time,
       location,
       description,
@@ -168,7 +180,8 @@ async function _updateEvent(
 
 async function _createEvent({
   title,
-  date,
+  startDate,
+  endDate,
   time,
   location,
   description,
@@ -177,7 +190,8 @@ async function _createEvent({
   const newEvent = {
     id: Date.now().toString(),
     title,
-    date,
+    date: startDate,
+    endDate,
     time,
     location,
     description,
@@ -258,7 +272,11 @@ window.openEditEventModal = (id) => {
   document.getElementById("eventStartTime").innerHTML = timeOptions;
   document.getElementById("eventEndTime").innerHTML = timeOptions;
   document.getElementById("eventTitle").value = ev.title || "";
-  document.getElementById("eventDate").value = ev.date || "";
+  const startDate = ev.startDate || ev.date || "";
+  const endDate = ev.endDate || startDate;
+  document.getElementById("eventStartDate").value = startDate;
+  document.getElementById("eventEndDate").value = endDate;
+  document.getElementById("eventEndDate").min = startDate;
   document.getElementById("eventDescription").value = ev.description || "";
   document.getElementById("eventImageUrl").value = ev.image || "";
   document.getElementById("eventLocation").value = ev.location || "Auditorium";
@@ -302,10 +320,14 @@ function renderAdminEvents() {
     return;
   }
 
-  const sorted = [...adminEvents].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...adminEvents].sort((a, b) =>
+    (a.startDate || a.date).localeCompare(b.startDate || b.date),
+  );
   container.innerHTML = sorted
     .map((ev) => {
-      const isPast = new Date(ev.date) < new Date(new Date().toDateString());
+      const eventStartDate = ev.startDate || ev.date;
+      const eventEndDate = ev.endDate || eventStartDate;
+      const isPast = new Date(eventEndDate) < new Date(new Date().toDateString());
       return `
         <div class="event-list-card" onclick="openEditEventModal('${ev.id}')"
              style="display:flex;justify-content:space-between;align-items:center;background:${isPast ? "#f8fafc" : "#fff"};border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;gap:12px;cursor:pointer;transition:background 0.15s;">
@@ -318,7 +340,7 @@ function renderAdminEvents() {
                         : '<span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:999px;">Upcoming</span>'
                     }
                 </div>
-                <div style="font-size:12px;color:#64748b;margin-top:3px;">${formatDateSimple(ev.date)} &bull; ${ev.time} &bull; ${ev.location}</div>
+                <div style="font-size:12px;color:#64748b;margin-top:3px;">${formatDateSimple(eventStartDate)}${eventEndDate !== eventStartDate ? ` – ${formatDateSimple(eventEndDate)}` : ""} &bull; ${ev.time} &bull; ${ev.location}</div>
                 <div style="font-size:12px;color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.description}</div>
             </div>
             <button class="event-delete-btn" data-id="${ev.id}"

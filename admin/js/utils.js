@@ -232,7 +232,7 @@ window.refreshManualConflicts = function () {
  */
 window.refreshEventConflicts = function () {
   const location = document.getElementById("eventLocation")?.value;
-  const dateStr = document.getElementById("eventDate")?.value;
+  const dateStr = document.getElementById("eventStartDate")?.value;
   const startTime = document.getElementById("eventStartTime")?.value;
   const endTime = document.getElementById("eventEndTime")?.value;
   if (!location || !dateStr) return;
