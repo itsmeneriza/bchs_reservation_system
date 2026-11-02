@@ -56,7 +56,8 @@ const rows = source.events.map((event) => {
   return {
     id: String(event.id),
     title: String(event.title).trim(),
-    event_date: event.date,
+    start_date: event.date,
+    end_date: event.endDate || event.date,
     start_time: time.start,
     end_time: time.end,
     facility_id: facility.id,

@@ -4,7 +4,7 @@ import { createSupabaseClient } from "../services/supabaseClient.js";
 import { formatTimeRange, parseTimeRange, isValidEventDate } from "../services/eventUtils.js";
 
 const EVENT_SELECT =
-  "id,title,event_date,start_time,end_time,facility_id,description,image,facilities(name)";
+  "id,title,start_date,end_date,start_time,end_time,facility_id,description,image,facilities(name)";
 
 function getFacilityName(row) {
   const facility = Array.isArray(row.facilities)
@@ -17,7 +17,9 @@ function toApiEvent(row) {
   return {
     id: String(row.id),
     title: row.title,
-    date: row.event_date,
+    date: row.start_date,
+    startDate: row.start_date,
+    endDate: row.end_date,
     time: formatTimeRange(row.start_time, row.end_time),
     facilityId: row.facility_id,
     location: getFacilityName(row),
@@ -35,6 +37,12 @@ function validateEventInput(event) {
   }
   if (!isValidEventDate(event.date)) {
     return "Enter a valid event date.";
+  }
+  if (event.endDate !== undefined && !isValidEventDate(event.endDate)) {
+    return "Enter a valid event end date.";
+  }
+  if (event.endDate && event.endDate < event.date) {
+    return "The event end date cannot be before its start date.";
   }
   if (typeof event.time !== "string" || !parseTimeRange(event.time)) {
     return "Enter a valid start and end time.";
@@ -96,7 +104,8 @@ async function toDatabaseEvent(client, event, existing = null) {
   return {
     id: existing?.id || String(event.id || Date.now()),
     title: event.title.trim(),
-    event_date: event.date,
+    start_date: event.date,
+    end_date: event.endDate || event.date,
     start_time: times.start,
     end_time: times.end,
     facility_id: facility.id,
@@ -130,7 +139,7 @@ export function createEventsRouter() {
       const { data, error } = await createSupabaseClient()
         .from("events")
         .select(EVENT_SELECT)
-        .order("event_date", { ascending: true })
+        .order("start_date", { ascending: true })
         .order("start_time", { ascending: true });
       if (error) throw error;
       return res.json({ events: data.map(toApiEvent) });

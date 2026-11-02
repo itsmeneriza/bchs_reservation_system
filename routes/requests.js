@@ -283,8 +283,9 @@ async function findReservationConflict(client, candidate, excludeCode = null) {
 
   const { data: events, error: eventError } = await client
     .from("events")
-    .select("id,facility_id,start_time,end_time")
-    .eq("event_date", candidate.date);
+    .select("id,facility_id,start_date,end_date,start_time,end_time")
+    .lte("start_date", candidate.date)
+    .gte("end_date", candidate.date);
   if (eventError) throw eventError;
 
   return (events || []).find((event) => {

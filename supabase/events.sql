@@ -4,7 +4,8 @@
 create table if not exists public.events (
   id text primary key,
   title text not null,
-  event_date date not null,
+  start_date date not null,
+  end_date date not null,
   start_time time not null,
   end_time time not null,
   facility_id text not null references public.facilities(id),
@@ -13,6 +14,7 @@ create table if not exists public.events (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   check (start_time < end_time)
+  ,check (start_date <= end_date)
 );
 
 alter table public.events drop column if exists attendees;
