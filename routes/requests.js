@@ -51,7 +51,7 @@ export function toDbReservation(payload = {}) {
     );
   }
 
-  return {
+  const reservation = {
     reservation_code: String(body.reservationCode || id),
     facility_id:
       body.facilityId === "global" || body.facility_id === "global"
@@ -100,6 +100,17 @@ export function toDbReservation(payload = {}) {
     submitted_at: body.submittedAt || body.submitted_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
+
+  // Staff reservations are payment-exempt. Do not rely on the browser to
+  // submit the correct amount or payment status.
+  if (userType === "staff") {
+    reservation.payment_status = "paid";
+    reservation.total_amount = 0;
+    reservation.down_payment_paid = false;
+    reservation.remaining_balance_paid = false;
+  }
+
+  return reservation;
 }
 
 export function fromDbReservation(row) {
