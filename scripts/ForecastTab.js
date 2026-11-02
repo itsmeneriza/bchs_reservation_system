@@ -417,8 +417,10 @@ export class Forecast {
       averageAttendees: summary.averageAttendees || 0,
       mostPopularFacility: summary.mostPopularFacility || "N/A",
     };
+    const showAnalyticsDashboard = this.includeRevenue;
 
     this.container.innerHTML = `
+            ${showAnalyticsDashboard ? `
             <!-- Hero Stats Section -->
             <div class="forecast-hero">
                 <div class="hero-header">
@@ -470,7 +472,8 @@ export class Forecast {
                 </div>
             </div>
 
-            ${this.includeRevenue ? this.renderRevenueForecast(summary) : ""}
+            ${this.renderRevenueForecast(summary)}
+            ` : ""}
 
             <!-- Year Comparison - Prominent Position -->
             ${lastYearStats ? this.renderYearComparison(lastYearStats, currentSummary, forecast.analyzedYear, this.currentYearData) : ""}
@@ -478,6 +481,7 @@ export class Forecast {
             <!-- Busy Patterns Analysis -->
             ${lastYearStats ? this.renderBusyPatterns(lastYearStats) : ""}
 
+            ${showAnalyticsDashboard ? `
             <!-- Facility Analytics -->
             <div class="forecast-section">
                 <div class="section-header">
@@ -512,6 +516,7 @@ export class Forecast {
                       .join("")}
                 </div>
             </div>
+            ` : ""}
             <!-- Ahead Predictions -->
             ${
               (

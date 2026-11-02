@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Data Service
  * Loads and manages all application data
  */

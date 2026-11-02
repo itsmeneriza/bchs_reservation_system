@@ -1,4 +1,4 @@
-﻿/**
+/**
  * BCHS reservation System - Main Application
  */
 import { LoginHandler } from "./components/LoginComponent.js";
