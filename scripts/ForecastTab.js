@@ -32,11 +32,17 @@ export class Forecast {
     try {
       const currentYear = new Date().getFullYear();
       const lastYear = currentYear - 1;
-      const response = await window.adminFetch("/api/requests");
+      const response = this.includeRevenue
+        ? await window.adminFetch("/api/requests")
+        : await fetch("/api/requests/availability");
       if (!response.ok) {
         throw new Error(`Requests API returned ${response.status}.`);
       }
-      const { requests = [] } = await response.json();
+      const data = await response.json();
+      const requests = this.includeRevenue ? data.requests : data.reservations;
+      if (!Array.isArray(requests)) {
+        throw new Error("Requests API returned an invalid reservation list.");
+      }
       const approved = requests.filter(
         (reservation) =>
           reservation.date &&
@@ -476,12 +482,11 @@ export class Forecast {
             ` : ""}
 
             <!-- Year Comparison - Prominent Position -->
-            ${lastYearStats ? this.renderYearComparison(lastYearStats, currentSummary, forecast.analyzedYear, this.currentYearData) : ""}
+            ${showAnalyticsDashboard && lastYearStats ? this.renderYearComparison(lastYearStats, currentSummary, forecast.analyzedYear, this.currentYearData) : ""}
 
             <!-- Busy Patterns Analysis -->
             ${lastYearStats ? this.renderBusyPatterns(lastYearStats) : ""}
 
-            ${showAnalyticsDashboard ? `
             <!-- Facility Analytics -->
             <div class="forecast-section">
                 <div class="section-header">
@@ -516,7 +521,6 @@ export class Forecast {
                       .join("")}
                 </div>
             </div>
-            ` : ""}
             <!-- Ahead Predictions -->
             ${
               (
