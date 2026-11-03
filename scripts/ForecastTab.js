@@ -566,7 +566,7 @@ export class Forecast {
                         <div class="revenue-forecast-value">${this.formatCurrency(summary.totalRevenue)}</div>
                     </div>
                     <div class="revenue-forecast-card">
-                        <div class="revenue-forecast-label">Average Revenue per Reservation</div>
+                        <div class="revenue-forecast-label">Average Revenue per Non-Staff Reservation</div>
                         <div class="revenue-forecast-value">${this.formatCurrency(summary.averageRevenuePerReservation)}</div>
                     </div>
                     <div class="revenue-forecast-card prediction">
@@ -574,7 +574,7 @@ export class Forecast {
                         <div class="revenue-forecast-value">${this.formatCurrency(summary.predictedNextWeekRevenue)}</div>
                     </div>
                 </div>
-                <p class="revenue-forecast-note">Projection applies each facility's average booked revenue per reservation to its predicted bookings.</p>
+                <p class="revenue-forecast-note">Projection applies each facility's average booked revenue to its predicted non-staff bookings.</p>
             </div>
         `;
   }

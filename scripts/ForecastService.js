@@ -305,35 +305,48 @@ function computeSummary(allData, facilityNames) {
 }
 
 function computeRevenueForecast(allData, facilityAnalytics) {
+  const isRevenueEligible = (reservation) =>
+    !reservation.isStaff &&
+    reservation.source !== "staff" &&
+    reservation.userType !== "staff";
   const getRevenue = (records) =>
     records.reduce((total, reservation) => {
-      if (reservation.isStaff || reservation.source === "staff") return total;
+      if (!isRevenueEligible(reservation)) return total;
       const amount = Number(reservation.totalAmount);
       return total + (Number.isFinite(amount) ? Math.max(0, amount) : 0);
     }, 0);
 
   const revenueFacilities = facilityAnalytics.map((facility) => {
-    const facilityData = allData.filter(
-      (reservation) => reservation.facilityId === facility.facilityId,
+    const facilityBookings = allData.filter(
+      (reservation) =>
+        reservation.facilityId === facility.facilityId &&
+        isRevenueEligible(reservation),
     );
-    const totalRevenue = getRevenue(facilityData);
+    const totalRevenue = getRevenue(facilityBookings);
     const averageRevenuePerReservation =
-      facilityData.length > 0 ? totalRevenue / facilityData.length : 0;
+      facilityBookings.length > 0 ? totalRevenue / facilityBookings.length : 0;
+    const revenueBookingForecast = computeFacilityAnalytics(
+      facilityBookings,
+      facility.facilityId,
+      { [facility.facilityId]: facility.facilityName },
+    );
 
     return {
       ...facility,
       totalRevenue,
       averageRevenuePerReservation,
       predictedNextWeekRevenue:
-        facility.predictedNextWeek * averageRevenuePerReservation,
+        (revenueBookingForecast?.predictedNextWeek || 0) *
+        averageRevenuePerReservation,
     };
   });
   const totalRevenue = getRevenue(allData);
+  const revenueBookings = allData.filter(isRevenueEligible);
 
   return {
     totalRevenue,
     averageRevenuePerReservation:
-      allData.length > 0 ? totalRevenue / allData.length : 0,
+      revenueBookings.length > 0 ? totalRevenue / revenueBookings.length : 0,
     predictedNextWeekRevenue: revenueFacilities.reduce(
       (total, facility) => total + facility.predictedNextWeekRevenue,
       0,

@@ -40,9 +40,9 @@ export default function createChatRouter() {
   - Find your reservation in the Daily Schedule sidebar and click on it
   - A 6-digit verification code is sent to your registered email
   - Enter the code, provide a cancellation reason, then confirm
-  - Cancellations are NOT accepted within 2 weeks of the event date
+  - Cancellations are NOT accepted within 1 week of the event date
   - The down payment is non-refundable
-  - Recommend giving at least 2 weeks notice
+  - Recommend giving at least 1 week notice
   
   == GENERAL RULES ==
   - Keep facilities clean after use; report any damage immediately

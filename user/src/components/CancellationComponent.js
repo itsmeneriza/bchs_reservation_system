@@ -73,7 +73,7 @@ export class CancellationHandler {
             return;
         }
 
-        // Check if event is within 2 weeks (14 days)
+        // Check if the event is within one week (7 days)
         if (!reservation.date) {
             showToast('Reservation has no event date.', 'error');
             return;
@@ -85,8 +85,8 @@ export class CancellationHandler {
         
         const daysUntilEvent = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
         
-        if (daysUntilEvent < 14) {
-            showToast('Cancellations are not accepted within 2 weeks of the event date.', 'error');
+        if (daysUntilEvent < 7) {
+            showToast('Cancellations are not accepted within one week of the event date.', 'error');
             return;
         }
 

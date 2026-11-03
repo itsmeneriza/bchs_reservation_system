@@ -101,7 +101,7 @@ const getOfflineReply = (question) => {
   const asksCapacity = /capacit|how many|people|pax|attendee/.test(normalized);
 
   if (/cancel|cancellation|refund/.test(normalized)) {
-    return "To cancel, select your reservation in the Daily Schedule and follow the email verification steps. Cancellations are not accepted within 2 weeks of the event, and the required down payment is non-refundable. Contact the Administration Office for help.";
+    return "To cancel, select your reservation in the Daily Schedule and follow the email verification steps. Cancellations are not accepted within 1 week of the event, and the required down payment is non-refundable. Contact the Administration Office for help.";
   }
 
   if (/payment|pay|down payment|deposit|balance/.test(normalized)) {

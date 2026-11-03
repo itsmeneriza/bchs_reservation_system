@@ -467,6 +467,9 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   const statusSection = document.getElementById("reservationStatusSection");
   const rejectEditBtn = document.getElementById("rejectEditBtn");
   const saveEditBtn = document.getElementById("saveEdit");
+  const acceptRescheduleBtn = document.getElementById(
+    "acceptRequestedRescheduleBtn",
+  );
   const hideStatus =
     isQueueMode ||
     isConfirmedEditMode ||
@@ -487,6 +490,14 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
         : isRescheduleMode
           ? "Offer Alternate Schedules"
           : "Update & Save";
+  if (acceptRescheduleBtn)
+    acceptRescheduleBtn.style.display =
+      isRescheduleMode &&
+      r.rescheduledDate &&
+      r.rescheduledStartTime &&
+      r.rescheduledEndTime
+          ? "inline-flex"
+          : "none";
 
   // Summary
   document.getElementById("edit-summary").innerHTML = `
@@ -511,7 +522,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
             : ""
         }
         ${
-          r.adminRevisionReason
+          r.adminRevisionReason && mode !== "RESCHEDULE_OR_REJECT"
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;">
             <strong style="display:block;margin-bottom:4px;font-size:11px;color:#6d28d9;text-transform:uppercase;">Admin Revision Reason</strong>
@@ -620,7 +631,6 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     "FULL_EDIT",
     "CONFIRMED_EDIT",
     "CONFIRMED_MANAGE",
-    "RESCHEDULE_OR_REJECT",
   ].includes(mode);
   if (adminRescheduleNoteSection)
     adminRescheduleNoteSection.style.display = isRescheduleMode ? "" : "none";
@@ -1032,6 +1042,48 @@ window.confirmRejection = async () => {
   }
 }
 
+window.acceptRequestedReschedule = async () => {
+  const request = requests.find((x) => x.id === selectedRequestToEdit);
+  if (
+    currentModalMode !== "RESCHEDULE_OR_REJECT" ||
+    !request?.rescheduledDate ||
+    !request.rescheduledStartTime ||
+    !request.rescheduledEndTime
+  ) {
+    showToast("The requested reschedule details are incomplete.", "error");
+    return;
+  }
+  if (!_isAllowedVisitDate(request.rescheduledDate)) {
+    showToast("The requested reschedule date has already passed.", "error");
+    return;
+  }
+
+  const saved = await patchRequest(selectedRequestToEdit, {
+    date: request.rescheduledDate,
+    startTime: request.rescheduledStartTime,
+    endTime: request.rescheduledEndTime,
+    rescheduleOptions: [],
+    rescheduleReason: null,
+    rescheduleRequestedAt: null,
+    rescheduledDate: null,
+    rescheduledStartTime: null,
+    rescheduledEndTime: null,
+    adminRescheduleNote: null,
+  });
+  if (!saved) {
+    showToast(
+      "Failed to accept the requested reschedule. Please try again.",
+      "error",
+    );
+    return;
+  }
+
+  showToast("Requested reschedule accepted.", "success");
+  document.getElementById("editModal").classList.remove("active");
+  await loadData();
+  window.activateTab("approved");
+};
+
 // ─── Save Changes ─────────────────────────────────────────────────────────────
 
 async function savereservationChanges() {
@@ -1118,7 +1170,6 @@ async function savereservationChanges() {
         rescheduleOptions: pendingVisitOptions,
         blockReschedulePending: false,
         blockRescheduleReason: null,
-        adminRevisionReason,
         adminRescheduleNote:
           document.getElementById("adminRescheduleNote")?.value.trim() || "",
         // Clear any pending user reschedule metadata since admin responded
@@ -1204,7 +1255,6 @@ async function savereservationChanges() {
       "FULL_EDIT",
       "CONFIRMED_EDIT",
       "CONFIRMED_MANAGE",
-      "RESCHEDULE_OR_REJECT",
     ].includes(currentModalMode) &&
     (scheduleChanged ||
       dateChanged ||
@@ -1277,6 +1327,7 @@ async function savereservationChanges() {
         notificationFailed = true;
       }
     }
+
     showToast(
       notificationFailed
         ? "Visit options saved, but the notification could not be sent."
@@ -1306,6 +1357,7 @@ async function savereservationChanges() {
         notificationFailed = true;
       }
     }
+
     showToast(
       notificationFailed
         ? "Confirmation visit saved, but the notification could not be sent."

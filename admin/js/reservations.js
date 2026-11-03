@@ -26,9 +26,36 @@ function renderAll() {
   renderApproved();
   renderUpcoming();
   renderPayments();
+  renderReschedulingRequests();
   renderCancellations();
   renderHistory();
   renderCalendar();
+}
+
+function needsRescheduleReview(request) {
+  return (
+    (Array.isArray(request.rescheduleOptions) &&
+      request.rescheduleOptions.length > 0) ||
+    !!(
+      request.rescheduleRequestedAt ||
+      request.rescheduleReason ||
+      request.rescheduledDate ||
+      request.rescheduledStartTime ||
+      request.rescheduledEndTime
+    )
+  );
+}
+
+function getReschedulingRequests() {
+  return requests
+    .filter(
+      (request) =>
+        ["approved", "accepted"].includes(request.status) &&
+        !request.isSchoolEvent &&
+        !request.isFullDayBlock &&
+        needsRescheduleReview(request),
+    )
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 // ─── Facility Selects / Facility Picker ──────────────────────────────────────────
@@ -640,15 +667,7 @@ function renderApproved() {
           const hasAlternateSchedules =
             Array.isArray(req.rescheduleOptions) &&
             req.rescheduleOptions.length > 0;
-          const needsReschedule =
-            hasAlternateSchedules ||
-            !!(
-              req.rescheduleRequestedAt ||
-              req.rescheduleReason ||
-              req.rescheduledDate ||
-              req.rescheduledStartTime ||
-              req.rescheduledEndTime
-            );
+          const needsReschedule = needsRescheduleReview(req);
           const rowStyle = needsReschedule
             ? ' style="background:#fff7ed;"'
             : "";
@@ -681,6 +700,42 @@ function renderApproved() {
         })
         .join("")
     : '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">No approved requests</td></tr>';
+}
+
+function renderReschedulingRequests() {
+  const body = document.getElementById("reschedulingTableBody");
+  if (!body) return;
+
+  const reschedulingRequests = getReschedulingRequests();
+  document.getElementById("reschedulingCount").textContent =
+    `${reschedulingRequests.length} requests`;
+  const badge = document.getElementById("rescheduling-badge");
+  if (badge) {
+    badge.textContent = reschedulingRequests.length;
+    badge.style.display =
+      reschedulingRequests.length > 0 ? "inline-flex" : "none";
+  }
+
+  body.innerHTML = reschedulingRequests.length
+    ? reschedulingRequests
+        .map((request) => {
+          const hasAlternateSchedules =
+            Array.isArray(request.rescheduleOptions) &&
+            request.rescheduleOptions.length > 0;
+          const requestedSchedule = hasAlternateSchedules
+            ? `${request.rescheduleOptions.length} alternate schedule${request.rescheduleOptions.length === 1 ? "" : "s"} offered`
+            : `${request.rescheduledDate ? formatDateSimple(request.rescheduledDate) : "Date not specified"}${request.rescheduledStartTime ? ` · ${escapeAdminText(convertTo12Hour(request.rescheduledStartTime))}–${escapeAdminText(convertTo12Hour(request.rescheduledEndTime))}` : ""}`;
+          return `<tr style="background:#fff7ed;">
+            <td><strong>${escapeAdminText(request.name)}</strong></td>
+            <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(request.facilityId))}</span></td>
+            <td>${formatDateSimple(request.date)} · ${escapeAdminText(convertTo12Hour(request.startTime))}–${escapeAdminText(convertTo12Hour(request.endTime))}</td>
+            <td>${requestedSchedule}</td>
+            <td>${escapeAdminText(request.rescheduleReason || (hasAlternateSchedules ? "Awaiting requester selection" : "No reason provided"))}</td>
+            <td><button class="btn btn-outline btn-sm" onclick="openEditModal(${escapeAdminJsArgument(request.id)},'RESCHEDULE_OR_REJECT')">${hasAlternateSchedules ? "Edit Alternate Schedules" : "Review Request"}</button></td>
+          </tr>`;
+        })
+        .join("")
+    : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">No event rescheduling requests</td></tr>';
 }
 
 // ─── Render Upcoming ──────────────────────────────────────────────────────────

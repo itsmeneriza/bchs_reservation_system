@@ -17,6 +17,29 @@ function nullableDate(value) {
   return value.trim() || null;
 }
 
+function daysUntilDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const eventDate = new Date(Date.UTC(year, month - 1, day));
+  if (
+    eventDate.getUTCFullYear() !== year ||
+    eventDate.getUTCMonth() !== month - 1 ||
+    eventDate.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  const today = new Date();
+  const todayUtc = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  return Math.round((eventDate.getTime() - todayUtc) / 86400000);
+}
+
 export function toDbReservation(payload = {}) {
   const body = payload && typeof payload === "object" ? payload : {};
   const source = String(
@@ -629,6 +652,21 @@ export function createRequestsRouter() {
         req.auth.kind === "user" &&
         authorizedChanges.status === "cancelled" &&
         existing.status !== "cancelled";
+      if (requiresCancellationOtp) {
+        const daysUntilEvent = daysUntilDate(existing.date);
+        if (daysUntilEvent === null) {
+          return res.status(400).json({
+            success: false,
+            message: "This reservation has no valid event date.",
+          });
+        }
+        if (daysUntilEvent < 7) {
+          return res.status(400).json({
+            success: false,
+            message: "Cancellations are not accepted within one week of the event date.",
+          });
+        }
+      }
       let effectiveChanges = authorizedChanges;
       if (Object.hasOwn(authorizedChanges, "rescheduleOptionIndex")) {
         if (req.auth.kind !== "user") {

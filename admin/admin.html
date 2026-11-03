@@ -105,6 +105,14 @@
           <button class="tab-trigger" data-tab="payments">
             Payment Status
           </button>
+          <button class="tab-trigger" data-tab="rescheduling">
+            Rescheduling Request
+            <span
+              class="tab-badge"
+              id="rescheduling-badge"
+              style="display: none"
+            ></span>
+          </button>
           <button class="tab-trigger" data-tab="cancellations">
             Cancellations
             <span
@@ -480,6 +488,33 @@
                   </tr>
                 </thead>
                 <tbody id="paidTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Rescheduling Requests Tab Content -->
+        <div id="rescheduling-tab" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h2>Event Rescheduling Requests</h2>
+              <span class="badge badge-secondary" id="reschedulingCount"
+                >0 requests</span
+              >
+            </div>
+            <div class="scroll-area">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Facility</th>
+                    <th>Current Event Date</th>
+                    <th>Rescheduling Request</th>
+                    <th>Reason</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="reschedulingTableBody"></tbody>
               </table>
             </div>
           </div>
@@ -2058,6 +2093,14 @@
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end; gap: 0.75rem">
+            <button
+              class="btn btn-secondary"
+              id="acceptRequestedRescheduleBtn"
+              style="display: none"
+              onclick="acceptRequestedReschedule()"
+            >
+              Accept User Requested Reschedule
+            </button>
             <button
               class="btn btn-destructive"
               id="rejectEditBtn"
