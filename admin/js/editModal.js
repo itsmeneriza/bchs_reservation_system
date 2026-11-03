@@ -502,9 +502,6 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   const statusSection = document.getElementById("reservationStatusSection");
   const rejectEditBtn = document.getElementById("rejectEditBtn");
   const saveEditBtn = document.getElementById("saveEdit");
-  const acceptRescheduleBtn = document.getElementById(
-    "acceptRequestedRescheduleBtn",
-  );
   const hideStatus =
     isQueueMode ||
     isConfirmedEditMode ||
@@ -525,15 +522,6 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
         : isRescheduleMode
           ? "Offer Alternate Schedules"
           : "Update & Save";
-  if (acceptRescheduleBtn)
-    acceptRescheduleBtn.style.display =
-      isRescheduleMode &&
-      r.rescheduledDate &&
-      r.rescheduledStartTime &&
-      r.rescheduledEndTime
-          ? "inline-flex"
-          : "none";
-
   // Summary
   document.getElementById("edit-summary").innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -1148,14 +1136,6 @@ window.acceptRescheduleSchedule = async (id, optionIndex = null) => {
   document.getElementById("editModal")?.classList.remove("active");
   await loadData();
   window.activateTab("rescheduling");
-};
-
-window.acceptRequestedReschedule = async () => {
-  if (currentModalMode !== "RESCHEDULE_OR_REJECT") {
-    showToast("Open a rescheduling request before accepting it.", "error");
-    return;
-  }
-  await window.acceptRescheduleSchedule(selectedRequestToEdit);
 };
 
 // ─── Save Changes ─────────────────────────────────────────────────────────────

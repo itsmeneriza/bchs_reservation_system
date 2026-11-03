@@ -33,16 +33,12 @@ function renderAll() {
 }
 
 function needsRescheduleReview(request) {
-  return (
-    (Array.isArray(request.rescheduleOptions) &&
-      request.rescheduleOptions.length > 0) ||
-    !!(
-      request.rescheduleRequestedAt ||
-      request.rescheduleReason ||
-      request.rescheduledDate ||
-      request.rescheduledStartTime ||
-      request.rescheduledEndTime
-    )
+  return !!(
+    request.rescheduleRequestedAt ||
+    request.rescheduleReason ||
+    request.rescheduledDate ||
+    request.rescheduledStartTime ||
+    request.rescheduledEndTime
   );
 }
 
@@ -719,20 +715,23 @@ function renderReschedulingRequests() {
   body.innerHTML = reschedulingRequests.length
     ? reschedulingRequests
         .map((request) => {
-          const hasAlternateSchedules =
-            Array.isArray(request.rescheduleOptions) &&
-            request.rescheduleOptions.length > 0;
           const safeId = escapeAdminJsArgument(request.id);
-          const requestedSchedule = hasAlternateSchedules
-            ? `${request.rescheduleOptions.length} alternate schedule${request.rescheduleOptions.length === 1 ? "" : "s"} offered`
-            : `${request.rescheduledDate ? formatDateSimple(request.rescheduledDate) : "Date not specified"}${request.rescheduledStartTime ? ` · ${escapeAdminText(convertTo12Hour(request.rescheduledStartTime))}–${escapeAdminText(convertTo12Hour(request.rescheduledEndTime))}` : ""}`;
+          const requestedSchedule =
+            `${request.rescheduledDate ? formatDateSimple(request.rescheduledDate) : "Date not specified"}${request.rescheduledStartTime ? ` · ${escapeAdminText(convertTo12Hour(request.rescheduledStartTime))}–${escapeAdminText(convertTo12Hour(request.rescheduledEndTime))}` : ""}`;
+          const canAcceptRequestedSchedule =
+            request.rescheduledDate &&
+            request.rescheduledStartTime &&
+            request.rescheduledEndTime;
           return `<tr style="background:#fff7ed;">
             <td><strong>${escapeAdminText(request.name)}</strong></td>
             <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(request.facilityId))}</span></td>
             <td>${formatDateSimple(request.date)} · ${escapeAdminText(convertTo12Hour(request.startTime))}–${escapeAdminText(convertTo12Hour(request.endTime))}</td>
             <td>${requestedSchedule}</td>
-            <td>${escapeAdminText(request.rescheduleReason || (hasAlternateSchedules ? "Awaiting requester selection" : "No reason provided"))}</td>
-            <td><button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},'RESCHEDULE_OR_REJECT')">${hasAlternateSchedules ? "Edit Alternate Schedules" : "Review Request"}</button></td>
+            <td>${escapeAdminText(request.rescheduleReason || "No reason provided")}</td>
+            <td><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+              ${canAcceptRequestedSchedule ? `<button class="btn btn-primary btn-sm" onclick="acceptRescheduleSchedule(${safeId})">Accept Reschedule</button>` : ""}
+              <button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},'RESCHEDULE_OR_REJECT')">Review Request</button>
+            </div></td>
           </tr>`;
         })
         .join("")
