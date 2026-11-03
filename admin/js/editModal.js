@@ -110,6 +110,23 @@ function renderVisitCalendar() {
         </div>`;
 }
 
+function setFinancialsExpanded(expanded) {
+  const toggle = document.getElementById("financialsToggle");
+  const content = document.getElementById("financialsContent");
+  const icon = document.getElementById("financialsToggleIcon");
+  if (!toggle || !content) return;
+
+  toggle.setAttribute("aria-expanded", String(expanded));
+  content.hidden = !expanded;
+  content.style.display = expanded ? "" : "none";
+  if (icon) icon.textContent = expanded ? "⌃" : "⌄";
+}
+
+document.getElementById("financialsToggle")?.addEventListener("click", () => {
+  const toggle = document.getElementById("financialsToggle");
+  setFinancialsExpanded(toggle?.getAttribute("aria-expanded") !== "true");
+});
+
 function renderVisitTimeOptions() {
   const container = document.getElementById("visitTimeOptions");
   if (!container) return;
@@ -462,6 +479,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
 
   // Footer: context-aware buttons based on mode
   const isQueueMode = mode === "QUEUE_REVIEW";
+  setFinancialsExpanded(mode !== "RESCHEDULE_OR_REJECT");
   const isConfirmedEditMode = mode === "CONFIRMED_EDIT";
   const isRescheduleMode = mode === "RESCHEDULE_OR_REJECT";
   const statusSection = document.getElementById("reservationStatusSection");
@@ -1042,26 +1060,45 @@ window.confirmRejection = async () => {
   }
 }
 
-window.acceptRequestedReschedule = async () => {
-  const request = requests.find((x) => x.id === selectedRequestToEdit);
-  if (
-    currentModalMode !== "RESCHEDULE_OR_REJECT" ||
-    !request?.rescheduledDate ||
-    !request.rescheduledStartTime ||
-    !request.rescheduledEndTime
-  ) {
-    showToast("The requested reschedule details are incomplete.", "error");
+window.acceptRescheduleSchedule = async (id, optionIndex = null) => {
+  const request = requests.find((item) => item.id === id);
+  let date = request?.rescheduledDate;
+  let startTime = request?.rescheduledStartTime;
+  let endTime = request?.rescheduledEndTime;
+
+  if (optionIndex !== null && optionIndex !== "") {
+    const parsedIndex = Number(optionIndex);
+    const option = request?.rescheduleOptions?.[parsedIndex];
+    if (!Number.isInteger(parsedIndex) || !option) {
+      showToast("Choose a valid alternate schedule.", "error");
+      return;
+    }
+
+    date = option.date;
+    startTime = option.startTime || option.time;
+    endTime = option.endTime;
+    if (!endTime && startTime) {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      if (Number.isInteger(hours) && Number.isInteger(minutes)) {
+        const endMinutes = hours * 60 + minutes + RESCHEDULE_SLOT_DURATION_MINUTES;
+        endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+      }
+    }
+  }
+
+  if (!request || !date || !startTime || !endTime) {
+    showToast("The reschedule details are incomplete.", "error");
     return;
   }
-  if (!_isAllowedVisitDate(request.rescheduledDate)) {
-    showToast("The requested reschedule date has already passed.", "error");
+  if (!_isAllowedVisitDate(date)) {
+    showToast("The reschedule date has already passed.", "error");
     return;
   }
 
-  const saved = await patchRequest(selectedRequestToEdit, {
-    date: request.rescheduledDate,
-    startTime: request.rescheduledStartTime,
-    endTime: request.rescheduledEndTime,
+  const update = {
+    date,
+    startTime,
+    endTime,
     rescheduleOptions: [],
     rescheduleReason: null,
     rescheduleRequestedAt: null,
@@ -1069,19 +1106,31 @@ window.acceptRequestedReschedule = async () => {
     rescheduledStartTime: null,
     rescheduledEndTime: null,
     adminRescheduleNote: null,
-  });
+  };
+  if (request.facilityId) {
+    update.facilityId = request.facilityId;
+    update.facilityName =
+      request.facilityName || getFacilityName(request.facilityId);
+  }
+
+  const saved = await patchRequest(id, update);
   if (!saved) {
-    showToast(
-      "Failed to accept the requested reschedule. Please try again.",
-      "error",
-    );
+    showToast("Could not accept the reschedule. Check availability and try again.", "error");
     return;
   }
 
-  showToast("Requested reschedule accepted.", "success");
-  document.getElementById("editModal").classList.remove("active");
+  showToast("Reschedule accepted.", "success");
+  document.getElementById("editModal")?.classList.remove("active");
   await loadData();
-  window.activateTab("approved");
+  window.activateTab("rescheduling");
+};
+
+window.acceptRequestedReschedule = async () => {
+  if (currentModalMode !== "RESCHEDULE_OR_REJECT") {
+    showToast("Open a rescheduling request before accepting it.", "error");
+    return;
+  }
+  await window.acceptRescheduleSchedule(selectedRequestToEdit);
 };
 
 // ─── Save Changes ─────────────────────────────────────────────────────────────

@@ -1732,8 +1732,31 @@
             </div>
           </div>
 
-          <div class="modal-section-title">Financials & Status</div>
-          <div class="form-grid">
+          <button
+            type="button"
+            class="modal-section-title"
+            id="financialsToggle"
+            aria-expanded="true"
+            aria-controls="financialsContent"
+            style="
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              border: 0;
+              border-bottom: 2px solid #f1f5f9;
+              background: transparent;
+              color: inherit;
+              text-align: left;
+              cursor: pointer;
+              font-family: inherit;
+              padding: 0 0 4px;
+            "
+          >
+            <span>Financials &amp; Status</span>
+            <span id="financialsToggleIcon" aria-hidden="true">⌃</span>
+          </button>
+          <div class="form-grid" id="financialsContent">
             <div class="form-group">
               <label>Total Amount (&#8369;)</label>
               <input type="number" class="input" id="editAmount" step="0.01" />
