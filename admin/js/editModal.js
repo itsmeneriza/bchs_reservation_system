@@ -44,12 +44,9 @@ const VISIT_TIME_OPTIONS = [
 const MAX_VISIT_TIME_SELECTION = 9;
 const RESCHEDULE_SLOT_DURATION_MINUTES = 60;
 
-/** Returns the ISO date string (YYYY-MM-DD) for tomorrow in local time. */
+/** Returns the ISO date string (YYYY-MM-DD) for today in local time. */
 function _getEarliestVisitDate() {
-  const tomorrow = new Date();
-  tomorrow.setHours(0, 0, 0, 0);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return _toISODate(tomorrow);
+  return _toISODate(new Date());
 }
 
 /** Format a Date as YYYY-MM-DD without UTC conversion */
@@ -146,6 +143,35 @@ function parseTimeToMinutes(value) {
     return null;
   }
   return hours * 60 + minutes;
+}
+
+function setScheduleTimeSelect(select, value) {
+  const rawTime = String(value || "").trim();
+  const match = rawTime.match(
+    /^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i,
+  );
+  if (!select || !match) {
+    if (select) select.value = rawTime;
+    return;
+  }
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3]?.toUpperCase();
+  if (minutes > 59 || hours > (meridiem ? 12 : 23) || (meridiem && hours < 1)) {
+    select.value = rawTime;
+    return;
+  }
+  if (meridiem) {
+    if (meridiem === "PM" && hours !== 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+  }
+
+  const time = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  if (![...select.options].some((option) => option.value === time)) {
+    select.add(new Option(convertTo12Hour(time), time));
+  }
+  select.value = time;
 }
 
 function getVisitTimeChoices() {
@@ -265,7 +291,7 @@ window.addVisitSlot = function () {
     return;
   }
   if (selectedVisitDates.some((date) => !_isAllowedVisitDate(date))) {
-    showToast("Visit dates must be tomorrow or later.", "error");
+    showToast("Visit dates must be today or later.", "error");
     return;
   }
 
@@ -537,8 +563,11 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   populateFacilitySelects();
   document.getElementById("editFacilityId").value = r.facilityId;
   document.getElementById("editDate").value = r.date;
-  document.getElementById("editStartTime").value = r.startTime;
-  document.getElementById("editEndTime").value = r.endTime;
+  setScheduleTimeSelect(
+    document.getElementById("editStartTime"),
+    r.startTime,
+  );
+  setScheduleTimeSelect(document.getElementById("editEndTime"), r.endTime);
   document.getElementById("editAppointmentDate").value =
     r.appointmentDate || "";
 
@@ -565,6 +594,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   );
   const adminRevisionReason = document.getElementById("adminRevisionReason");
   if (visitSectionTitle) {
+    visitSectionTitle.style.display = isConfirmedEdit ? "none" : "";
     visitSectionTitle.textContent = isRescheduleMode
       ? "Alternate Schedule Available"
       : "Confirmation Visit";
@@ -645,7 +675,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
       renderVisitTimeOptions();
     } else {
       slotBuilder.style.display = "none";
-      singleSlot.style.display = "";
+      singleSlot.style.display = isConfirmedEdit ? "none" : "";
     }
   }
   const apptDateEl = document.getElementById("editAppointmentDate");
@@ -1158,6 +1188,12 @@ async function savereservationChanges() {
     typeof update.appointmentTime !== "undefined" &&
     String(update.appointmentTime ?? "") !==
       String(requests[idx].appointmentTime ?? "");
+  const scheduleChanged =
+    ["facilityId", "date", "startTime", "endTime"].some(
+      (field) =>
+        typeof update[field] !== "undefined" &&
+        String(update[field] ?? "") !== String(requests[idx][field] ?? ""),
+    );
   const visitOptionsChanged =
     Array.isArray(update.visitOptions) && update.visitOptions.length > 0;
   const rescheduleOptionsChanged =
@@ -1170,7 +1206,8 @@ async function savereservationChanges() {
       "CONFIRMED_MANAGE",
       "RESCHEDULE_OR_REJECT",
     ].includes(currentModalMode) &&
-    (dateChanged ||
+    (scheduleChanged ||
+      dateChanged ||
       timeChanged ||
       visitOptionsChanged ||
       rescheduleOptionsChanged);
@@ -1188,7 +1225,7 @@ async function savereservationChanges() {
     update.appointmentDate !== requests[idx].appointmentDate &&
     !_isAllowedVisitDate(update.appointmentDate)
   ) {
-    showToast("Visit dates must be tomorrow or later.", "error");
+    showToast("Visit dates must be today or later.", "error");
     return;
   }
   if (
@@ -1196,7 +1233,7 @@ async function savereservationChanges() {
     update.visitOptions.some((option) => !_isAllowedVisitDate(option.date))
   ) {
     showToast(
-      "All visit options must be scheduled for tomorrow or later.",
+      "All visit options must be scheduled for today or later.",
       "error",
     );
     return;
