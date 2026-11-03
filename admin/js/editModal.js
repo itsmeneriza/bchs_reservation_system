@@ -44,6 +44,24 @@ const VISIT_TIME_OPTIONS = [
 const MAX_VISIT_TIME_SELECTION = 9;
 const RESCHEDULE_SLOT_DURATION_MINUTES = 60;
 
+function getRescheduleDurationMinutes() {
+  const durationHours = Number(
+    document.getElementById("rescheduleDuration")?.value || 1,
+  );
+  return Number.isInteger(durationHours) &&
+    durationHours >= 1 &&
+    durationHours <= 5
+    ? durationHours * 60
+    : RESCHEDULE_SLOT_DURATION_MINUTES;
+}
+
+document
+  .getElementById("rescheduleDuration")
+  ?.addEventListener("change", () => {
+    selectedVisitTimes = [];
+    renderVisitTimeOptions();
+  });
+
 /** Returns the ISO date string (YYYY-MM-DD) for today in local time. */
 function _getEarliestVisitDate() {
   return _toISODate(new Date());
@@ -140,7 +158,7 @@ function renderVisitTimeOptions() {
 
   const count = document.getElementById("visitTimeSelectionCount");
   if (count)
-    count.textContent = `${selectedVisitTimes.length} / ${Math.min(choices.length, MAX_VISIT_TIME_SELECTION)} selected`;
+    count.textContent = `${selectedVisitTimes.length} / ${getSelectableVisitTimeLimit()} selected`;
 }
 
 function parseTimeToMinutes(value) {
@@ -201,35 +219,34 @@ function getVisitTimeChoices() {
 
   const formatTime = (minutes) =>
     `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-  const fixedStartTimes = [
-    7 * 60,
-    8 * 60,
-    9 * 60,
-    10 * 60,
-    11 * 60,
-    13 * 60,
-    14 * 60,
-    15 * 60,
-    16 * 60,
+  const durationMinutes = getRescheduleDurationMinutes();
+  const operatingPeriods = [
+    { start: 7 * 60, end: 12 * 60 },
+    { start: 13 * 60, end: 18 * 60 },
   ];
   const choices = [];
-  fixedStartTimes.forEach((startMinutesValue) => {
-    const endMinutesValue =
-      startMinutesValue + RESCHEDULE_SLOT_DURATION_MINUTES;
-    if (endMinutesValue > 18 * 60) return;
-    const startTime = formatTime(startMinutesValue);
-    const endTime = formatTime(endMinutesValue);
-    choices.push({
-      value: startTime,
-      label: `${convertTo12Hour(startTime)}–${convertTo12Hour(endTime)}`,
-    });
+  operatingPeriods.forEach(({ start, end }) => {
+    for (
+      let startMinutesValue = start;
+      startMinutesValue + durationMinutes <= end;
+      startMinutesValue += 60
+    ) {
+      const startTime = formatTime(startMinutesValue);
+      const endTime = formatTime(startMinutesValue + durationMinutes);
+      choices.push({
+        value: startTime,
+        label: `${convertTo12Hour(startTime)}–${convertTo12Hour(endTime)}`,
+      });
+    }
   });
   return choices;
 }
 
 function getSelectableVisitTimeLimit() {
   const choices = getVisitTimeChoices();
-  return Math.min(choices.length, MAX_VISIT_TIME_SELECTION);
+  return currentModalMode === "RESCHEDULE_OR_REJECT"
+    ? choices.length
+    : Math.min(choices.length, MAX_VISIT_TIME_SELECTION);
 }
 
 function updateVisitDateSelectionCount() {
@@ -327,7 +344,7 @@ window.addVisitSlot = function () {
         const timeMinutes = parseTimeToMinutes(time);
         if (timeMinutes === null) return;
         const endTime = formatTime(
-          timeMinutes + RESCHEDULE_SLOT_DURATION_MINUTES,
+          timeMinutes + getRescheduleDurationMinutes(),
         );
         if (
           adminCheckConflict(
@@ -617,6 +634,10 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   const adminRescheduleNoteSection = document.getElementById(
     "adminRescheduleNoteSection",
   );
+  const rescheduleDurationGroup = document.getElementById(
+    "rescheduleDurationGroup",
+  );
+  const rescheduleDuration = document.getElementById("rescheduleDuration");
   const adminRescheduleNote = document.getElementById("adminRescheduleNote");
   const adminRevisionReasonSection = document.getElementById(
     "adminRevisionReasonSection",
@@ -630,9 +651,13 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   }
   if (visitSlotInstructions) {
     visitSlotInstructions.textContent = isRescheduleMode
-      ? "Select alternative dates and times for the event reservation. Each option is a 1-hour event schedule. When the requester chooses an option, it becomes the finalized event schedule."
+      ? "Choose an event duration, then select alternate dates and start times. Available schedules will match the selected duration."
       : "Select up to 5 dates and up to 9 time slots. Adding them creates a separate option for each date and time combination.";
   }
+  if (rescheduleDurationGroup)
+    rescheduleDurationGroup.style.display = isRescheduleMode ? "" : "none";
+  if (rescheduleDuration && isRescheduleMode)
+    rescheduleDuration.value = "1";
   if (visitCalendarTitle)
     visitCalendarTitle.textContent = isRescheduleMode
       ? "Alternate dates"
