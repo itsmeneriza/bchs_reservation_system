@@ -612,6 +612,12 @@ input:checked + .slider:before {
   display: none;
 }
 
+body.forecast-tab-active #view-facility-btn,
+body.forecast-tab-active #calendar-legend-mobile,
+body.forecast-tab-active #calendar-legend {
+  display: none !important;
+}
+
 .month-nav-btn {
   background: white;
   border: 1px solid #cbd5e1;

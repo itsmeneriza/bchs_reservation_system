@@ -136,6 +136,7 @@ class ReservationApp {
     const mainContent = document.querySelector(".main-content");
     const isCalendar = tab === "calendar";
     const isMobile = window.innerWidth <= 768;
+    document.body.classList.toggle("forecast-tab-active", tab === "forecast");
 
     if (sidebar) sidebar.style.display = isCalendar ? "" : "none";
     if (timeslotsSidebar)

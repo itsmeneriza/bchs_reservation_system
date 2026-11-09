@@ -22,6 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
+*.txt
+!commit.txt
 .vercel
 .env*
+
+request.sql

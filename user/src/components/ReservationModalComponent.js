@@ -167,7 +167,7 @@ export class ReservationModal {
     // Keep this.inputs.date in sync
     if (this.inputs.date) this.inputs.date.value = dateToUse;
 
-    if (prefill) {
+    if (editingId && prefill) {
       // Editing mode — fill all fields from the existing request
       const set = (id, val) => {
         const el = document.getElementById(id);
@@ -280,6 +280,10 @@ export class ReservationModal {
         }
       }
       this.updateAvailableTimes();
+      if (prefill) {
+        this.inputs.startTime.value = prefill.startTime || "";
+        this.inputs.endTime.value = prefill.endTime || "";
+      }
     }
 
     this.updateDurationInfo();

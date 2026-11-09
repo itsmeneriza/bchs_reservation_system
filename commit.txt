@@ -1,0 +1,14 @@
+Facility-user forecasting
+
+- Added live, on-demand facility forecasting from Supabase reservations, events, and facilities.
+- Normalized valid active booking/event intervals to 7:00 AM-6:00 PM, merged overlaps, and bounded multi-day events to the history window.
+- Added the 12-month, four-week-bucket utilization forecast with 55/30/15 historical weighting and seasonal adjustments.
+- Added the trailing four-complete-week hourly demand grid for Monday through Sunday, 8:00 AM-5:00 PM.
+- Added paginated source queries, active-status filtering, invalid-date validation, and support for the facilities configured in Supabase.
+- Kept demand tiers advisory: every forecast slot can open a reservation request, while existing calendar conflicts remain enforced.
+- Connected forecast slot selection to the calendar, facility list, and reservation modal without replacing full facility details or losing logged-in user defaults.
+- Wired the booking forecast tab and added responsive demand tier and slot guidance styling.
+
+Validation:
+- Passed Node.js syntax checks for the updated forecast route and user components.
+- Passed focused checks for overlap merging, operating-hour clipping, malformed record rejection, event-window clipping, seasonal adjustments, 48 macro buckets, and 7-day MA4 labels.

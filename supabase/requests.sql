@@ -55,6 +55,41 @@ before update on public.reservations
 for each row
 execute function public.update_reservations_modified_column();
 
+-- Keep staff payment exemption authoritative even when rows are written by
+-- an older client or directly through an admin integration.
+create or replace function public.normalize_staff_reservation_payment()
+returns trigger as $$
+begin
+  if new.is_staff or new.user_type = 'staff' or new.source = 'staff' then
+    new.is_staff = true;
+    new.user_type = 'staff';
+    new.payment_status = 'paid';
+    new.total_amount = 0.00;
+    new.down_payment_paid = false;
+    new.remaining_balance_paid = false;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_normalize_staff_reservation_payment on public.reservations;
+create trigger trg_normalize_staff_reservation_payment
+before insert or update on public.reservations
+for each row
+execute function public.normalize_staff_reservation_payment();
+
+update public.reservations
+set
+  is_staff = true,
+  user_type = 'staff',
+  payment_status = 'paid',
+  total_amount = 0.00,
+  down_payment_paid = false,
+  remaining_balance_paid = false
+where is_staff
+   or user_type = 'staff'
+   or source = 'staff';
+
 create or replace function public.prevent_reservation_time_conflicts()
 returns trigger as $$
 begin

@@ -17,6 +17,269 @@ const FACILITIES = {
   gym: "Gym",
 };
 
+const ACTIVE_STATUSES = ["confirmed", "approved", "accepted", "completed"];
+const WEEK_LABELS = ["W1", "W2", "W3", "W4"];
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function parseTime(value) {
+  const match = String(value || "").match(/^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function dateParts(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const [, year, month, day] = match.map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+    ? date
+    : null;
+}
+
+function dateKey(date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+function normalizeActivity(entries) {
+  const intervalsByDate = new Map();
+  for (const entry of entries) {
+    const date = dateParts(entry.date);
+    const start = parseTime(entry.startTime);
+    const end = parseTime(entry.endTime);
+    if (!date || !entry.facilityId || start === null || end === null || end <= start) continue;
+
+    const startMinute = Math.max(7 * 60, start);
+    const endMinute = Math.min(18 * 60, end);
+    if (endMinute <= startMinute) continue;
+
+    const key = `${entry.facilityId}|${dateKey(date)}`;
+    if (!intervalsByDate.has(key)) {
+      intervalsByDate.set(key, {
+        facilityId: entry.facilityId,
+        date: dateKey(date),
+        intervals: [],
+      });
+    }
+    intervalsByDate.get(key).intervals.push([startMinute, endMinute]);
+  }
+
+  return [...intervalsByDate.values()].flatMap(({ facilityId, date, intervals }) => {
+    intervals.sort((left, right) => left[0] - right[0]);
+    const merged = [];
+    for (const interval of intervals) {
+      const previous = merged[merged.length - 1];
+      if (previous && interval[0] <= previous[1]) {
+        previous[1] = Math.max(previous[1], interval[1]);
+      } else {
+        merged.push([...interval]);
+      }
+    }
+    return merged.map(([startMinute, endMinute]) => ({
+      facilityId,
+      date,
+      startMinute,
+      endMinute,
+    }));
+  });
+}
+
+function expandEvent(event, fromDate, throughDate) {
+  const eventStart = dateParts(event.start_date);
+  const eventEnd = dateParts(event.end_date || event.start_date);
+  const rangeStart = dateParts(fromDate);
+  const rangeEnd = dateParts(throughDate);
+  if (!eventStart || !eventEnd || !rangeStart || !rangeEnd || eventStart > eventEnd) return [];
+  const start = eventStart > rangeStart ? eventStart : rangeStart;
+  const end = eventEnd < rangeEnd ? eventEnd : rangeEnd;
+  if (!start || !end) return [];
+  const days = [];
+  for (const date = new Date(start); date <= end; date.setUTCDate(date.getUTCDate() + 1)) {
+    days.push({
+      facilityId: event.facility_id,
+      date: dateKey(date),
+      startTime: event.start_time,
+      endTime: event.end_time,
+      isEvent: true,
+    });
+  }
+  return days;
+}
+
+function weekIndex(date) {
+  return Math.min(4, Math.floor((date.getUTCDate() - 1) / 7) + 1);
+}
+
+async function fetchAllRows(query) {
+  const rows = [];
+  const pageSize = 1000;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await query.range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) return rows;
+  }
+}
+
+async function loadForecastActivity(referenceYear, client) {
+  const firstYear = referenceYear - 2;
+  const [reservations, events] = await Promise.all([
+    fetchAllRows(client
+      .from("reservations")
+      .select("reservation_code,date,start_time,end_time,facility_id,status")
+      .in("status", ACTIVE_STATUSES)
+      .gte("date", `${firstYear}-01-01`)
+      .lte("date", `${referenceYear}-12-31`)
+      .order("date", { ascending: true })
+      .order("reservation_code", { ascending: true })),
+    fetchAllRows(client
+      .from("events")
+      .select("id,start_date,end_date,start_time,end_time,facility_id")
+      .lte("start_date", `${referenceYear}-12-31`)
+      .gte("end_date", `${firstYear}-01-01`)
+      .order("start_date", { ascending: true })
+      .order("id", { ascending: true })),
+  ]);
+  return normalizeActivity([
+    ...reservations
+      .filter((row) => ACTIVE_STATUSES.includes(String(row.status || "").trim().toLowerCase()))
+      .map((row) => ({
+        facilityId: row.facility_id,
+        date: row.date,
+        startTime: row.start_time,
+        endTime: row.end_time,
+      })),
+    ...events.flatMap((event) =>
+      expandEvent(event, `${firstYear}-01-01`, `${referenceYear}-12-31`),
+    ),
+  ]);
+}
+
+function getTier(value) {
+  if (value >= 70) return "High";
+  if (value >= 35) return "Moderate";
+  return "Low";
+}
+
+function buildMacroForecast(activity, facilityId, referenceDate) {
+  const start = dateParts(referenceDate) || new Date();
+  const startMonth = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+  const forecastYears = [startMonth.getUTCFullYear() - 2, startMonth.getUTCFullYear() - 1, startMonth.getUTCFullYear()];
+  const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
+
+  return Array.from({ length: 12 }, (_, offset) => {
+    const forecastMonth = new Date(Date.UTC(startMonth.getUTCFullYear(), startMonth.getUTCMonth() + offset, 1));
+    const monthIndex = forecastMonth.getUTCMonth();
+    const month = MONTHS[monthIndex];
+    const year = forecastMonth.getUTCFullYear();
+    return WEEK_LABELS.map((weekLabel, weekNumber) => {
+      const observedByYear = forecastYears.map((observedYear) => {
+        const hours = facilityActivity.reduce((total, entry) => {
+          const date = dateParts(entry.date);
+          return date &&
+            date.getUTCFullYear() === observedYear &&
+            date.getUTCMonth() === monthIndex &&
+            weekIndex(date) === weekNumber + 1
+            ? total + (entry.endMinute - entry.startMinute) / 60
+            : total;
+        }, 0);
+        return Math.min(100, (hours / 54) * 100);
+      });
+      const adjustment = monthIndex === 3 || monthIndex === 4 ? -40 : monthIndex === 8 ? 15 : 0;
+      const forecasted = Math.max(
+        0,
+        Math.min(
+          100,
+          observedByYear[0] * 0.15 + observedByYear[1] * 0.3 + observedByYear[2] * 0.55 + adjustment,
+        ),
+      );
+      return {
+        periodKey: `${month} ${year} W${weekNumber + 1}`,
+        monthLabel: `${month} ${year}`,
+        year,
+        month: monthIndex + 1,
+        week: weekLabel,
+        forecasted_pct: Math.round(forecasted),
+        demand_tier: getTier(forecasted),
+        anchor_event_note: monthIndex === 3 || monthIndex === 4
+          ? "Mandatory EOSY vacation adjustment"
+          : monthIndex === 8
+            ? "Peak orientation and event season adjustment"
+            : "Historical activity and live bookings",
+      };
+    });
+  }).flat();
+}
+
+function buildMicroForecast(activity, facilityId, referenceDate) {
+  const target = dateParts(referenceDate) || new Date();
+  const monday = new Date(target);
+  monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+  const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
+  return Array.from({ length: 9 }, (_, index) => {
+    const hour = index + 8;
+    return DAYS.map((day, dayIndex) => {
+      let matches = 0;
+      for (let week = 1; week <= 4; week += 1) {
+        const date = new Date(monday);
+        date.setUTCDate(date.getUTCDate() - week * 7 + dayIndex);
+        const dateValue = dateKey(date);
+        const active = facilityActivity.some((entry) =>
+          entry.date === dateValue &&
+          entry.startMinute < (hour + 1) * 60 &&
+          entry.endMinute > hour * 60,
+        );
+        if (active) matches += 1;
+      }
+      const ma4 = matches / 4;
+      return {
+        day,
+        dayIndex,
+        hour,
+        label: `${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00`,
+        moving_avg_score: ma4,
+        slot_status: ma4 >= 0.75 ? "Busy" : ma4 >= 0.35 ? "Moderate" : "Available",
+        policy_note: hour === 12
+          ? "Lunch Micro-Run Window"
+          : hour >= 15
+            ? "After-Hours Club Window"
+            : "Protected Instructional Hours",
+      };
+    });
+  });
+}
+
+async function computeUserForecast(facilityId, referenceDate) {
+  const targetDate = dateParts(referenceDate) || new Date();
+  const client = createServiceRoleSupabaseClient();
+  const [{ data: facilities, error: facilitiesError }, activity] = await Promise.all([
+    client.from("facilities").select("id,name").order("name", { ascending: true }),
+    loadForecastActivity(targetDate.getUTCFullYear(), client),
+  ]);
+  if (facilitiesError) throw facilitiesError;
+  if (!facilities?.length) throw new Error("No facilities are available for forecasting.");
+  const selectedFacility = facilities.some((facility) => facility.id === facilityId)
+    ? facilityId
+    : facilities[0].id;
+  const forecast = {
+    lastUpdated: new Date().toISOString(),
+    facilities,
+    selectedFacility: selectedFacility,
+    macro: buildMacroForecast(activity, selectedFacility, referenceDate),
+    micro: buildMicroForecast(activity, selectedFacility, referenceDate),
+  };
+  return forecast;
+}
+
 async function computeForecast({ includeRevenue = false } = {}) {
   const now = new Date();
   const analyzedYear = now.getFullYear() - 1;
@@ -132,6 +395,28 @@ export function createForecastRouter() {
     }
   });
 
+  router.get("/user", async (req, res) => {
+    if (req.query.referenceDate && !dateParts(req.query.referenceDate)) {
+      return res.status(400).json({
+        message: "Enter a valid forecast reference date.",
+      });
+    }
+    try {
+      return res.json({
+        forecast: await computeUserForecast(
+          req.query.facilityId,
+          req.query.referenceDate,
+        ),
+      });
+    } catch (error) {
+      console.error("Could not compute user forecast from Supabase:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Could not compute facility booking forecast.",
+      });
+    }
+  });
+
   router.post("/refresh", async (_req, res) => {
     try {
       return res.json({
@@ -150,3 +435,5 @@ export function createForecastRouter() {
 
   return router;
 }
+
+export { buildMacroForecast, buildMicroForecast, expandEvent, normalizeActivity };
