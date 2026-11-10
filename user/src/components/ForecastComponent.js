@@ -6,6 +6,11 @@ const TIER_COLORS = {
   Moderate: "#d97706",
   Low: "#059669",
 };
+const MONTH_ABBREVIATIONS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+const MICRO_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -27,6 +32,76 @@ function todayAsDateString() {
   const today = new Date();
   const pad = (value) => String(value).padStart(2, "0");
   return `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+}
+
+function getCurrentWeekRange() {
+  const sunday = new Date();
+  sunday.setHours(0, 0, 0, 0);
+  sunday.setDate(sunday.getDate() - sunday.getDay());
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  const format = (date, options) => date.toLocaleDateString("en-US", options);
+
+  if (sunday.getFullYear() !== saturday.getFullYear()) {
+    return `${format(sunday, { month: "short", day: "numeric", year: "numeric" })}-${format(saturday, { month: "short", day: "numeric", year: "numeric" })}`;
+  }
+  if (sunday.getMonth() !== saturday.getMonth()) {
+    return `${format(sunday, { month: "short", day: "numeric" })}-${format(saturday, { month: "short", day: "numeric", year: "numeric" })}`;
+  }
+  return `${format(sunday, { month: "short" })} ${sunday.getDate()}-${saturday.getDate()}, ${saturday.getFullYear()}`;
+}
+
+function getMacroDateRange(item) {
+  const match = String(item.periodKey || "").match(/^([A-Za-z]{3})\s+(\d{4})\s+W([1-4])$/);
+  if (!match) return item.dateRange || "";
+
+  const [, month, year, week] = match;
+  const monthIndex = MONTH_ABBREVIATIONS.indexOf(month);
+  if (monthIndex < 0) return item.dateRange || "";
+  const start = new Date(Date.UTC(Number(year), monthIndex, 1));
+  start.setUTCDate(start.getUTCDate() - start.getUTCDay() + (Number(week) - 1) * 7);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  const startMonth = MONTH_ABBREVIATIONS[start.getUTCMonth()];
+  const endMonth = MONTH_ABBREVIATIONS[end.getUTCMonth()];
+  const startYear = start.getUTCFullYear();
+  const endYear = end.getUTCFullYear();
+  if (startYear !== endYear) {
+    return `${startMonth} ${start.getUTCDate()}, ${startYear}-${endMonth} ${end.getUTCDate()}, ${endYear}`;
+  }
+  if (start.getUTCMonth() !== end.getUTCMonth()) {
+    return `${startMonth} ${start.getUTCDate()}-${endMonth} ${end.getUTCDate()}, ${endYear}`;
+  }
+  return `${startMonth} ${start.getUTCDate()}-${end.getUTCDate()}, ${endYear}`;
+}
+
+export function formatMacroPeriod(item) {
+  const periodKey = item.periodKey || "Weekly outlook";
+  const dateRange = getMacroDateRange(item);
+  return `${periodKey}${dateRange ? `(${dateRange})` : ""}`;
+}
+
+export function normalizeMicroRows(micro) {
+  const slotsByHourAndDay = new Map();
+  for (const row of micro || []) {
+    for (const slot of row || []) {
+      const dayIndex = MICRO_DAYS.indexOf(slot.day);
+      if (dayIndex < 0 || !Number.isInteger(slot.hour)) continue;
+      slotsByHourAndDay.set(`${slot.hour}:${dayIndex}`, slot);
+    }
+  }
+
+  return Array.from({ length: 11 }, (_, index) => {
+    const hour = index + 7;
+    return MICRO_DAYS.map((day, dayIndex) => slotsByHourAndDay.get(`${hour}:${dayIndex}`) || ({
+      day,
+      dayIndex,
+      hour,
+      label: `${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00`,
+      moving_avg_score: 0,
+      slot_status: "Available",
+    }));
+  });
 }
 
 export class Forecast {
@@ -52,7 +127,9 @@ export class Forecast {
         facilityId: this.selectedFacilityId,
         referenceDate: this.referenceDate,
       });
-      const response = await fetch(`/api/forecast/user?${params}`);
+      const response = await fetch(`/api/forecast/user?${params}`, {
+        cache: "no-store",
+      });
       const payload = await response.json();
       if (!response.ok || !payload.forecast) {
         throw new Error(payload.message || `Forecast API returned ${response.status}.`);
@@ -73,6 +150,7 @@ export class Forecast {
 
   renderForecast() {
     const { facilities, macro, micro } = this.forecast;
+    const microRows = normalizeMicroRows(micro);
     const facility = facilities.find(({ id }) => id === this.selectedFacilityId) || facilities[0];
     this.selectedFacilityId = facility.id;
     const appFacility = state.facilities.find(({ id }) => id === facility.id);
@@ -89,14 +167,16 @@ export class Forecast {
     const selectedMacro = visibleMacro[0];
     this.container.innerHTML = `
       <div class="user-forecast">
+        <div class="forecast-facility-toolbar">
+          <label class="macro-facility-control">Facility
+            <select class="forecast-facility-select">
+              ${facilities.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === facility.id ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")}
+            </select>
+          </label>
+        </div>
         <section class="user-forecast-card">
           <div class="macro-card-heading">
             <h3>12-month usage forecast (month &amp; week)</h3>
-            <label class="macro-facility-control">Facility
-              <select class="forecast-facility-select">
-                ${facilities.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === facility.id ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")}
-              </select>
-            </label>
           </div>
           <div class="macro-forecast-layout">
             <div class="macro-forecast-main">
@@ -108,8 +188,9 @@ export class Forecast {
                     const value = item.forecasted_pct;
                     const label = "Forecast";
                     const color = TIER_COLORS[item.demand_tier];
+                    const dateRange = getMacroDateRange(item);
                     return `
-                      <button type="button" class="macro-forecast-bar macro-bar-incoming" data-period="${escapeHtml(item.periodKey)}" title="${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
+                      <button type="button" class="macro-forecast-bar macro-bar-incoming" data-period="${escapeHtml(item.periodKey)}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${value}%" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
                         <span class="macro-bar-value">${value}%</span>
                         <span class="macro-bar macro-bar-single" style="height:${Math.max(4, value)}%;background:${color}" aria-label="${label} ${value}%"></span>
                         <span class="macro-bar-label">${escapeHtml(item.week)}</span>
@@ -132,20 +213,14 @@ export class Forecast {
                 <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
               </div>
               <div class="macro-insight macro-insight-inline">
-                <strong class="macro-insight-title">${escapeHtml(selectedMacro?.periodKey || "Weekly outlook")}</strong>
+                <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
                 <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
                 <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
               </div>
             </div>
             <aside class="macro-summary-panel">
-              <span class="macro-insight-badge">Forecast</span>
-              <span class="macro-summary-icon" aria-hidden="true">i</span>
               <h4>12-month forecast for ${escapeHtml(facility.name)}</h4>
               <p>Projected utilization based on historical activity, live bookings, and seasonal guidance.</p>
-              <div class="macro-summary-stat">
-                <small>First forecast bucket</small>
-                <strong>${selectedMacro?.forecasted_pct ?? 0}%</strong>
-              </div>
               <div class="macro-summary-stat">
                 <small>Forecast method</small>
                 <strong>55 / 30 / 15</strong>
@@ -156,24 +231,24 @@ export class Forecast {
 
         <section class="user-forecast-card">
           <div class="forecast-step-heading">
-            <span class="forecast-step forecast-step-green">Step 2</span>
-            <div><h3>Choose a lower-demand hour</h3><p>Recent usage guidance for ${escapeHtml(facility.name)}. Select any hour to check the live calendar and start a request.</p></div>
+            <div><h3>Weekly Hourly Demand Guide (${escapeHtml(getCurrentWeekRange())})</h3><p>Estimated busy hours for the ${escapeHtml(facility.name)} based on bookings from the past 4 weeks.</p></div>
           </div>
           <div class="forecast-legend">
-            <span><i class="slot-dot available"></i>Available</span>
-            <span><i class="slot-dot moderate"></i>Moderate</span>
-            <span><i class="slot-dot busy"></i>Busy</span>
+            <span><i class="slot-dot available"></i>Lower demand</span>
+            <span><i class="slot-dot moderate"></i>Moderate demand</span>
+            <span><i class="slot-dot busy"></i>Higher demand</span>
           </div>
           <div class="micro-forecast-wrap">
             <table class="micro-forecast-table">
-              <thead><tr><th>Time</th>${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => `<th>${day}</th>`).join("")}</tr></thead>
-              <tbody>${micro.map((row) => `
-                <tr><th>${formatHour(row[0].hour)}<small>${escapeHtml(row[0].policy_note)}</small></th>
-                  ${row.map((slot) => `<td><button type="button" class="micro-slot ${slot.slot_status.toLowerCase()}" data-day-index="${slot.dayIndex}" data-hour="${slot.hour}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status}, ${Math.round(slot.moving_avg_score * 100)}% recent use" title="${escapeHtml(slot.policy_note)}">${slot.slot_status}<small>${Math.round(slot.moving_avg_score * 100)}% recent use</small></button></td>`).join("")}
-                </tr>`).join("")}</tbody>
+              <thead><tr><th>Time</th>${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => `<th>${day}</th>`).join("")}</tr></thead>
+              <tbody>${microRows.map((row) => `
+                <tr><th>${formatHour(row[0].hour)}</th>
+                  ${row.map((slot) => `<td><button type="button" class="micro-slot ${slot.slot_status.toLowerCase()}" data-day-index="${slot.dayIndex}" data-hour="${slot.hour}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand, ${Math.round(slot.moving_avg_score * 100)}%" title="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand">${Math.round(slot.moving_avg_score * 100)}%</button></td>`).join("")}
+                </tr>`).join("")}
+              </tbody>
             </table>
           </div>
-          <p class="forecast-policy-note">Demand labels are guidance, not availability guarantees. Actual reservations and school events remain hard calendar conflicts.</p>
+          <p class="forecast-policy-note">Forecasts are guidance; actual bookings and school events determine availability.</p>
         </section>
       </div>`;
 
@@ -201,7 +276,7 @@ export class Forecast {
         const value = this.container.querySelector(".macro-insight-value");
         const note = this.container.querySelector(".forecast-selection-note");
         if (item && title && value && note) {
-          title.textContent = item.periodKey;
+          title.textContent = formatMacroPeriod(item);
           value.textContent = `${item.forecasted_pct}%`;
           note.textContent = item.anchor_event_note;
         }
@@ -215,10 +290,10 @@ export class Forecast {
   openSlot(button) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-    const selectedDate = new Date(monday);
-    selectedDate.setDate(monday.getDate() + Number(button.dataset.dayIndex));
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay());
+    const selectedDate = new Date(sunday);
+    selectedDate.setDate(sunday.getDate() + Number(button.dataset.dayIndex));
     const hour = Number(button.dataset.hour);
     if (selectedDate < today || (
       selectedDate.getTime() === today.getTime() &&

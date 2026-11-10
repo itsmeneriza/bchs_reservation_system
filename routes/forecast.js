@@ -19,7 +19,9 @@ const FACILITIES = {
 
 const ACTIVE_STATUSES = ["confirmed", "approved", "accepted", "completed"];
 const WEEK_LABELS = ["W1", "W2", "W3", "W4"];
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MICRO_START_HOUR = 7;
+const MICRO_END_HOUR = 18;
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -48,6 +50,20 @@ function dateParts(value) {
 
 function dateKey(date) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+function formatMacroDateRange(start, end) {
+  const startMonth = MONTHS[start.getUTCMonth()];
+  const endMonth = MONTHS[end.getUTCMonth()];
+  const startYear = start.getUTCFullYear();
+  const endYear = end.getUTCFullYear();
+  if (startYear !== endYear) {
+    return `${startMonth} ${start.getUTCDate()}, ${startYear}-${endMonth} ${end.getUTCDate()}, ${endYear}`;
+  }
+  if (start.getUTCMonth() !== end.getUTCMonth()) {
+    return `${startMonth} ${start.getUTCDate()}-${endMonth} ${end.getUTCDate()}, ${endYear}`;
+  }
+  return `${startMonth} ${start.getUTCDate()}-${end.getUTCDate()}, ${endYear}`;
 }
 
 function normalizeActivity(entries) {
@@ -115,8 +131,12 @@ function expandEvent(event, fromDate, throughDate) {
   return days;
 }
 
-function weekIndex(date) {
-  return Math.min(4, Math.floor((date.getUTCDate() - 1) / 7) + 1);
+function getMacroWeekRange(year, monthIndex, weekNumber) {
+  const start = new Date(Date.UTC(year, monthIndex, 1));
+  start.setUTCDate(start.getUTCDate() - start.getUTCDay() + weekNumber * 7);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  return { start, end };
 }
 
 async function fetchAllRows(query) {
@@ -131,7 +151,7 @@ async function fetchAllRows(query) {
 }
 
 async function loadForecastActivity(referenceYear, client) {
-  const firstYear = referenceYear - 2;
+  const firstYear = referenceYear - 3;
   const [reservations, events] = await Promise.all([
     fetchAllRows(client
       .from("reservations")
@@ -182,13 +202,14 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
     const month = MONTHS[monthIndex];
     const year = forecastMonth.getUTCFullYear();
     return WEEK_LABELS.map((weekLabel, weekNumber) => {
+      const forecastRange = getMacroWeekRange(year, monthIndex, weekNumber);
       const observedByYear = forecastYears.map((observedYear) => {
+        const observedRange = getMacroWeekRange(observedYear, monthIndex, weekNumber);
         const hours = facilityActivity.reduce((total, entry) => {
           const date = dateParts(entry.date);
           return date &&
-            date.getUTCFullYear() === observedYear &&
-            date.getUTCMonth() === monthIndex &&
-            weekIndex(date) === weekNumber + 1
+            date >= observedRange.start &&
+            date <= observedRange.end
             ? total + (entry.endMinute - entry.startMinute) / 60
             : total;
         }, 0);
@@ -205,6 +226,7 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
       return {
         periodKey: `${month} ${year} W${weekNumber + 1}`,
         monthLabel: `${month} ${year}`,
+        dateRange: formatMacroDateRange(forecastRange.start, forecastRange.end),
         year,
         month: monthIndex + 1,
         week: weekLabel,
@@ -222,40 +244,38 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
 
 function buildMicroForecast(activity, facilityId, referenceDate) {
   const target = dateParts(referenceDate) || new Date();
-  const monday = new Date(target);
-  monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+  const sunday = new Date(target);
+  sunday.setUTCDate(sunday.getUTCDate() - sunday.getUTCDay());
   const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
-  return Array.from({ length: 9 }, (_, index) => {
-    const hour = index + 8;
-    return DAYS.map((day, dayIndex) => {
-      let matches = 0;
-      for (let week = 1; week <= 4; week += 1) {
-        const date = new Date(monday);
-        date.setUTCDate(date.getUTCDate() - week * 7 + dayIndex);
-        const dateValue = dateKey(date);
-        const active = facilityActivity.some((entry) =>
-          entry.date === dateValue &&
-          entry.startMinute < (hour + 1) * 60 &&
-          entry.endMinute > hour * 60,
-        );
-        if (active) matches += 1;
-      }
-      const ma4 = matches / 4;
-      return {
-        day,
-        dayIndex,
-        hour,
-        label: `${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00`,
-        moving_avg_score: ma4,
-        slot_status: ma4 >= 0.75 ? "Busy" : ma4 >= 0.35 ? "Moderate" : "Available",
-        policy_note: hour === 12
-          ? "Lunch Micro-Run Window"
-          : hour >= 15
-            ? "After-Hours Club Window"
-            : "Protected Instructional Hours",
-      };
-    });
-  });
+  return Array.from(
+    { length: MICRO_END_HOUR - MICRO_START_HOUR },
+    (_, index) => {
+      const hour = MICRO_START_HOUR + index;
+      return DAYS.map((day, dayIndex) => {
+        let matches = 0;
+        for (let week = 1; week <= 4; week += 1) {
+          const date = new Date(sunday);
+          date.setUTCDate(date.getUTCDate() - week * 7 + dayIndex);
+          const dateValue = dateKey(date);
+          const active = facilityActivity.some((entry) =>
+            entry.date === dateValue &&
+            entry.startMinute < (hour + 1) * 60 &&
+            entry.endMinute > hour * 60,
+          );
+          if (active) matches += 1;
+        }
+        const ma4 = matches / 4;
+        return {
+          day,
+          dayIndex,
+          hour,
+          label: `${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00`,
+          moving_avg_score: ma4,
+          slot_status: ma4 >= 0.75 ? "Busy" : ma4 >= 0.35 ? "Moderate" : "Available",
+        };
+      });
+    },
+  );
 }
 
 async function computeUserForecast(facilityId, referenceDate) {
@@ -396,6 +416,7 @@ export function createForecastRouter() {
   });
 
   router.get("/user", async (req, res) => {
+    res.set("Cache-Control", "no-store");
     if (req.query.referenceDate && !dateParts(req.query.referenceDate)) {
       return res.status(400).json({
         message: "Enter a valid forecast reference date.",
@@ -436,4 +457,10 @@ export function createForecastRouter() {
   return router;
 }
 
-export { buildMacroForecast, buildMicroForecast, expandEvent, normalizeActivity };
+export {
+  buildMacroForecast,
+  buildMicroForecast,
+  expandEvent,
+  getMacroWeekRange,
+  normalizeActivity,
+};

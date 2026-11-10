@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 *.txt
-!commit.txt
 .vercel
 .env*
 

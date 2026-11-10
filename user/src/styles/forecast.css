@@ -3,9 +3,10 @@
  */
 
 .user-forecast {
+  width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0.75rem;
+  padding: 1.25rem 2rem;
   color: #172033;
 }
 
@@ -21,6 +22,13 @@
 .user-forecast-card h3 {
   margin: 0;
   color: #172033;
+}
+
+.user-forecast-card .macro-card-heading h3,
+.user-forecast-card .forecast-step-heading h3 {
+  font-size: 1.125rem;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .user-forecast-header p,
@@ -105,19 +113,6 @@
   line-height: 1.45;
 }
 
-.macro-summary-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
-  background: #eff6ff;
-  color: #2563eb;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
 .macro-summary-stat {
   margin-top: 0.35rem;
   padding-top: 0.55rem;
@@ -144,16 +139,14 @@
   align-items: flex-start;
 }
 
-.macro-card-heading {
-  justify-content: space-between;
-  align-items: flex-start;
+.forecast-facility-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.75rem;
 }
 
 .macro-card-heading h3 {
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.72rem;
   color: #334155;
 }
 
@@ -381,15 +374,6 @@
   padding: 0.4rem 0.55rem;
 }
 
-.macro-insight-badge {
-  padding: 0.2rem 0.45rem;
-  border-radius: 999px;
-  background: #dcfce7;
-  color: #15803d;
-  font-size: 0.62rem;
-  font-weight: 800;
-}
-
 .macro-insight-title {
   color: #334155;
   font-size: 0.75rem;
@@ -407,6 +391,10 @@
 }
 
 @media (max-width: 760px) {
+  .user-forecast {
+    padding: 0.75rem;
+  }
+
   .macro-forecast-layout {
     grid-template-columns: 1fr;
   }
@@ -425,25 +413,27 @@
 }
 
 .micro-forecast-wrap {
+  width: 100%;
   overflow-x: auto;
 }
 
 .micro-forecast-table {
   width: 100%;
-  min-width: 700px;
+  min-width: 560px;
+  table-layout: fixed;
   border-collapse: separate;
-  border-spacing: 0.35rem;
+  border-spacing: 0.15rem;
   font-size: 0.78rem;
 }
 
 .micro-forecast-table th {
-  padding: 0.45rem;
+  padding: 0.2rem 0.1rem;
   color: #475569;
   text-align: center;
 }
 
 .micro-forecast-table tbody th {
-  min-width: 11rem;
+  width: 5.5rem;
   text-align: left;
 }
 
@@ -457,12 +447,12 @@
 
 .micro-slot {
   width: 100%;
-  min-height: 3.2rem;
-  padding: 0.35rem;
+  min-height: 2.4rem;
+  padding: 0.2rem 0.05rem;
   border: 1px solid transparent;
-  border-radius: 0.45rem;
+  border-radius: 0.3rem;
   color: white;
-  font-size: 0.73rem;
+  font-size: 0.7rem;
   font-weight: 700;
   cursor: pointer;
 }

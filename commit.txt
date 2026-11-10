@@ -2,8 +2,8 @@ Facility-user forecasting
 
 - Added live, on-demand facility forecasting from Supabase reservations, events, and facilities.
 - Normalized valid active booking/event intervals to 7:00 AM-6:00 PM, merged overlaps, and bounded multi-day events to the history window.
-- Added the 12-month, four-week-bucket utilization forecast with 55/30/15 historical weighting and seasonal adjustments.
-- Added the trailing four-complete-week hourly demand grid for Monday through Sunday, 8:00 AM-5:00 PM.
+- Added the 12-month, four-week-bucket utilization forecast with 55/30/15 historical weighting, calendar-aligned Sunday-Saturday ranges, and seasonal adjustments.
+- Added the trailing four-complete-week hourly demand grid for Monday through Sunday, now covering 7:00 AM-6:00 PM.
 - Added paginated source queries, active-status filtering, invalid-date validation, and support for the facilities configured in Supabase.
 - Kept demand tiers advisory: every forecast slot can open a reservation request, while existing calendar conflicts remain enforced.
 - Connected forecast slot selection to the calendar, facility list, and reservation modal without replacing full facility details or losing logged-in user defaults.
@@ -12,3 +12,25 @@ Facility-user forecasting
 Validation:
 - Passed Node.js syntax checks for the updated forecast route and user components.
 - Passed focused checks for overlap merging, operating-hour clipping, malformed record rejection, event-window clipping, seasonal adjustments, 48 macro buckets, and 7-day MA4 labels.
+
+Forecast presentation updates:
+- Added dynamic date ranges to each macro weekly bucket and its selected insight heading.
+- Changed micro hourly slots to cover 7:00 AM-6:00 PM, removed instructional/policy notes and per-slot "Available" text, and removed the Step 2 badge.
+- Clarified that the micro grid uses the four complete weeks before the current week; it does not include the in-progress current week.
+- Simplified micro guidance to demand colors and a percentage per slot, removed "recent use" wording, and reduced table spacing and padding to limit excess right-side width.
+- Added the dynamic current Monday-Sunday date range to the micro forecast heading.
+- Changed micro forecast columns and selected booking dates to Sunday-Saturday, labeled the section "Recent Usage Forecast as of" the current Sunday-Saturday date range, and clarified that colors represent demand over the previous four complete weeks.
+- Formatted selected macro week insights as "Aug 2027 W1(Aug 1-7, 2027)" with no space before the date range.
+- Explicitly defined the micro forecast's 7:00 AM start and 6:00 PM end, and disabled browser caching for forecast requests so outdated hourly grids are not reused.
+- Ensure macro selected-week headers calculate and display the calendar range directly from month/week, even when a server returns a forecast without the dateRange field; chart labels use the same fallback.
+- Moved the facility selector to the top-left above both forecasts, removed the Forecast badge and info icon, and labeled macro bars W1-W4 with full date ranges retained in each bar's tooltip and selected insight.
+- Corrected macro week ranges to exact Sunday-Saturday calendar weeks, including ranges that cross month/year boundaries (for example, Dec 2026 W1 is Nov 29-Dec 5); historical buckets use matching calendar ranges.
+- Ensured the micro table starts at 7:00 AM and ends with the 5:00-6:00 PM forecast row; removed the extra 6:00 PM boundary row so 5:00 PM is the bottom row.
+- Made the micro UI normalize older/incomplete API responses into a complete 7:00 AM-5:00 PM row sequence, filling missing hours with neutral 0% guidance.
+- Changed micro forecast title and subtitle to "Weekly Hourly Demand Guide (<current week range>)" and estimated busy hours for the selected facility based on bookings from the past 4 weeks.
+- Widened facility-user forecast content to use the available viewport and reduced forecast-only outer horizontal padding without changing other tabs.
+- Matched the macro forecast title font size to the weekly hourly demand guide and removed the First Forecast Bucket pane.
+- Restored a centered 1440px maximum forecast content width with increased inner padding to keep the forecast readable rather than stretched, and explicitly matched both section heading font sizes.
+- Increased forecast horizontal padding to 2rem, restored the standard outer forecast-tab padding, retained compact mobile padding, and kept both forecast section headings at the same 1.125rem size.
+- Restored the right-side macro summary and "Forecast Method" pane (55 / 30 / 15), removing the selected-week insight replacement while keeping the previously removed First Forecast Bucket pane out.
+- Restored the selected-week macro details beneath the chart legend; clicking a week updates its date-range heading, utilization percentage, and demand note without removing the Forecast Method pane.
