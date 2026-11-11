@@ -176,7 +176,7 @@ export class Forecast {
         </div>
         <section class="user-forecast-card">
           <div class="macro-card-heading">
-            <h3>12-month usage forecast (month &amp; week)</h3>
+            <h3>12-Month Usage Forecast (Month &amp; Week)</h3>
           </div>
           <div class="macro-forecast-layout">
             <div class="macro-forecast-main">
@@ -212,18 +212,14 @@ export class Forecast {
                 <span><i style="background:${TIER_COLORS.Moderate}"></i>Moderate 35–69%</span>
                 <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
               </div>
-              <div class="macro-insight macro-insight-inline">
-                <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
-                <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
-                <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
-              </div>
             </div>
             <aside class="macro-summary-panel">
               <h4>12-month forecast for ${escapeHtml(facility.name)}</h4>
               <p>Projected utilization based on historical activity, live bookings, and seasonal guidance.</p>
-              <div class="macro-summary-stat">
-                <small>Forecast method</small>
-                <strong>55 / 30 / 15</strong>
+              <div class="macro-insight macro-insight-inline">
+                <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
+                <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
+                <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
               </div>
             </aside>
           </div>

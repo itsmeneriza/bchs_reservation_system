@@ -20,6 +20,7 @@ const FACILITIES = {
 const ACTIVE_STATUSES = ["confirmed", "approved", "accepted", "completed"];
 const WEEK_LABELS = ["W1", "W2", "W3", "W4"];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MICRO_WEEK_WEIGHTS = [0.4, 0.3, 0.2, 0.1];
 const MICRO_START_HOUR = 7;
 const MICRO_END_HOUR = 18;
 const MONTHS = [
@@ -252,7 +253,7 @@ function buildMicroForecast(activity, facilityId, referenceDate) {
     (_, index) => {
       const hour = MICRO_START_HOUR + index;
       return DAYS.map((day, dayIndex) => {
-        let matches = 0;
+        let weightedActivity = 0;
         for (let week = 1; week <= 4; week += 1) {
           const date = new Date(sunday);
           date.setUTCDate(date.getUTCDate() - week * 7 + dayIndex);
@@ -262,16 +263,20 @@ function buildMicroForecast(activity, facilityId, referenceDate) {
             entry.startMinute < (hour + 1) * 60 &&
             entry.endMinute > hour * 60,
           );
-          if (active) matches += 1;
+          if (active) weightedActivity += MICRO_WEEK_WEIGHTS[week - 1];
         }
-        const ma4 = matches / 4;
+        const weightedScore = Number(weightedActivity.toFixed(2));
         return {
           day,
           dayIndex,
           hour,
           label: `${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00`,
-          moving_avg_score: ma4,
-          slot_status: ma4 >= 0.75 ? "Busy" : ma4 >= 0.35 ? "Moderate" : "Available",
+          moving_avg_score: weightedScore,
+          slot_status: weightedScore >= 0.75
+            ? "Busy"
+            : weightedScore >= 0.35
+              ? "Moderate"
+              : "Available",
         };
       });
     },
