@@ -19,11 +19,12 @@ export default function createChatRouter() {
   - Auditorium: capacity 700 pax | ₱1,800/hour | stage, sound system, projector, AC | no food/drinks inside
   - Gymnasium (Gym): capacity 300 pax | ₱1,000/hour | basketball court, bleachers
   - Library: capacity 100 pax | ₱1,000/hour | quiet environment, AC | no food/drinks, maintain silence
-  - School Grounds (Grounds): capacity 180 pax | ₱700/hour | outdoor | CLOSED on weekends (Sat & Sun)
+  - School Grounds (Grounds): capacity 180 pax | ₱700/hour | outdoor | unavailable for reservations on weekends (Sat & Sun) because the grounds are used for public parking
   - Audio-Visual Facility (AVR): capacity 150 pax | ₱500/hour | projector, sound system, AC
   
   == PRICING ==
   - Hourly rates as listed above
+  - If asked about discounts or negotiating the price, explain that the price is negotiable and can be discussed during an in-person visit to the Administration Office.
   - Utility Fee: ₱800 added for reservations 8+ hours
   - Down Payment: Required for all reservations except staff. The amount depends on the reservation total and is confirmed after approval. It is non-refundable and must be paid at the Admin Office within 3 working days of approval.
   - Final Balance: remaining amount due at least 3 working days before the event
@@ -55,7 +56,7 @@ export default function createChatRouter() {
   == PAYMENT / ADMIN OFFICE ==
   - Location: Administration Office (on campus)
   - Office hours: Monday-Friday, 8:00 AM - 5:00 PM
-  - All payments (down payment and final balance) are made in person
+  - Online payment is not available. All payments (down payment and final balance) must be made in person at the Administration Office.
   
   == LOGIN ==
   - Community members: log in with their phone number

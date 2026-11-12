@@ -61,9 +61,12 @@ const getOfflineReply = (question) => {
     "pricing",
     "cost",
     "rate",
+    "discount",
+    "negotiable",
     "fee",
     "payment",
     "pay",
+    "online",
     "cancel",
     "cancellation",
     "refund",
@@ -72,6 +75,7 @@ const getOfflineReply = (question) => {
     "auditorium",
     "library",
     "grounds",
+    "parking",
     "avr",
     "date",
     "time",
@@ -104,8 +108,18 @@ const getOfflineReply = (question) => {
     return "To cancel, select your reservation in the Daily Schedule and follow the email verification steps. Cancellations are not accepted within 1 week of the event, and the required down payment is non-refundable. Contact the Administration Office for help.";
   }
 
+  if (/discount|negotiat/.test(normalized)) {
+    return "The price is negotiable. Please visit the Administration Office in person to discuss the price or any discount.";
+  }
+
   if (/payment|pay|down payment|deposit|balance/.test(normalized)) {
-    return "A down payment is required for non-staff reservations. The amount depends on the reservation total and is confirmed after approval. It is non-refundable and due at the Admin Office within 3 working days of approval. The remaining balance is due at least 3 working days before the event. Payments are made in person.";
+    return "Online payment is not available. All payments must be made in person at the Administration Office. A down payment is required for non-staff reservations; the amount depends on the reservation total and is confirmed after approval. It is non-refundable and due within 3 working days of approval. The remaining balance is due at least 3 working days before the event.";
+  }
+
+  if (
+    /grounds|weekend|saturday|sunday|public parking|parking/.test(normalized)
+  ) {
+    return "The School Grounds are unavailable for reservations on weekends (Saturday and Sunday) because the grounds are used for public parking.";
   }
 
   if (
