@@ -452,15 +452,12 @@
   padding: 0.2rem 0.05rem;
   border: 1px solid transparent;
   border-radius: 0.3rem;
+  background-color: var(--micro-slot-color);
   color: white;
   font-size: 0.7rem;
   font-weight: 700;
   cursor: default;
 }
-
-.micro-slot.available { background: #059669; }
-.micro-slot.moderate { background: #d97706; }
-.micro-slot.busy { background: #dc2626; }
 
 .forecast-error {
   margin: 2rem auto;

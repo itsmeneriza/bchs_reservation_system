@@ -6,6 +6,11 @@ const TIER_COLORS = {
   Moderate: "#d97706",
   Low: "#059669",
 };
+const MICRO_HEATMAP_STOPS = [
+  { threshold: 0, color: TIER_COLORS.Low },
+  { threshold: 0.35, color: TIER_COLORS.Moderate },
+  { threshold: 0.7, color: TIER_COLORS.High },
+];
 const MONTH_ABBREVIATIONS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -26,6 +31,30 @@ function formatHour(hour) {
   const suffix = hour >= 12 ? "PM" : "AM";
   const display = hour % 12 || 12;
   return `${display}:00 ${suffix}`;
+}
+
+function getMicroHeatmapColor(value) {
+  const numericValue = Number(value);
+  const score = Number.isFinite(numericValue)
+    ? Math.max(0, Math.min(1, numericValue))
+    : 0;
+
+  for (let index = 1; index < MICRO_HEATMAP_STOPS.length; index++) {
+    const upper = MICRO_HEATMAP_STOPS[index];
+    if (score <= upper.threshold) {
+      const lower = MICRO_HEATMAP_STOPS[index - 1];
+      const ratio =
+        (score - lower.threshold) / (upper.threshold - lower.threshold);
+      const start = lower.color.match(/[a-f\d]{2}/gi).map((part) => parseInt(part, 16));
+      const end = upper.color.match(/[a-f\d]{2}/gi).map((part) => parseInt(part, 16));
+      const channels = start.map((channel, channelIndex) =>
+        Math.round(channel + (end[channelIndex] - channel) * ratio),
+      );
+      return `rgb(${channels.join(", ")})`;
+    }
+  }
+
+  return MICRO_HEATMAP_STOPS[MICRO_HEATMAP_STOPS.length - 1].color;
 }
 
 function todayAsDateString() {
@@ -239,7 +268,7 @@ export class Forecast {
               <thead><tr><th>Time</th>${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => `<th>${day}</th>`).join("")}</tr></thead>
               <tbody>${microRows.map((row) => `
                 <tr><th>${formatHour(row[0].hour)}</th>
-                  ${row.map((slot) => `<td><span class="micro-slot ${slot.slot_status.toLowerCase()}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand, ${Math.round(slot.moving_avg_score * 100)}%" title="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand">${Math.round(slot.moving_avg_score * 100)}%</span></td>`).join("")}
+                  ${row.map((slot) => `<td><span class="micro-slot ${slot.slot_status.toLowerCase()}" style="--micro-slot-color: ${getMicroHeatmapColor(slot.moving_avg_score)}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand" title="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand"></span></td>`).join("")}
                 </tr>`).join("")}
               </tbody>
             </table>
