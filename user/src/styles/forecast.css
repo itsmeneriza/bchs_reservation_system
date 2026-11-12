@@ -272,9 +272,9 @@
   font-size: 0.58rem;
 }
 
-.slot-dot.available { background: #059669; }
-.slot-dot.moderate { background: #d97706; }
-.slot-dot.busy { background: #dc2626; }
+.slot-dot.available { background: #dcfce7; }
+.slot-dot.moderate { background: #22c55e; }
+.slot-dot.busy { background: #166534; }
 
 .macro-forecast-grid {
   display: grid;

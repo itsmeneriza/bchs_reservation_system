@@ -6,11 +6,11 @@ const TIER_COLORS = {
   Moderate: "#d97706",
   Low: "#059669",
 };
-const MICRO_HEATMAP_STOPS = [
-  { threshold: 0, color: TIER_COLORS.Low },
-  { threshold: 0.35, color: TIER_COLORS.Moderate },
-  { threshold: 0.7, color: TIER_COLORS.High },
-];
+const MICRO_TIER_COLORS = {
+  High: "#166534",
+  Moderate: "#4ade80",
+  Low: "#dcfce7",
+};
 const MONTH_ABBREVIATIONS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -33,28 +33,27 @@ function formatHour(hour) {
   return `${display}:00 ${suffix}`;
 }
 
-function getMicroHeatmapColor(value) {
+function getMicroScore(value) {
   const numericValue = Number(value);
-  const score = Number.isFinite(numericValue)
+  return Number.isFinite(numericValue)
     ? Math.max(0, Math.min(1, numericValue))
     : 0;
+}
 
-  for (let index = 1; index < MICRO_HEATMAP_STOPS.length; index++) {
-    const upper = MICRO_HEATMAP_STOPS[index];
-    if (score <= upper.threshold) {
-      const lower = MICRO_HEATMAP_STOPS[index - 1];
-      const ratio =
-        (score - lower.threshold) / (upper.threshold - lower.threshold);
-      const start = lower.color.match(/[a-f\d]{2}/gi).map((part) => parseInt(part, 16));
-      const end = upper.color.match(/[a-f\d]{2}/gi).map((part) => parseInt(part, 16));
-      const channels = start.map((channel, channelIndex) =>
-        Math.round(channel + (end[channelIndex] - channel) * ratio),
-      );
-      return `rgb(${channels.join(", ")})`;
-    }
-  }
+function getMicroDemandTier(slot) {
+  const status = String(slot?.slot_status ?? "").trim().toLowerCase();
+  if (status === "busy" || status === "high") return "High";
+  if (status === "moderate") return "Moderate";
+  if (status === "available" || status === "low") return "Low";
 
-  return MICRO_HEATMAP_STOPS[MICRO_HEATMAP_STOPS.length - 1].color;
+  const score = getMicroScore(slot?.moving_avg_score);
+  if (score >= 0.75) return "High";
+  if (score >= 0.35) return "Moderate";
+  return "Low";
+}
+
+function getMicroHeatmapColor(slot) {
+  return MICRO_TIER_COLORS[getMicroDemandTier(slot)];
 }
 
 function todayAsDateString() {
@@ -259,16 +258,19 @@ export class Forecast {
             <div><h3>Weekly Hourly Demand Guide (${escapeHtml(getCurrentWeekRange())})</h3><p>Estimated busy hours for the ${escapeHtml(facility.name)} based on bookings from the past 4 weeks.</p></div>
           </div>
           <div class="forecast-legend">
-            <span><i class="slot-dot available"></i>Lower demand</span>
-            <span><i class="slot-dot moderate"></i>Moderate demand</span>
-            <span><i class="slot-dot busy"></i>Higher demand</span>
+            <span><i class="slot-dot busy" style="background:${MICRO_TIER_COLORS.High}"></i>High demand</span>
+            <span><i class="slot-dot moderate" style="background:${MICRO_TIER_COLORS.Moderate}"></i>Moderate demand</span>
+            <span><i class="slot-dot available" style="background:${MICRO_TIER_COLORS.Low}"></i>Low demand</span>
           </div>
           <div class="micro-forecast-wrap">
             <table class="micro-forecast-table">
               <thead><tr><th>Time</th>${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => `<th>${day}</th>`).join("")}</tr></thead>
               <tbody>${microRows.map((row) => `
                 <tr><th>${formatHour(row[0].hour)}</th>
-                  ${row.map((slot) => `<td><span class="micro-slot ${slot.slot_status.toLowerCase()}" style="--micro-slot-color: ${getMicroHeatmapColor(slot.moving_avg_score)}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand" title="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand"></span></td>`).join("")}
+                  ${row.map((slot) => {
+                    const demand = getMicroDemandTier(slot);
+                    return `<td><span class="micro-slot ${slot.slot_status.toLowerCase()}" style="--micro-slot-color: ${getMicroHeatmapColor(slot)}" aria-label="${slot.day}(${formatHour(slot.hour)}): ${demand.toLowerCase()} demand" title="${slot.day}(${formatHour(slot.hour)}): ${demand.toLowerCase()} demand"></span></td>`;
+                  }).join("")}
                 </tr>`).join("")}
               </tbody>
             </table>
