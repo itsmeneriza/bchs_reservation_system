@@ -446,6 +446,7 @@
 }
 
 .micro-slot {
+  display: block;
   width: 100%;
   min-height: 2.4rem;
   padding: 0.2rem 0.05rem;
@@ -454,14 +455,12 @@
   color: white;
   font-size: 0.7rem;
   font-weight: 700;
-  cursor: pointer;
+  cursor: default;
 }
 
 .micro-slot.available { background: #059669; }
 .micro-slot.moderate { background: #d97706; }
 .micro-slot.busy { background: #dc2626; }
-.micro-slot:hover,
-.micro-slot:focus-visible { border-color: #172033; transform: translateY(-1px); }
 
 .forecast-error {
   margin: 2rem auto;

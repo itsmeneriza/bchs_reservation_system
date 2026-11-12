@@ -239,17 +239,21 @@ class ReservationApp {
   setupAutoRefresh() {
     let refreshing = false;
     const refresh = async () => {
-      if (refreshing) return;
+      if (refreshing || document.hidden) return;
       refreshing = true;
-      await loadData();
-      this.calendar.render();
-      this.timeSlots.render();
-      refreshing = false;
+      try {
+        await loadData();
+        this.calendar.render();
+        this.timeSlots.render();
+      } finally {
+        refreshing = false;
+      }
     };
 
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) refresh();
+      if (!document.hidden) void refresh();
     });
+    window.setInterval(() => void refresh(), 30000);
   }
 }
 

@@ -89,6 +89,9 @@ export class Calendar {
     const hasApproved = dayreservations.some(
       (b) => b.status === "approved" || b.status === "accepted",
     );
+    const hasSchoolEvent = dayreservations.some(
+      (b) => b.isSchoolEvent === true,
+    );
     const isAdminBlocked = dayreservations.some(
       (b) => b.status === "blocked" && b.isFullDayBlock,
     );
@@ -106,18 +109,18 @@ export class Calendar {
       bgColor = "#4b5563"; // Admin Blocked Dark Gray
     } else if (isDisabled) {
       bgColor = isPast && !isWeekend ? "#e5e7eb" : "#4b5563";
+    } else if (hasSchoolEvent) {
+      bgColor = "#4b5563";
     } else if (selected) {
       bgColor = "var(--calendar-selected-bg)";
     } else if (isCurrentDay) {
       bgColor = "var(--calendar-today-bg)";
+    } else if (hasPending && !hasApproved) {
+      bgColor = "var(--calendar-pending-bg)";
     } else if (density === "full") {
       bgColor = "var(--calendar-full-bg)";
     } else if (density === "busy") {
       bgColor = "var(--calendar-busy-bg)";
-    } else if (density === "light") {
-      bgColor = "var(--calendar-light-bg)";
-    } else if (hasPending && !hasApproved) {
-      bgColor = "var(--calendar-pending-bg)";
     }
 
     const closedStyle = isDisabled
@@ -176,8 +179,7 @@ export class Calendar {
   renderLegend() {
     const items = [
       { color: "var(--calendar-full-bg)", label: "Full" },
-      { color: "var(--calendar-busy-bg)", label: "Busy" },
-      { color: "var(--calendar-light-bg)", label: "Light" },
+      { color: "var(--calendar-busy-bg)", label: "Partial" },
       { color: "var(--calendar-pending-bg)", label: "Pending" },
       { color: "var(--calendar-selected-bg)", label: "Selected" },
       {
@@ -186,7 +188,6 @@ export class Calendar {
         border: "var(--calendar-today-ring)",
       },
       { color: "#4b5563", label: "Unavailable" },
-      { color: "#f59e0b", label: "School Event" },
     ];
 
     const html = items

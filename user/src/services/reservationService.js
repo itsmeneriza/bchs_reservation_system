@@ -99,7 +99,7 @@ export function getReservationDensity(facilityId, day, month, year) {
 
   if (bookedPercentage >= 70) return "full";
   if (bookedPercentage >= 40) return "busy";
-  return "light";
+  return "none";
 }
 
 export function isTimeSlotBooked(

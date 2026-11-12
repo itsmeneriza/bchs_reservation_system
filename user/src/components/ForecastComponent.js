@@ -1,4 +1,4 @@
-import { state, setSelectedDate, setSelectedFacility } from "../core/state.js";
+import { state, setSelectedFacility } from "../core/state.js";
 import { FacilityList } from "./FacilityListComponent.js";
 
 const TIER_COLORS = {
@@ -239,7 +239,7 @@ export class Forecast {
               <thead><tr><th>Time</th>${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => `<th>${day}</th>`).join("")}</tr></thead>
               <tbody>${microRows.map((row) => `
                 <tr><th>${formatHour(row[0].hour)}</th>
-                  ${row.map((slot) => `<td><button type="button" class="micro-slot ${slot.slot_status.toLowerCase()}" data-day-index="${slot.dayIndex}" data-hour="${slot.hour}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand, ${Math.round(slot.moving_avg_score * 100)}%" title="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand">${Math.round(slot.moving_avg_score * 100)}%</button></td>`).join("")}
+                  ${row.map((slot) => `<td><span class="micro-slot ${slot.slot_status.toLowerCase()}" aria-label="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand, ${Math.round(slot.moving_avg_score * 100)}%" title="${slot.day} ${formatHour(slot.hour)}: ${slot.slot_status.toLowerCase()} demand">${Math.round(slot.moving_avg_score * 100)}%</span></td>`).join("")}
                 </tr>`).join("")}
               </tbody>
             </table>
@@ -277,31 +277,6 @@ export class Forecast {
           note.textContent = item.anchor_event_note;
         }
       });
-    });
-    this.container.querySelectorAll(".micro-slot:not(:disabled)").forEach((button) => {
-      button.addEventListener("click", () => this.openSlot(button));
-    });
-  }
-
-  openSlot(button) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const sunday = new Date(today);
-    sunday.setDate(today.getDate() - today.getDay());
-    const selectedDate = new Date(sunday);
-    selectedDate.setDate(sunday.getDate() + Number(button.dataset.dayIndex));
-    const hour = Number(button.dataset.hour);
-    if (selectedDate < today || (
-      selectedDate.getTime() === today.getTime() &&
-      hour <= new Date().getHours()
-    )) {
-      selectedDate.setDate(selectedDate.getDate() + 7);
-    }
-    setSelectedDate(selectedDate);
-    const pad = (value) => String(value).padStart(2, "0");
-    window._openReservationModal?.(null, {
-      startTime: `${pad(hour)}:00`,
-      endTime: `${pad(hour + 1)}:00`,
     });
   }
 }
