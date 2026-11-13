@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Calendar Component
  * Handles calendar display, date selection, and reservation density legend.
  */
@@ -141,10 +141,9 @@ export class Calendar {
         : "";
 
     // Pending marker
-    const pendingMarker =
-      hasPending && hasApproved && !selected
-        ? '<span style="position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; background-color: var(--status-pending); border-radius: 50%;"></span>'
-        : "";
+    const pendingMarker = hasPending
+      ? '<span style="position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; background-color: var(--status-pending); border-radius: 50%;"></span>'
+      : "";
 
     // Hover tooltip: count approved + pending
     const approvedCount = dayreservations.filter(

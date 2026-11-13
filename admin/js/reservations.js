@@ -533,7 +533,7 @@ window.rescheduleConfirmed = (id) => {
   openEditModal(id, "QUEUE_REVIEW");
   setTimeout(() => {
     const titleEl = document.getElementById("editModalTitle");
-    if (titleEl) titleEl.textContent = "Reschedule Confirmation Visit";
+    if (titleEl) titleEl.textContent = "Set New Confirmation Visit Time";
   }, 50);
 };
 
@@ -603,7 +603,7 @@ function renderConfirmed() {
               : isLive
                 ? "Edit"
                 : isPastWin
-                  ? "Reschedule"
+                  ? "Set New Visit Time"
                   : isViewOnly
                     ? "View"
                     : "Manage";
@@ -629,7 +629,7 @@ function renderConfirmed() {
             <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(req.facilityId))}</span></td>
             <td>${formatDateSimple(req.date)}</td>
             ${visitCell}
-            <td><button class="btn btn-bchs btn-sm" style="${btnStyle}" onclick="openEditModal(${safeId},${escapeAdminJsArgument(btnMode)})">${btnLabel}</button></td>
+            <td><button class="btn btn-bchs btn-sm" style="${btnStyle}" onclick="${isPastWin ? `rescheduleConfirmed(${safeId})` : `openEditModal(${safeId},${escapeAdminJsArgument(btnMode)})`}">${btnLabel}</button></td>
         </tr>`;
         })
         .join("")

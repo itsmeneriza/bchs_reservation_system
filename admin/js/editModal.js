@@ -496,7 +496,18 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
 
   // Footer: context-aware buttons based on mode
   const isQueueMode = mode === "QUEUE_REVIEW";
-  setFinancialsExpanded(mode !== "RESCHEDULE_OR_REJECT");
+  const showPaymentDetails = [
+    "VIEW_ONLY",
+    "CONFIRMED_EDIT",
+    "QUEUE_REVIEW",
+  ].includes(mode);
+  setFinancialsExpanded(showPaymentDetails);
+  const financialsToggle = document.getElementById("financialsToggle");
+  if (financialsToggle)
+    financialsToggle.style.display = showPaymentDetails ? "" : "none";
+  const financialsContent = document.getElementById("financialsContent");
+  if (financialsContent)
+    financialsContent.style.display = showPaymentDetails ? "" : "none";
   const isConfirmedEditMode = mode === "CONFIRMED_EDIT";
   const isRescheduleMode = mode === "RESCHEDULE_OR_REJECT";
   const statusSection = document.getElementById("reservationStatusSection");
