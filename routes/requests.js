@@ -621,6 +621,30 @@ export function createRequestsRouter() {
       }
 
       const changes = req.body || {};
+      if (req.auth.kind === "admin" && Object.hasOwn(changes, "visitOptions")) {
+        const uniqueVisitOptions = new Set();
+        (Array.isArray(changes.visitOptions) ? changes.visitOptions : []).forEach(
+          (option) => {
+            if (!option || typeof option !== "object") return;
+            const date =
+              typeof option.date === "string" ? option.date.trim() : "";
+            const time =
+              typeof option.time === "string"
+                ? option.time.trim()
+                : typeof option.startTime === "string"
+                  ? option.startTime.trim()
+                  : "";
+            if (date && time) uniqueVisitOptions.add(`${date}::${time}`);
+          },
+        );
+        if (uniqueVisitOptions.size < 3) {
+          return res.status(400).json({
+            success: false,
+            message: "Offer at least 3 different visit date and time options.",
+          });
+        }
+      }
+
       let authorizedChanges = changes;
       if (req.auth.kind === "user") {
         const allowedFields = new Set([

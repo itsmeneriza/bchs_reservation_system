@@ -8,6 +8,7 @@ let pendingRejectionId = null;
 // ─── Multi-slot visit option builder (QUEUE_REVIEW) ───────────────────────────
 
 let pendingVisitOptions = [];
+const MIN_VISIT_OPTION_COUNT = 3;
 let selectedVisitDates = [];
 let selectedVisitTimes = [];
 let visitCalendarMonth = new Date(
@@ -450,13 +451,9 @@ function renderVisitSlotList() {
       currentModalMode === "RESCHEDULE_OR_REJECT")
   ) {
     saveBtn.textContent =
-      pendingVisitOptions.length > 0
-        ? currentModalMode === "RESCHEDULE_OR_REJECT"
-          ? "Offer Alternate Schedules"
-          : "Send Visit Options"
-        : currentModalMode === "RESCHEDULE_OR_REJECT"
-          ? "Offer Alternate Schedules"
-          : "Set Visit";
+      currentModalMode === "RESCHEDULE_OR_REJECT"
+        ? "Offer Alternate Schedules"
+        : `Send Visit Options (${MIN_VISIT_OPTION_COUNT} minimum)`;
   }
 }
 
@@ -527,7 +524,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
         : "none";
   if (saveEditBtn)
     saveEditBtn.textContent = isQueueMode
-      ? "Set Visit"
+      ? `Send Visit Options (${MIN_VISIT_OPTION_COUNT} minimum)`
       : isConfirmedEditMode
         ? "Update & Approve"
         : isRescheduleMode
@@ -649,7 +646,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   if (visitSlotInstructions) {
     visitSlotInstructions.textContent = isRescheduleMode
       ? "Choose an event duration, then select alternate dates and start times. Available schedules will match the selected duration."
-      : "Select up to 5 dates and up to 9 time slots. Adding them creates a separate option for each date and time combination.";
+      : `Add at least ${MIN_VISIT_OPTION_COUNT} date/time options before sending. Select up to 5 dates and 9 time slots; each combination is a separate option.`;
   }
   if (rescheduleDurationGroup)
     rescheduleDurationGroup.style.display = isRescheduleMode ? "" : "none";
@@ -1097,35 +1094,22 @@ async function savereservationChanges() {
         : parseFloat(document.getElementById("editAmount").value) || 0,
     };
   } else if (currentModalMode === "QUEUE_REVIEW") {
-    // ── Multi-slot path ──
-    if (pendingVisitOptions.length > 0) {
-      update = {
-        visitOptions: pendingVisitOptions,
-        appointmentDate: "",
-        appointmentTime: "",
-        status: document.getElementById("editStatus").value,
-        blockReschedulePending: false,
-        blockRescheduleReason: null,
-        adminRevisionReason,
-      };
-    } else {
-      // Fallback: single-slot (backward compat)
-      const singleDate = document.getElementById("editAppointmentDate").value;
-      const singleTime = document.getElementById("editAppointmentTime").value;
-      if (!singleDate || !singleTime) {
-        showToast("Please add at least one visit slot.", "error");
-        return;
-      }
-      update = {
-        appointmentDate: singleDate,
-        appointmentTime: singleTime,
-        visitOptions: [],
-        status: document.getElementById("editStatus").value,
-        blockReschedulePending: false,
-        blockRescheduleReason: null,
-        adminRevisionReason,
-      };
+    if (pendingVisitOptions.length < MIN_VISIT_OPTION_COUNT) {
+      showToast(
+        `Please add at least ${MIN_VISIT_OPTION_COUNT} date and time options before sending.`,
+        "error",
+      );
+      return;
     }
+    update = {
+      visitOptions: pendingVisitOptions,
+      appointmentDate: "",
+      appointmentTime: "",
+      status: document.getElementById("editStatus").value,
+      blockReschedulePending: false,
+      blockRescheduleReason: null,
+      adminRevisionReason,
+    };
   } else if (
     ["CONFIRMED_MANAGE", "RESCHEDULE_OR_REJECT"].includes(currentModalMode)
   ) {
