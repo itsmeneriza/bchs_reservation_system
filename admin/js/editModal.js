@@ -462,6 +462,41 @@ function renderVisitSlotList() {
 
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
+function hasAdminRevisionScheduleChanges(request) {
+  return [
+    ["editFacilityId", "facilityId"],
+    ["editDate", "date"],
+    ["editStartTime", "startTime"],
+    ["editEndTime", "endTime"],
+    ["editAppointmentDate", "appointmentDate"],
+    ["editAppointmentTime", "appointmentTime"],
+  ].some(([elementId, field]) => {
+    const element = document.getElementById(elementId);
+    return (
+      element &&
+      String(element.value ?? "") !== String(request[field] ?? "")
+    );
+  });
+}
+
+function updateAdminRevisionReasonVisibility() {
+  const section = document.getElementById("adminRevisionReasonSection");
+  if (!section) return;
+
+  const request = requests.find((item) => item.id === selectedRequestToEdit);
+  const modeAllowsRevisionReason = [
+    "FULL_EDIT",
+    "CONFIRMED_EDIT",
+    "CONFIRMED_MANAGE",
+  ].includes(currentModalMode);
+  section.style.display =
+    modeAllowsRevisionReason &&
+    request &&
+    hasAdminRevisionScheduleChanges(request)
+      ? ""
+      : "none";
+}
+
 window.openEditModal = (id, mode = "FULL_EDIT") => {
   const r = requests.find((x) => x.id === id);
   if (!r) {
@@ -636,9 +671,6 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   );
   const rescheduleDuration = document.getElementById("rescheduleDuration");
   const adminRescheduleNote = document.getElementById("adminRescheduleNote");
-  const adminRevisionReasonSection = document.getElementById(
-    "adminRevisionReasonSection",
-  );
   const adminRevisionReason = document.getElementById("adminRevisionReason");
   if (visitSectionTitle) {
     visitSectionTitle.style.display = isConfirmedEdit ? "none" : "";
@@ -667,23 +699,15 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     addVisitSlotButton.textContent = isRescheduleMode
       ? "+ Add Alternate Schedules"
       : "+ Add Selected Date & Time Options";
-  const showAdminRevisionReason = [
-    "FULL_EDIT",
-    "CONFIRMED_EDIT",
-    "CONFIRMED_MANAGE",
-  ].includes(mode);
   if (adminRescheduleNoteSection)
     adminRescheduleNoteSection.style.display = isRescheduleMode ? "" : "none";
   if (adminRescheduleNote)
     adminRescheduleNote.value = isRescheduleMode
       ? r.adminRescheduleNote || ""
       : "";
-  if (adminRevisionReasonSection)
-    adminRevisionReasonSection.style.display = showAdminRevisionReason
-      ? ""
-      : "none";
   if (adminRevisionReason)
     adminRevisionReason.value = r.adminRevisionReason || "";
+  updateAdminRevisionReasonVisibility();
   if (slotBuilder && singleSlot) {
     if (isQueueReview || mode === "RESCHEDULE_OR_REJECT") {
       slotBuilder.style.display = "block";
@@ -852,6 +876,10 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
 
   document.getElementById("editModal").classList.add("active");
 };
+
+const editModal = document.getElementById("editModal");
+editModal?.addEventListener("input", updateAdminRevisionReasonVisibility);
+editModal?.addEventListener("change", updateAdminRevisionReasonVisibility);
 
 // ─── Payment Breakdown ────────────────────────────────────────────────────────
 
@@ -1183,45 +1211,6 @@ async function savereservationChanges() {
       status: document.getElementById("editStatus").value,
       adminRevisionReason,
     };
-  }
-
-  const dateChanged =
-    typeof update.appointmentDate !== "undefined" &&
-    String(update.appointmentDate ?? "") !==
-      String(requests[idx].appointmentDate ?? "");
-  const timeChanged =
-    typeof update.appointmentTime !== "undefined" &&
-    String(update.appointmentTime ?? "") !==
-      String(requests[idx].appointmentTime ?? "");
-  const scheduleChanged =
-    ["facilityId", "date", "startTime", "endTime"].some(
-      (field) =>
-        typeof update[field] !== "undefined" &&
-        String(update[field] ?? "") !== String(requests[idx][field] ?? ""),
-    );
-  const visitOptionsChanged =
-    Array.isArray(update.visitOptions) && update.visitOptions.length > 0;
-  const rescheduleOptionsChanged =
-    Array.isArray(update.rescheduleOptions) &&
-    update.rescheduleOptions.length > 0;
-  const requiresRevisionReason =
-    [
-      "FULL_EDIT",
-      "CONFIRMED_EDIT",
-      "CONFIRMED_MANAGE",
-    ].includes(currentModalMode) &&
-    (scheduleChanged ||
-      dateChanged ||
-      timeChanged ||
-      visitOptionsChanged ||
-      rescheduleOptionsChanged);
-  if (requiresRevisionReason && !adminRevisionReason) {
-    showToast(
-      "Please provide a reason for this revision before saving.",
-      "error",
-    );
-    document.getElementById("adminRevisionReason")?.focus();
-    return;
   }
 
   if (
