@@ -21,7 +21,7 @@ create table if not exists public.reservations (
   purpose varchar(255),
   additional_notes text,
   status varchar(30) not null default 'pending' check (status in ('pending', 'approved', 'accepted', 'rejected', 'refused', 'cancelled', 'completed', 'blocked')),
-  payment_status varchar(30) not null default 'pending' check (payment_status in ('pending', 'paid', 'unpaid')),
+  payment_status varchar(30) not null default 'unpaid' check (payment_status in ('half_paid', 'paid', 'unpaid')),
   appointment_date date,
   appointment_time varchar(50),
   total_amount numeric(10,2) not null default 0.00,
@@ -35,6 +35,17 @@ create table if not exists public.reservations (
   updated_at timestamptz not null default now(),
   check (start_time < end_time)
 );
+
+alter table public.reservations
+  drop constraint if exists reservations_payment_status_check;
+update public.reservations
+set payment_status = 'half_paid'
+where payment_status = 'pending';
+alter table public.reservations
+  add constraint reservations_payment_status_check
+  check (payment_status in ('half_paid', 'paid', 'unpaid'));
+alter table public.reservations
+  alter column payment_status set default 'unpaid';
 
 create index if not exists idx_reservations_status on public.reservations (status);
 create index if not exists idx_reservations_facility_date on public.reservations (facility_id, date);
@@ -142,6 +153,97 @@ create trigger trg_prevent_reservation_time_conflicts
 before insert or update on public.reservations
 for each row
 execute function public.prevent_reservation_time_conflicts();
+
+create or replace function public.confirm_visit_slot(
+  p_reservation_code text,
+  p_visit_date date,
+  p_visit_time text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  claimed_count integer;
+begin
+  perform pg_advisory_xact_lock(
+    hashtext(p_visit_date::text || '|' || p_visit_time)::bigint
+  );
+
+  update public.reservations as selected
+  set
+    appointment_date = p_visit_date,
+    appointment_time = p_visit_time,
+    request_data = jsonb_set(
+      coalesce(selected.request_data, '{}'::jsonb),
+      '{visitOptions}',
+      '[]'::jsonb,
+      true
+    ),
+    updated_at = now()
+  where selected.reservation_code = p_reservation_code
+    and exists (
+      select 1
+      from jsonb_array_elements(
+        case
+          when jsonb_typeof(selected.request_data->'visitOptions') = 'array'
+            then selected.request_data->'visitOptions'
+          else '[]'::jsonb
+        end
+      ) as offer_item(item)
+      where offer_item.item->>'date' = p_visit_date::text
+        and offer_item.item->>'time' = p_visit_time
+    );
+
+  get diagnostics claimed_count = row_count;
+  if claimed_count = 0 then
+    raise exception 'visit_slot_unavailable'
+      using errcode = 'P0001';
+  end if;
+
+  update public.reservations as other
+  set
+    request_data = jsonb_set(
+      coalesce(other.request_data, '{}'::jsonb),
+      '{visitOptions}',
+      (
+        select coalesce(
+          jsonb_agg(offer_item.item order by offer_item.ordinality),
+          '[]'::jsonb
+        )
+        from jsonb_array_elements(
+          case
+            when jsonb_typeof(other.request_data->'visitOptions') = 'array'
+              then other.request_data->'visitOptions'
+            else '[]'::jsonb
+          end
+        ) with ordinality as offer_item(item, ordinality)
+        where offer_item.item->>'date' is distinct from p_visit_date::text
+          or offer_item.item->>'time' is distinct from p_visit_time
+      )
+    ),
+    updated_at = now()
+  where other.reservation_code <> p_reservation_code
+    and exists (
+      select 1
+      from jsonb_array_elements(
+        case
+          when jsonb_typeof(other.request_data->'visitOptions') = 'array'
+            then other.request_data->'visitOptions'
+          else '[]'::jsonb
+        end
+      ) as offer_item(item)
+      where offer_item.item->>'date' = p_visit_date::text
+        and offer_item.item->>'time' = p_visit_time
+    );
+end;
+$$;
+
+revoke all on function public.confirm_visit_slot(text, date, text)
+  from public, anon, authenticated;
+grant execute on function public.confirm_visit_slot(text, date, text)
+  to service_role;
 
 alter table public.reservations enable row level security;
 

@@ -598,8 +598,6 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   document.querySelectorAll(".edit-field-appointment").forEach((el) => {
     el.disabled = lockFields;
   });
-  document.getElementById("editPaymentStatus").disabled =
-    readOnlyAll || isQueueReview;
   document.getElementById("saveEdit").style.display = readOnlyAll
     ? "none"
     : "block";
@@ -742,17 +740,22 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
 
   updatePaymentBreakdown();
 
-  if (!readOnlyAll) {
-    document.getElementById("downPaymentPaid").onchange =
-      updatePaymentBreakdown;
-    document.getElementById("remainingBalancePaid").onchange =
-      updatePaymentBreakdown;
-    document.getElementById("editAmount").oninput = updatePaymentBreakdown;
-  } else {
-    document.getElementById("downPaymentPaid").onchange = null;
-    document.getElementById("remainingBalancePaid").onchange = null;
-    document.getElementById("editAmount").oninput = null;
-  }
+  const lockPayment =
+    readOnlyAll || isQueueReview || isStaff || mode === "RESCHEDULE_OR_REJECT";
+  const lockAmount = isStaff || (lockPayment && !isConfirmedEdit);
+  const canEditPaymentBreakdown = isConfirmedEdit && !isStaff;
+  document.getElementById("editAmount").disabled = lockAmount;
+  document.getElementById("downPaymentPaid").disabled =
+    !canEditPaymentBreakdown;
+  document.getElementById("remainingBalancePaid").disabled =
+    !canEditPaymentBreakdown;
+  document.getElementById("downPaymentPaid").onchange =
+    canEditPaymentBreakdown ? updatePaymentBreakdown : null;
+  document.getElementById("remainingBalancePaid").onchange =
+    canEditPaymentBreakdown ? updatePaymentBreakdown : null;
+  document.getElementById("editAmount").oninput = lockAmount
+    ? null
+    : updatePaymentBreakdown;
 
   const canRecalc =
     (mode === "CONFIRMED_EDIT" || mode === "FULL_EDIT") && !isStaff;
@@ -766,74 +769,10 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     ? recalcEditPrice
     : null;
 
-  // Payment status buttons
-  const paymentStatus = isStaff ? "paid" : r.paymentStatus || "pending";
-  // Unlock payment fields during CONFIRMED_EDIT only for non-staff (visitor is physically present)
-  const lockPayment =
-    readOnlyAll || isQueueReview || isStaff || mode === "RESCHEDULE_OR_REJECT";
-  const lockBreakdown = isStaff || (lockPayment && !isConfirmedEdit);
-  const lockAmount = isStaff || (lockPayment && !isConfirmedEdit);
-
-  document.getElementById("editPaymentStatus").value = paymentStatus;
-  document.getElementById("editAmount").disabled = lockAmount;
-  document.getElementById("downPaymentPaid").disabled = lockBreakdown;
-  document.getElementById("remainingBalancePaid").disabled = lockBreakdown;
-
-  document
-    .querySelectorAll("#paymentStatusGroup .status-btn")
-    .forEach((btn) => {
-      btn.classList.remove("active");
-      const shouldLock = isStaff || (lockPayment && !isConfirmedEdit);
-      btn.disabled = shouldLock;
-      if (shouldLock) {
-        btn.classList.add("disabled");
-        btn.onclick = null;
-      } else {
-        btn.classList.remove("disabled");
-        btn.onclick = () => selectPaymentStatus(btn.dataset.value);
-      }
-    });
-  document
-    .querySelector(`#paymentStatusGroup [data-value="${paymentStatus}"]`)
-    ?.classList.add("active");
-
-  // Staff badge / notice
-  ["staff-payment-notice", "staff-paid-badge"].forEach((id) =>
-    document.getElementById(id)?.remove(),
-  );
-  document.getElementById("paymentStatusGroup").style.display = isStaff
-    ? "none"
-    : "";
   // Hide the entire Payment Breakdown section for staff — they are always free
   const downPaymentSection = document.getElementById("downPaymentSection");
   if (downPaymentSection)
     downPaymentSection.style.display = isStaff ? "none" : "";
-  if (isStaff) {
-    const badge = document.createElement("div");
-    badge.id = "staff-paid-badge";
-    badge.innerHTML =
-      '<span class="badge badge-paid" style="font-size:14px;font-weight:700;padding:6px 16px;">PAID</span>';
-    document.getElementById("paymentStatusGroup").after(badge);
-    const notice = document.createElement("p");
-    notice.id = "staff-payment-notice";
-    notice.style.cssText =
-      "font-size:0.75rem;color:#16a34a;font-weight:600;margin-top:6px;";
-    notice.textContent =
-      "Staff member — payment is automatically set to Paid and cannot be changed.";
-    badge.after(notice);
-  }
-
-  // Queue payment notice
-  document.getElementById("queue-payment-notice")?.remove();
-  if (isQueueReview && !isStaff) {
-    const notice = document.createElement("p");
-    notice.id = "queue-payment-notice";
-    notice.style.cssText =
-      "font-size:0.75rem;color:#92400e;font-weight:600;margin-top:6px;";
-    notice.textContent =
-      "Payment status can only be updated during the confirmation visit.";
-    document.getElementById("paymentStatusGroup").after(notice);
-  }
 
   // Reservation status buttons
   const reservationStatus = r.status;
@@ -954,16 +893,6 @@ function updatePaymentBreakdown() {
     fmt(remainingBalance);
   document.getElementById("summaryPaid").textContent = fmt(totalPaid);
 
-  // Auto-set payment status based on what's been paid:
-  // - fully paid (or zero-amount staff) → 'paid'
-  // - partial (down paid but not remaining) → 'pending'
-  // - nothing paid → do not override; keep whatever the admin set (may be 'unpaid' or 'pending')
-  if (totalAmount === 0 || totalPaid >= totalAmount) {
-    selectPaymentStatus("paid");
-  } else if (totalPaid > 0) {
-    selectPaymentStatus("pending");
-  }
-  // If totalPaid === 0 and totalAmount > 0, leave the status as-is.
 }
 
 function recalcEditPrice() {
@@ -980,22 +909,6 @@ function recalcEditPrice() {
   document.getElementById("editAmount").value = total;
   updatePaymentBreakdown();
 }
-
-// ─── Status Selectors ─────────────────────────────────────────────────────────
-
-window.selectPaymentStatus = (status) => {
-  if (selectedRequestToEdit) {
-    const r = requests.find((x) => x.id === selectedRequestToEdit);
-    if (r && isStaffRequest(r)) return;
-  }
-  document.getElementById("editPaymentStatus").value = status;
-  document
-    .querySelectorAll("#paymentStatusGroup .status-btn")
-    .forEach((btn) => btn.classList.remove("active"));
-  document
-    .querySelector(`#paymentStatusGroup [data-value="${status}"]`)
-    ?.classList.add("active");
-};
 
 window.selectReservationStatus = (status) => {
   if (currentModalMode === "PAYMENT_ONLY" || currentModalMode === "VIEW_ONLY")
@@ -1182,15 +1095,6 @@ async function savereservationChanges() {
       totalAmount: isStaff
         ? requests[idx].totalAmount || 0
         : parseFloat(document.getElementById("editAmount").value) || 0,
-      paymentStatus: isStaff
-        ? "paid"
-        : document.getElementById("editPaymentStatus").value,
-      downPaymentPaid: isStaff
-        ? false
-        : document.getElementById("downPaymentPaid").checked,
-      remainingBalancePaid: isStaff
-        ? false
-        : document.getElementById("remainingBalancePaid").checked,
     };
   } else if (currentModalMode === "QUEUE_REVIEW") {
     // ── Multi-slot path ──
@@ -1267,33 +1171,18 @@ async function savereservationChanges() {
       totalAmount: isStaff
         ? requests[idx].totalAmount || 0
         : parseFloat(document.getElementById("editAmount").value) || 0,
-      paymentStatus: isStaff
-        ? "paid"
-        : document.getElementById("editPaymentStatus").value,
-      downPaymentPaid: isStaff
-        ? false
-        : document.getElementById("downPaymentPaid").checked,
-      remainingBalancePaid: isStaff
-        ? false
-        : document.getElementById("remainingBalancePaid").checked,
+      ...(currentModalMode === "CONFIRMED_EDIT" && !isStaff
+        ? {
+            downPaymentPaid:
+              document.getElementById("downPaymentPaid").checked,
+            remainingBalancePaid: document.getElementById(
+              "remainingBalancePaid",
+            ).checked,
+          }
+        : {}),
       status: document.getElementById("editStatus").value,
       adminRevisionReason,
     };
-  }
-
-  // Prevent changing payment tracking from PAID back to a non-paid state
-  const currentPaymentStatus = requests[idx].paymentStatus || "pending";
-  const requestedPaymentStatus = update.paymentStatus;
-  if (
-    currentPaymentStatus === "paid" &&
-    requestedPaymentStatus &&
-    requestedPaymentStatus !== "paid"
-  ) {
-    showToast(
-      "Payment tracking is already marked PAID and cannot be changed.",
-      "error",
-    );
-    return;
   }
 
   const dateChanged =

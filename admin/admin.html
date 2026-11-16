@@ -448,7 +448,7 @@
             >
               <option value="">All Statuses</option>
               <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
+              <option value="half_paid">Half Paid</option>
               <option value="unpaid">Unpaid</option>
             </select>
             <button
@@ -1495,14 +1495,6 @@
                 "
               ></div>
             </div>
-            <div class="form-group" id="manualPaymentStatusGroup">
-                <label>Payment Status</label>
-                <select class="select" id="manualPaymentStatus">
-                  <option value="paid">Paid</option>
-                  <option value="pending">Pending</option>
-                  <option value="unpaid">Unpaid</option>
-                </select>
-            </div>
             <div
                 class="form-group full-width"
                 id="manualPricingPreview"
@@ -1753,32 +1745,13 @@
               padding: 0 0 4px;
             "
           >
-            <span>Financials &amp; Status</span>
+            <span>Financials</span>
             <span id="financialsToggleIcon" aria-hidden="true">⌃</span>
           </button>
           <div class="form-grid" id="financialsContent">
             <div class="form-group">
               <label>Total Amount (&#8369;)</label>
               <input type="number" class="input" id="editAmount" step="0.01" />
-            </div>
-
-            <div
-              class="form-group"
-              style="display: flex; flex-direction: column"
-            >
-              <label>Payment Status</label>
-              <div class="status-button-group" id="paymentStatusGroup">
-                <button type="button" class="status-btn" data-value="paid">
-                  Paid
-                </button>
-                <button type="button" class="status-btn" data-value="pending">
-                  Pending
-                </button>
-                <button type="button" class="status-btn" data-value="unpaid">
-                  Unpaid
-                </button>
-              </div>
-              <input type="hidden" id="editPaymentStatus" value="pending" />
             </div>
 
             <!-- Down Payment Tracking - Right Side -->

@@ -100,7 +100,7 @@ export function toDbReservation(payload = {}) {
     purpose: body.purpose || "",
     additional_notes: body.additionalNotes ?? body.additional_notes ?? null,
     status: body.status || "pending",
-    payment_status: body.paymentStatus || body.payment_status || "pending",
+    payment_status: body.paymentStatus || body.payment_status || "unpaid",
     appointment_date: nullableDate(
       body.appointmentDate ?? body.appointment_date,
     ),
@@ -240,6 +240,12 @@ function toDbReservationPatch(existing, changes) {
 
 function handleSupabaseError(res, error, action) {
   console.error(`Could not ${action} reservation in Supabase:`, error);
+  if (error.code === "P0001" && error.message === "visit_slot_unavailable") {
+    return res.status(409).json({
+      success: false,
+      message: "That visit slot is no longer available. Please choose another option.",
+    });
+  }
   if (error.code === "P0001" && error.message === "reservation_time_conflict") {
     return res.status(409).json({
       success: false,
@@ -495,7 +501,7 @@ export function createRequestsRouter() {
         payload.staff_id = isStaff ? req.auth.user.sub : null;
         payload.guest_id = isStaff ? null : req.auth.user.sub;
         payload.status = "pending";
-        payload.payment_status = isStaff ? "paid" : "pending";
+        payload.payment_status = isStaff ? "paid" : "unpaid";
         payload.down_payment_paid = false;
         payload.remaining_balance_paid = false;
         payload.appointment_date = null;
@@ -668,6 +674,34 @@ export function createRequestsRouter() {
         }
       }
       let effectiveChanges = authorizedChanges;
+      if (
+        req.auth.kind === "user" &&
+        typeof changes.appointmentDate === "string" &&
+        changes.appointmentDate.trim() &&
+        typeof changes.appointmentTime === "string" &&
+        changes.appointmentTime.trim() &&
+        !Object.hasOwn(changes, "rescheduleOptionIndex")
+      ) {
+        const { error: confirmError } = await client.rpc("confirm_visit_slot", {
+          p_reservation_code: req.params.id,
+          p_visit_date: changes.appointmentDate.trim(),
+          p_visit_time: changes.appointmentTime.trim(),
+        });
+        if (confirmError) throw confirmError;
+
+        const { data, error } = await client
+          .from("reservations")
+          .select(RESERVATION_SELECT)
+          .eq("reservation_code", req.params.id)
+          .single();
+        if (error) throw error;
+        return res.json({
+          success: true,
+          message: "Visit slot confirmed successfully.",
+          request: fromDbReservation(data),
+        });
+      }
+
       if (Object.hasOwn(authorizedChanges, "rescheduleOptionIndex")) {
         if (req.auth.kind !== "user") {
           return res.status(403).json({

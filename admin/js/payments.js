@@ -72,8 +72,11 @@ function renderPayments() {
       collected = total;
     } else if (downPaid) {
       collected = downAmt;
-    } else if (b.paymentStatus === "pending") {
-      // paymentStatus 'pending' means a partial payment exists —
+    } else if (
+      b.paymentStatus === "half_paid" ||
+      b.paymentStatus === "pending"
+    ) {
+      // Older records may use 'pending' for a partial payment.
       // treat as down payment collected when checkbox isn't set.
       collected = downAmt;
     }
@@ -105,7 +108,9 @@ function renderPayments() {
           const remainingBalance = Math.max(0, totalAmount - downPaymentAmount);
           const effectiveStatus = isStaff
             ? "paid"
-            : b.paymentStatus || "pending";
+            : ["pending", "half_paid"].includes(b.paymentStatus)
+              ? "half_paid"
+              : b.paymentStatus || "unpaid";
           const safeId = escapeAdminJsArgument(b.id);
           const safeName = escapeAdminText(b.name);
           const safeFacilityId = escapeAdminText(b.facilityId);
@@ -137,7 +142,7 @@ function renderPayments() {
                 <span class="badge badge-interactive ${getPaymentBadgeClass(effectiveStatus)}"
                       onclick="${isStaff ? "" : `cyclePaymentStatus(${safeId},${escapeAdminJsArgument(effectiveStatus)})`}"
                       style="${isStaff ? "cursor:default;opacity:0.85;" : ""}">
-                    ${isStaff ? "PAID (Staff)" : effectiveStatus.toUpperCase()}
+                    ${isStaff ? "PAID (Staff)" : effectiveStatus === "half_paid" ? "HALF PAID" : effectiveStatus.toUpperCase()}
                 </span>
             </td>
             <td>
@@ -154,6 +159,7 @@ function renderPayments() {
 function getPaymentBadgeClass(status) {
   if (status === "paid") return "badge-paid";
   if (status === "unpaid") return "badge-unpaid";
+  if (status === "half_paid") return "badge-half-paid";
   return "badge-pending";
 }
 
@@ -167,15 +173,22 @@ window.cyclePaymentStatus = async (id, currentStatus) => {
     showToast("Payment already marked PAID and cannot be changed", "error");
     return;
   }
-  const map = { pending: "paid", unpaid: "pending" }; // prevent paid->unpaid transition
-  const next = map[currentStatus || req.paymentStatus || "pending"] || "pending";
+  const map = {
+    pending: "paid",
+    half_paid: "paid",
+    unpaid: "half_paid",
+  };
+  const next = map[currentStatus || req.paymentStatus || "unpaid"] || "unpaid";
   const saved = await patchRequest(id, { paymentStatus: next });
   if (!saved) {
     showToast("Could not update payment status. Please try again.", "error");
     return;
   }
   await loadData();
-  showToast(`Payment marked as ${next}`, "success");
+  showToast(
+    `Payment marked as ${next === "half_paid" ? "Half Paid" : "Paid"}`,
+    "success",
+  );
 };
 
 window.toggleDownPayment = async (id, newState) => {
@@ -195,7 +208,11 @@ window.toggleDownPayment = async (id, newState) => {
       ? "unpaid"
       : newState && remainingPaid
         ? "paid"
-        : "pending";
+        : newState
+          ? "half_paid"
+          : remainingPaid
+            ? "half_paid"
+            : "unpaid";
   const saved = await patchRequest(id, {
     downPaymentPaid: newState,
     paymentStatus,
@@ -228,7 +245,9 @@ window.toggleRemainingBalance = async (id, newState) => {
       ? "unpaid"
       : downPaid && newState
         ? "paid"
-        : "pending";
+        : downPaid || newState
+          ? "half_paid"
+          : "unpaid";
   const saved = await patchRequest(id, {
     remainingBalancePaid: newState,
     paymentStatus,

@@ -223,16 +223,6 @@ function updateManualPricing() {
     labelOn.style.fontWeight = isStaff ? "800" : "700";
   }
 
-  const paymentSelect = document.getElementById("manualPaymentStatus");
-  const paymentGroup = document.getElementById("manualPaymentStatusGroup");
-  if (paymentGroup) paymentGroup.style.display = isStaff ? "none" : "";
-  if (paymentSelect) {
-    paymentSelect.value = isStaff ? "paid" : "pending";
-    paymentSelect.disabled = isStaff;
-    paymentSelect.style.opacity = isStaff ? "0.6" : "";
-    paymentSelect.style.cursor = isStaff ? "not-allowed" : "";
-  }
-
   if (!facilityId || !start || !end || start >= end) {
     preview.style.display = "none";
     return;
@@ -353,7 +343,6 @@ async function saveManualReservation() {
   const attendees =
     parseInt(document.getElementById("manualAttendees").value) || 0;
   const isStaff = document.getElementById("manualIsStaff")?.checked || false;
-  const paymentStatus = document.getElementById("manualPaymentStatus").value;
   const contact =
     document.getElementById("manualContactNumber").value.trim() || "N/A";
   const email =
@@ -429,7 +418,7 @@ async function saveManualReservation() {
     utilities: utilities.length ? utilities : [],
     attendees,
     status: "approved",
-    paymentStatus: isStaff ? "paid" : paymentStatus,
+    paymentStatus: isStaff ? "paid" : "unpaid",
     totalAmount,
     submittedAt: new Date().toISOString(),
   };
@@ -690,7 +679,7 @@ function renderApproved() {
             <td><div class="truncate" title="${escapeAdminText(req.purpose)}">${escapeAdminText(req.purpose)}</div>
                 ${needsReschedule ? `<div style="font-size:11px;color:#64748b;margin-top:6px;">${hasAlternateSchedules ? "The requester has alternate event schedules to choose from." : `Requested reschedule: <strong style="color:#92400e;">${escapeAdminText(req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—")}</strong> ${req.rescheduledStartTime ? escapeAdminText("· " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime)) : ""}<div style="font-size:11px;color:#7c2d12;margin-top:4px;">Reason: ${escapeAdminText(req.rescheduleReason || "No reason provided")}</div>`}</div>` : ""}
             </td>
-            <td><span class="badge ${req.paymentStatus === "paid" ? "badge-success" : req.paymentStatus === "pending" ? "badge-warning" : "badge-secondary"}">${escapeAdminText(req.paymentStatus || "unpaid")}</span></td>
+            <td><span class="badge ${req.paymentStatus === "paid" ? "badge-success" : ["pending", "half_paid"].includes(req.paymentStatus) ? "badge-half-paid" : "badge-secondary"}">${escapeAdminText(["pending", "half_paid"].includes(req.paymentStatus) ? "Half Paid" : req.paymentStatus || "unpaid")}</span></td>
             <td><button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},${escapeAdminJsArgument(actionMode)})">${actionLabel}</button></td>
         </tr>`;
         })
@@ -1030,6 +1019,13 @@ window.openHistoryView = (id) => {
             <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;text-transform:uppercase;">${escapeAdminText(label)}</span>
             <span style="font-size:0.82rem;color:#1e293b;font-weight:500;flex:1;word-break:break-word;">${escapeAdminText(value)}</span>
         </div>`;
+  const paymentRow = ["pending", "half_paid"].includes(r.paymentStatus)
+    ? `
+        <div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid #f1f5f9;">
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;text-transform:uppercase;">Payment</span>
+            <span style="flex:1;"><span class="badge badge-half-paid">Half Paid</span></span>
+        </div>`
+    : row("Payment", r.paymentStatus || "—");
 
   let rows = `
         ${row("Facility", getFacilityName(r.facilityId))}
@@ -1041,7 +1037,7 @@ window.openHistoryView = (id) => {
         ${row("Purpose", r.purpose || "—")}
         ${row("Attendees", r.attendees != null ? r.attendees : "—")}
         ${row("Amount", fmtAmt(r.totalAmount))}
-        ${row("Payment", r.paymentStatus || "—")}
+        ${paymentRow}
         ${row("Submitted", r.submittedAt ? formatDateTimeSimple(r.submittedAt) : "—")}
     `;
   if (r.appointmentDate)

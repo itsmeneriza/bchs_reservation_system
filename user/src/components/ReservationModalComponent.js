@@ -933,7 +933,7 @@ export class ReservationModal {
       facilityId: state.selectedFacility.id,
       facilityName: state.selectedFacility.name,
       totalAmount: totalAmount,
-      paymentStatus: isStaff ? "paid" : "pending",
+      paymentStatus: isStaff ? "paid" : "unpaid",
       isStaff: isStaff,
       source: isStaff ? "staff" : "guest",
       staffId: isStaff ? state.user?.id || null : null,
