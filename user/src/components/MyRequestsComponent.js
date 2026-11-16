@@ -29,6 +29,27 @@ const escapeHtml = (value) =>
       })[character],
   );
 
+function getCalendarDaysUntil(dateValue) {
+  if (typeof dateValue !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return null;
+  }
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const eventDate = new Date(Date.UTC(year, month - 1, day));
+  if (
+    eventDate.getUTCFullYear() !== year ||
+    eventDate.getUTCMonth() !== month - 1 ||
+    eventDate.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  const [todayYear, todayMonth, todayDay] = getLocalISODate(new Date())
+    .split("-")
+    .map(Number);
+  const todayDate = Date.UTC(todayYear, todayMonth - 1, todayDay);
+  return Math.round((eventDate.getTime() - todayDate) / 86400000);
+}
+
 export class MyRequests {
   constructor() {
     this.container = document.getElementById("my-requests-container");
@@ -484,7 +505,7 @@ export class MyRequests {
             </div>
         `;
 
-    window.editRequest = (requestId) => {
+    window.editRequest = (requestId, utilitiesOnly = false) => {
       const req = userRequests.find((r) => r.id === requestId);
       if (!req || !window._openReservationModal) return;
 
@@ -494,7 +515,7 @@ export class MyRequests {
       setSelectedDate(new Date(req.date + "T00:00:00"));
 
       // Open modal with the full request data to prefill all fields
-      window._openReservationModal(requestId, req);
+      window._openReservationModal(requestId, req, { utilitiesOnly });
     };
 
     window.toggleRequestCard = (requestId) => {
@@ -719,14 +740,21 @@ export class MyRequests {
               }
             : statusConfig[req.status] || statusConfig["pending"];
 
-    const isPast = new Date(req.date) < new Date();
+    const daysUntilEvent = getCalendarDaysUntil(req.date);
+    const isPast = daysUntilEvent !== null && daysUntilEvent < 0;
     const isAcceptedReservation = ["approved", "accepted"].includes(req.status);
     const canCancel =
       (req.status === "pending" || isAcceptedReservation) &&
       !isPast &&
       !req.cancellationReason &&
       !isBlockForced;
-    const canEdit = req.status === "pending" && !isPast && !isBlockForced;
+    const canEdit =
+      !isBlockForced &&
+      ((req.status === "pending" && !isPast) ||
+        (isAcceptedReservation &&
+          daysUntilEvent !== null &&
+          daysUntilEvent >= 1 &&
+          daysUntilEvent <= 3));
     const canRemove =
       isPast || ["rejected", "refused", "cancelled"].includes(req.status);
 
@@ -769,7 +797,7 @@ export class MyRequests {
                         ${
                           canEdit
                             ? `
-                        <button onclick="window.editRequest('${req.id}')"
+                        <button onclick="window.editRequest('${req.id}', ${isAcceptedReservation})"
                             style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:0.25rem 0.6rem;border-radius:0.375rem;font-size:0.7rem;font-weight:600;cursor:pointer;white-space:nowrap;"
                             onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
                             Edit
@@ -794,7 +822,7 @@ export class MyRequests {
                         <button onclick="window.requestReschedule('${req.id}')"
                             style="background:#dcfce7;color:#166534;border:1px solid #86efac;padding:0.25rem 0.6rem;border-radius:0.375rem;font-size:0.7rem;font-weight:600;cursor:pointer;white-space:nowrap;"
                             onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">
-                            Request Event Rescheduling
+                            Request Reschedule
                         </button>`
                             : ""
                         }

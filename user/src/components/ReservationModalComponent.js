@@ -47,8 +47,11 @@ export class ReservationModal {
     this.injectUIElements();
     this.attachEventListeners();
     // Expose open() globally for CalendarComponent day-click and MyRequests edit
-    window._openReservationModal = (editingId = null, prefill = null) =>
-      this.open(editingId, prefill);
+    window._openReservationModal = (
+      editingId = null,
+      prefill = null,
+      options = {},
+    ) => this.open(editingId, prefill, options);
   }
 
   injectUIElements() {
@@ -125,13 +128,19 @@ export class ReservationModal {
     });
   }
 
-  open(editingId = null, prefill = null) {
+  open(editingId = null, prefill = null, options = {}) {
     // --- AUTH CHECK ---
     if (!state.isLoggedIn) {
       showToast("Please login to request a reservation.", "info");
       document.getElementById("login-modal").classList.add("active");
       return;
     }
+
+    this.setUtilitiesOnlyMode(false);
+    const modalTitle = this.modal.querySelector(".modal-header h2");
+    const submitButton = this.form.querySelector('button[type="submit"]');
+    if (modalTitle) modalTitle.textContent = "Reservation Request";
+    if (submitButton) submitButton.textContent = "Submit Request";
 
     this.paymentDeadlineNotice.hidden = Boolean(state.user?.isStaff);
 
@@ -286,12 +295,20 @@ export class ReservationModal {
       }
     }
 
+    if (options.utilitiesOnly) {
+      const title = this.modal.querySelector(".modal-header h2");
+      const submit = this.form.querySelector('button[type="submit"]');
+      if (title) title.textContent = "Edit Reservation Utilities";
+      if (submit) submit.textContent = "Save Utilities";
+    }
+
     this.updateDurationInfo();
     this.checkTimeConflict();
     this.modal.classList.add("active");
 
     // Render facility picker — highlight the current facility (already set in state by editRequest)
     this.renderFacilityPicker(parseInt(this.inputs.attendees?.value) || 0);
+    this.setUtilitiesOnlyMode(Boolean(options.utilitiesOnly));
     this.checkMinPax(parseInt(this.inputs.attendees?.value) || 0);
   }
 
@@ -593,6 +610,11 @@ export class ReservationModal {
 
   close() {
     this.modal.classList.remove("active");
+    this.setUtilitiesOnlyMode(false);
+    const title = this.modal.querySelector(".modal-header h2");
+    const submit = this.form.querySelector('button[type="submit"]');
+    if (title) title.textContent = "Reservation Request";
+    if (submit) submit.textContent = "Submit Request";
     this.modal.dataset.editId = "";
     this.form.reset();
     if (this.inputs.notes) this.inputs.notes.style.display = "none";
@@ -618,6 +640,30 @@ export class ReservationModal {
     import("./FacilityListComponent.js").then(({ FacilityList }) =>
       new FacilityList().render(0),
     );
+  }
+
+  setUtilitiesOnlyMode(enabled) {
+    if (this.utilitiesOnlyControls) {
+      for (const [control, wasDisabled] of this.utilitiesOnlyControls) {
+        control.disabled = wasDisabled;
+      }
+      this.utilitiesOnlyControls = null;
+    }
+    if (!enabled) return;
+
+    this.utilitiesOnlyControls = new Map();
+    this.form
+      .querySelectorAll("input, select, textarea, button")
+      .forEach((control) => {
+        if (
+          control.matches('[name="equipment"], #req-notes, #cancel-btn') ||
+          control.type === "submit"
+        ) {
+          return;
+        }
+        this.utilitiesOnlyControls.set(control, control.disabled);
+        control.disabled = true;
+      });
   }
 
   openPolicy() {

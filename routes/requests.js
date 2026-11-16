@@ -17,6 +17,101 @@ function nullableDate(value) {
   return value.trim() || null;
 }
 
+function getManilaDateParts(now = new Date()) {
+  return Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(now)
+      .map(({ type, value }) => [type, value]),
+  );
+}
+
+function getTimeMinutes(value) {
+  if (typeof value !== "string") return null;
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return null;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (minutes > 59) return null;
+  if (match[3]) {
+    if (hours < 1 || hours > 12) return null;
+    const period = match[3].toUpperCase();
+    if (period === "PM" && hours !== 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+  } else if (hours > 23) {
+    return null;
+  }
+  return hours * 60 + minutes;
+}
+
+function isExpiredVisitSlot(row, now = new Date()) {
+  // Forced-reschedule rows use a past appointment as an admin workflow marker.
+  if (
+    !row.appointment_date ||
+    !row.appointment_time ||
+    row.block_reschedule_pending
+  ) {
+    return false;
+  }
+
+  const date = String(row.appointment_date);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const [year, month, day] = date.split("-").map(Number);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() !== month - 1 ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    return false;
+  }
+
+  const visitMinutes = getTimeMinutes(row.appointment_time);
+  if (visitMinutes === null) return false;
+  const currentParts = getManilaDateParts(now);
+  const currentDate = `${currentParts.year}-${currentParts.month}-${currentParts.day}`;
+  if (date !== currentDate) return date < currentDate;
+
+  return (
+    visitMinutes <=
+    Number(currentParts.hour) * 60 + Number(currentParts.minute)
+  );
+}
+
+async function clearExpiredVisitSlot(client, row) {
+  if (!isExpiredVisitSlot(row)) return row;
+
+  const { data, error } = await client
+    .from("reservations")
+    .update({
+      appointment_date: null,
+      appointment_time: null,
+    })
+    .eq("reservation_code", row.reservation_code)
+    .eq("appointment_date", row.appointment_date)
+    .eq("appointment_time", row.appointment_time)
+    .select(RESERVATION_SELECT)
+    .maybeSingle();
+  if (error) throw error;
+  if (data) return data;
+
+  const { data: current, error: reloadError } = await client
+    .from("reservations")
+    .select(RESERVATION_SELECT)
+    .eq("reservation_code", row.reservation_code)
+    .maybeSingle();
+  if (reloadError) throw reloadError;
+  return current || row;
+}
+
 function daysUntilDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return null;
@@ -31,11 +126,11 @@ function daysUntilDate(value) {
     return null;
   }
 
-  const today = new Date();
+  const today = getManilaDateParts();
   const todayUtc = Date.UTC(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
+    Number(today.year),
+    Number(today.month) - 1,
+    Number(today.day),
   );
   return Math.round((eventDate.getTime() - todayUtc) / 86400000);
 }
@@ -425,16 +520,20 @@ export function createRequestsRouter() {
 
   router.get("/", async (req, res) => {
     try {
-      const { data, error } = await createServiceRoleSupabaseClient()
+      const client = createServiceRoleSupabaseClient();
+      const { data, error } = await client
         .from("reservations")
         .select(RESERVATION_SELECT)
         .order("submitted_at", { ascending: false });
       if (error) throw error;
+      const currentRows = await Promise.all(
+        (data || []).map((row) => clearExpiredVisitSlot(client, row)),
+      );
 
       const isUserScoped = req.auth.kind === "user";
       const visible = isUserScoped
-        ? (data || []).filter((row) => isRequestOwnedByUser(req.auth, row))
-        : data || [];
+        ? currentRows.filter((row) => isRequestOwnedByUser(req.auth, row))
+        : currentRows;
 
       return res.json({ requests: visible.map(fromDbReservation) });
     } catch (error) {
@@ -466,7 +565,8 @@ export function createRequestsRouter() {
 
   router.get("/:id", async (req, res) => {
     try {
-      const { data, error } = await createServiceRoleSupabaseClient()
+      const client = createServiceRoleSupabaseClient();
+      const { data, error } = await client
         .from("reservations")
         .select(RESERVATION_SELECT)
         .eq("reservation_code", req.params.id)
@@ -478,7 +578,8 @@ export function createRequestsRouter() {
       if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, data)) {
         return res.status(403).json({ success: false, message: "You do not have access to this request." });
       }
-      return res.json({ request: fromDbReservation(data) });
+      const current = await clearExpiredVisitSlot(client, data);
+      return res.json({ request: fromDbReservation(current) });
     } catch (error) {
       return handleSupabaseError(res, error, "load");
     }
@@ -607,15 +708,16 @@ export function createRequestsRouter() {
   router.patch("/:id", async (req, res) => {
     try {
       const client = createServiceRoleSupabaseClient();
-      const { data: existing, error: findError } = await client
+      const { data: found, error: findError } = await client
         .from("reservations")
         .select(RESERVATION_SELECT)
         .eq("reservation_code", req.params.id)
         .maybeSingle();
       if (findError) throw findError;
-      if (!existing) {
+      if (!found) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
+      const existing = await clearExpiredVisitSlot(client, found);
       if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
         return res.status(403).json({ success: false, message: "You do not have permission to update this request." });
       }
@@ -650,6 +752,40 @@ export function createRequestsRouter() {
         authorizedChanges = Object.fromEntries(
           Object.entries(changes).filter(([key]) => allowedFields.has(key)),
         );
+        if (
+          ["approved", "accepted"].includes(existing.status) &&
+          Object.hasOwn(changes, "additionalNotes")
+        ) {
+          const daysUntilEvent = daysUntilDate(existing.date);
+          if (
+            daysUntilEvent === null ||
+            daysUntilEvent < 1 ||
+            daysUntilEvent > 3
+          ) {
+            return res.status(403).json({
+              success: false,
+              message:
+                "Utilities can only be edited within 3 days before the event.",
+            });
+          }
+        }
+        if (
+          ["approved", "accepted"].includes(existing.status) &&
+          changes._isEdit === true &&
+          changes._editedByUser === true
+        ) {
+          const utilityEditFields = new Set([
+            "_editedByUser",
+            "_isEdit",
+            "additionalNotes",
+            "userEditReason",
+          ]);
+          authorizedChanges = Object.fromEntries(
+            Object.entries(authorizedChanges).filter(([key]) =>
+              utilityEditFields.has(key),
+            ),
+          );
+        }
         if (authorizedChanges.status && authorizedChanges.status !== "cancelled") {
           authorizedChanges.status = existing.status;
         }
@@ -800,6 +936,23 @@ export function createRequestsRouter() {
       }
 
       const payload = toDbReservationPatch(existing, authorizedChanges);
+      if (
+        req.auth.kind === "user" &&
+        ["approved", "accepted"].includes(existing.status) &&
+        changes._isEdit === true &&
+        changes._editedByUser === true &&
+        Object.hasOwn(authorizedChanges, "additionalNotes") &&
+        !existing.is_staff
+      ) {
+        const hadUtilities = Boolean(existing.additional_notes?.trim());
+        const hasUtilities = Boolean(
+          authorizedChanges.additionalNotes?.trim(),
+        );
+        payload.total_amount =
+          Number(existing.total_amount || 0) +
+          (hasUtilities ? 800 : 0) -
+          (hadUtilities ? 800 : 0);
+      }
       if (Object.hasOwn(authorizedChanges, "date") && !payload.date) {
         return res.status(400).json({
           success: false,
