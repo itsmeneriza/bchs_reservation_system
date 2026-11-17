@@ -273,7 +273,7 @@ export class Forecast {
 
         wrap
           .querySelectorAll(
-            ".yoy-series-all, .yoy-series-all-marker, .yoy-series-last",
+            ".yoy-series-all, .yoy-series-all-marker, .yoy-series-last, .yoy-series-all-forecast, .yoy-series-all-forecast-marker",
           )
           .forEach((series) => {
             series.style.display = isAll ? "" : "none";
@@ -283,11 +283,19 @@ export class Forecast {
           line.style.display = show ? "inline" : "none";
           if (show && svg && maxValue > 0) {
             const values = line.dataset.values.split(",").map(Number);
+            const startIndex = Number(line.dataset.startIndex || 0);
+            const endIndex = line.dataset.endIndex
+              ? Number(line.dataset.endIndex)
+              : startIndex + values.length - 1;
             const plotWidth =
               chartWidth - padLeft - Number(svg.dataset.padRight);
             const points = values
+              .slice(0, endIndex - startIndex + 1)
               .map((value, index) => {
-                const x = padLeft + (index * plotWidth) / (values.length - 1);
+                const x =
+                  padLeft +
+                  ((startIndex + index) * plotWidth) /
+                    (Number(svg.dataset.monthCount) - 1);
                 const y = padTop + plotHeight - (value / maxValue) * plotHeight;
                 return `${x},${y}`;
               })
@@ -318,11 +326,19 @@ export class Forecast {
               ? currentLegend.dataset.allLabel
               : `${btn.textContent.trim()} (${currentLegend.dataset.year})`;
         }
-        wrap
-          .querySelectorAll(".yoy-legend-last-year, .yoy-legend-future-ref")
-          .forEach((legend) => {
-            legend.style.display = isAll ? "" : "none";
-          });
+        wrap.querySelector(".yoy-legend-last-year").style.display = isAll
+          ? ""
+          : "none";
+        const projectedLegend = wrap.querySelector(".yoy-legend-future-ref");
+        if (projectedLegend) {
+          const forecastRate = Number(btn.dataset.forecastRate);
+          const formattedRate = forecastRate > 0 ? `+${forecastRate}` : forecastRate;
+          projectedLegend.querySelector(".yoy-legend-future-dash").style.color =
+            isAll ? "#0ea5e9" : btn.dataset.color;
+          projectedLegend.querySelector(
+            ".yoy-legend-future-label",
+          ).textContent = `Projected (${formattedRate}% vs LY YTD)`;
+        }
         const facilityLastLegend = wrap.querySelector(
           ".yoy-legend-facility-last",
         );
@@ -700,6 +716,7 @@ export class Forecast {
       "Nov",
       "Dec",
     ];
+    const currentMonthIdx = new Date().getMonth();
 
     // this.lastYearData is pre-filtered to lastYear by loadData().
     // Only approved reservations count toward facility usage.
@@ -739,18 +756,47 @@ export class Forecast {
       return cyApproved.filter((r) => r.date.startsWith(prefix)).length;
     });
 
+    const buildProjection = (lastYearValues, currentYearValues) => {
+      const currentYtd = currentYearValues
+        .slice(0, currentMonthIdx)
+        .reduce((sum, value) => sum + value, 0);
+      const previousYtd = lastYearValues
+        .slice(0, currentMonthIdx)
+        .reduce((sum, value) => sum + value, 0);
+      const growthRate = previousYtd > 0 ? currentYtd / previousYtd : 1;
+      return {
+        growthPercent: Math.round((growthRate - 1) * 100),
+        values: lastYearValues.map((value, index) =>
+          index <= currentMonthIdx
+            ? currentYearValues[index]
+            : Math.round(value * growthRate),
+        ),
+      };
+    };
+
     // Pre-compute datasets keyed by facility id
     const datasets = {};
     FACILITIES.forEach((f) => {
       if (f.id === "all") {
+        const projection = buildProjection(
+          lastYearAllMonthly,
+          currentYearAllMonthly,
+        );
         datasets["all"] = {
           lastYear: lastYearAllMonthly,
           currentYear: currentYearAllMonthly,
+          projected: projection.values,
+          growthPercent: projection.growthPercent,
         };
       } else {
+        const lastYear = buildLastYearPerFacility(f.id);
+        const currentYear = buildCurrentYearPerFacility(f.id);
+        const projection = buildProjection(lastYear, currentYear);
         datasets[f.id] = {
-          lastYear: buildLastYearPerFacility(f.id),
-          currentYear: buildCurrentYearPerFacility(f.id),
+          lastYear,
+          currentYear,
+          projected: projection.values,
+          growthPercent: projection.growthPercent,
         };
       }
     });
@@ -776,29 +822,39 @@ export class Forecast {
     // Unique chart id to scope the script
     const chartId = `yoy-chart-${Date.now()}`;
 
-    // Current month index (0-based). Months 0..currentMonthIdx = past (solid line).
-    // Months currentMonthIdx+1..11 are future approved bookings.
-    const currentMonthIdx = new Date().getMonth(); // 0=Jan … 11=Dec
-
-    const allVals = lastYearAllMonthly.concat(currentYearAllMonthly);
+    const projectedAllMonthly = datasets.all.projected;
+    const allVals = lastYearAllMonthly.concat(
+      currentYearAllMonthly,
+      projectedAllMonthly,
+    );
     const yMax = Math.max(...allVals, 1);
     const toY = (val) => padT + chartH - (val / yMax) * chartH;
 
-    const seriesFor = (values) =>
-      values.map((v, i) => `${toX(i)},${toY(v)}`).join(" ");
+    const seriesFor = (values, startIndex = 0) =>
+      values
+        .map((v, i) => `${toX(startIndex + i)},${toY(v)}`)
+        .join(" ");
     const lastYearPoints = seriesFor(lastYearAllMonthly);
-    const currentAllPoints = seriesFor(currentYearAllMonthly);
+    const currentAllPoints = seriesFor(
+      currentYearAllMonthly.slice(0, currentMonthIdx + 1),
+    );
+    const projectedAllPoints = seriesFor(
+      projectedAllMonthly.slice(currentMonthIdx),
+      currentMonthIdx,
+    );
 
     const facilitySeries = FACILITIES.filter((f) => f.id !== "all")
       .map((f) => {
-        const lastYearValues = datasets[f.id].lastYear;
-        const currentYearValues = datasets[f.id].currentYear;
+        const { lastYear, currentYear, projected } = datasets[f.id];
         return `
-                <polyline class="yoy-facility-line yoy-facility-line-last" data-facility="${f.id}" data-values="${lastYearValues.join(",")}" points="${seriesFor(lastYearValues)}"
+                <polyline class="yoy-facility-line yoy-facility-line-last" data-facility="${f.id}" data-values="${lastYear.join(",")}" points="${seriesFor(lastYear)}"
                           fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4"
                           stroke-linejoin="round" stroke-linecap="round" style="display:none"/>
-                <polyline class="yoy-facility-line yoy-facility-line-current" data-facility="${f.id}" data-values="${currentYearValues.join(",")}" points="${seriesFor(currentYearValues)}"
+                <polyline class="yoy-facility-line yoy-facility-line-current" data-facility="${f.id}" data-values="${currentYear.join(",")}" data-end-index="${currentMonthIdx}" points="${seriesFor(currentYear.slice(0, currentMonthIdx + 1))}"
                           fill="none" stroke="${f.color}" stroke-width="2.5"
+                          stroke-linejoin="round" stroke-linecap="round" style="display:none"/>
+                <polyline class="yoy-facility-line yoy-facility-line-forecast" data-facility="${f.id}" data-start-index="${currentMonthIdx}" data-values="${projected.slice(currentMonthIdx).join(",")}" points="${seriesFor(projected.slice(currentMonthIdx), currentMonthIdx)}"
+                          fill="none" stroke="${f.color}" stroke-width="2.5" stroke-dasharray="5 4"
                           stroke-linejoin="round" stroke-linecap="round" style="display:none"/>
             `;
       })
@@ -809,7 +865,8 @@ export class Forecast {
             <svg id="${chartId}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
                  class="yoy-svg-chart" aria-label="Year-over-Year monthly reservations line chart for all facilities"
                  data-chart-width="${W}" data-pad-left="${padL}" data-pad-right="${padR}"
-                 data-pad-top="${padT}" data-plot-height="${chartH}" data-all-y-max="${yMax}">
+                 data-pad-top="${padT}" data-plot-height="${chartH}" data-all-y-max="${yMax}"
+                 data-month-count="${MONTHS.length}">
                 <defs>
                     <linearGradient id="yoy-grad-last-${chartId}" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.18"/>
@@ -837,11 +894,13 @@ export class Forecast {
                 <polyline class="yoy-series-last" points="${lastYearPoints}" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
                 <polygon class="yoy-series-all" points="${toX(0)},${padT + chartH} ${currentAllPoints} ${toX(currentMonthIdx)},${padT + chartH}" fill="url(#yoy-grad-curr-${chartId})"></polygon>
                 <polyline class="yoy-series-all" points="${currentAllPoints}" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+                <polyline class="yoy-series-all-forecast" points="${projectedAllPoints}" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"></polyline>
                 <line x1="${toX(currentMonthIdx)}" y1="${padT}" x2="${toX(currentMonthIdx)}" y2="${padT + chartH}" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"></line>
                 <text x="${toX(currentMonthIdx) + 3}" y="${padT + 8}" font-size="7" fill="#94a3b8">today</text>
                 ${facilitySeries}
                 ${lastYearAllMonthly.map((v, i) => `<circle class="yoy-series-last" cx="${toX(i)}" cy="${toY(v)}" r="3.5" fill="#94a3b8" stroke="#fff" stroke-width="1.5"></circle>`).join("")}
-                ${currentYearAllMonthly.map((v, i) => `<circle class="yoy-series-all-marker" cx="${toX(i)}" cy="${toY(v)}" r="3.5" fill="${i <= currentMonthIdx ? "#0ea5e9" : "#fff"}" stroke="#0ea5e9" stroke-width="2" opacity="${i <= currentMonthIdx ? "1" : "0.85"}"></circle>`).join("")}
+                ${currentYearAllMonthly.slice(0, currentMonthIdx + 1).map((v, i) => `<circle class="yoy-series-all-marker" cx="${toX(i)}" cy="${toY(v)}" r="3.5" fill="#0ea5e9" stroke="#0ea5e9" stroke-width="2"></circle>`).join("")}
+                ${projectedAllMonthly.slice(currentMonthIdx + 1).map((v, i) => `<circle class="yoy-series-all-forecast-marker" cx="${toX(currentMonthIdx + i + 1)}" cy="${toY(v)}" r="3.5" fill="#fff" stroke="#0ea5e9" stroke-width="2"></circle>`).join("")}
             </svg>
         `;
 
@@ -852,6 +911,7 @@ export class Forecast {
                     data-facility="${f.id}"
                     data-chart="${chartId}"
                     data-color="${f.color}"
+                    data-forecast-rate="${datasets[f.id].growthPercent}"
                     aria-pressed="${f.id === "all" ? "true" : "false"}"
                     style="--btn-color:${f.color}">
                 ${f.label}
@@ -897,12 +957,13 @@ export class Forecast {
                             <span class="yoy-legend-facility-last-label">${lastYear}</span>
                         </span>
                         <span class="yoy-legend-item yoy-legend-future-ref">
-                            <span class="yoy-legend-dot-dash yoy-legend-future-dash"></span>
-                            Scheduled
+                            <span class="yoy-legend-dot-dash yoy-legend-future-dash" style="color:#0ea5e9"></span>
+                            <span class="yoy-legend-future-label">Projected (${datasets.all.growthPercent > 0 ? "+" : ""}${datasets.all.growthPercent}% vs LY YTD)</span>
                         </span>
                     </div>
                     ${svgChart}
                 </div>
+                <p class="yoy-forecast-note">Completed months show actual bookings. Upcoming months are projected from the same months last year, adjusted by this year's completed-month growth rate.</p>
 
                 <div class="insights-panel" style="margin-top:1rem;">
                     <h4 class="insights-title">
