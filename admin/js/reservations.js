@@ -1010,13 +1010,13 @@ window.openHistoryView = (id) => {
 
   const row = (label, value) => `
         <div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid #f1f5f9;">
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;text-transform:uppercase;">${escapeAdminText(label)}</span>
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;">${escapeAdminText(label)}</span>
             <span style="font-size:0.82rem;color:#1e293b;font-weight:500;flex:1;word-break:break-word;">${escapeAdminText(value)}</span>
         </div>`;
   const paymentRow = ["pending", "half_paid"].includes(r.paymentStatus)
     ? `
         <div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid #f1f5f9;">
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;text-transform:uppercase;">Payment</span>
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;">Payment</span>
             <span style="flex:1;"><span class="badge badge-half-paid">Half Paid</span></span>
         </div>`
     : row("Payment", r.paymentStatus || "—");

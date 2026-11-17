@@ -106,7 +106,17 @@ export class MyRequests {
             _editedByUser: true,
           }),
         });
-        if (!patchRes.ok) throw new Error("Patch failed");
+        const patchData = await patchRes.json().catch(() => ({}));
+        if (!patchRes.ok) {
+          const { showToast } = await import("./NotificationComponent.js");
+          showToast(
+            patchData.message ||
+              "Could not confirm this visit slot. Please try another option.",
+            "error",
+          );
+          if (patchRes.status === 409) await this.render();
+          return;
+        }
 
         // Notify user via email
         const allRes = await fetch("/api/requests");
@@ -572,9 +582,9 @@ export class MyRequests {
                     <span style="font-size: 0.62rem; color: #a16207;">${changedAt}</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; padding-bottom: 0.2rem; margin-bottom: 0.2rem;">
-                    <span style="font-size: 0.62rem; color: #a16207; font-weight: 700; text-transform: uppercase;">Field</span>
-                    <span style="font-size: 0.62rem; color: #a16207; font-weight: 700; text-transform: uppercase;">Before</span>
-                    <span style="font-size: 0.62rem; color: #a16207; font-weight: 700; text-transform: uppercase;">After</span>
+                    <span style="font-size: 0.62rem; color: #a16207; font-weight: 700;">Field</span>
+                    <span style="font-size: 0.62rem; color: #a16207; font-weight: 700;">Before</span>
+                    <span style="font-size: 0.62rem; color: #a16207; font-weight: 700;">After</span>
                 </div>
                 ${rows}
             </div>
@@ -626,9 +636,9 @@ export class MyRequests {
                     <span style="font-size: 0.62rem; color: #3b82f6;">${changedAt}</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; padding-bottom: 0.2rem; margin-bottom: 0.2rem;">
-                    <span style="font-size: 0.62rem; color: #3b82f6; font-weight: 700; text-transform: uppercase;">Field</span>
-                    <span style="font-size: 0.62rem; color: #3b82f6; font-weight: 700; text-transform: uppercase;">Before</span>
-                    <span style="font-size: 0.62rem; color: #3b82f6; font-weight: 700; text-transform: uppercase;">After</span>
+                    <span style="font-size: 0.62rem; color: #3b82f6; font-weight: 700;">Field</span>
+                    <span style="font-size: 0.62rem; color: #3b82f6; font-weight: 700;">Before</span>
+                    <span style="font-size: 0.62rem; color: #3b82f6; font-weight: 700;">After</span>
                 </div>
                 ${rows}
             </div>
@@ -909,7 +919,7 @@ export class MyRequests {
 
                     <!-- purpose -->
                     <div style="font-size:0.72rem;color:#475569;margin-bottom:0.5rem;">
-                        <span style="font-weight:600;color:#94a3b8;text-transform:uppercase;font-size:0.62rem;letter-spacing:0.06em;">Purpose</span><br>
+                        <span style="font-weight:600;color:#94a3b8;font-size:0.62rem;">Purpose</span><br>
                         <span>${req.purpose}</span>
                     </div>
 

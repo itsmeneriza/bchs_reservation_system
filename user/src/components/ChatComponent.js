@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Chat Component
  * AI-powered assistant using the Gemini API via /api/chat.
  * All BCHS-specific knowledge is handled server-side via a system prompt.

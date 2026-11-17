@@ -1965,6 +1965,8 @@
     color 0.15s,
     box-shadow 0.15s;
   line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .yoy-filter-btn:hover {

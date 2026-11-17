@@ -578,14 +578,14 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
             <span class="badge badge-secondary">${escapeAdminText(r.status.toUpperCase())}</span>
         </div>
         <div style="margin-top:12px;font-size:14px;color:#475569;padding:10px;background:white;border-radius:6px;border:1px dashed #cbd5e1;">
-            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#94a3b8;text-transform:uppercase;">Original Request Purpose:</strong>
+            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#94a3b8;">Original Request Purpose:</strong>
             "${escapeAdminText(r.purpose)}"
         </div>
         ${
           r.userEditReason
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">
-            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#1d4ed8;text-transform:uppercase;">User's Reason for Editing</strong>
+            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#1d4ed8;">User's Reason for Editing</strong>
             <span style="color:#1e40af;">${escapeAdminText(r.userEditReason)}</span>
         </div>`
             : ""
@@ -594,7 +594,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
           r.adminRevisionReason && mode !== "RESCHEDULE_OR_REJECT"
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;">
-            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#6d28d9;text-transform:uppercase;">Admin Revision Reason</strong>
+            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#6d28d9;">Admin Revision Reason</strong>
             <span style="color:#4c1d95;">${escapeAdminText(r.adminRevisionReason)}</span>
         </div>`
             : ""
@@ -603,7 +603,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
           r.rescheduleReason || r.rescheduleRequestedAt
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#fffbeb;border:1px solid #fef3c7;border-radius:6px;">
-            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#92400e;text-transform:uppercase;">User Requested Reschedule</strong>
+            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#92400e;">User Requested Reschedule</strong>
             <div style="color:#92400e;font-weight:700;margin-bottom:6px;">${escapeAdminText(r.rescheduledDate ? formatDateSimple(r.rescheduledDate) : "Date not specified")} ${r.rescheduledStartTime ? escapeAdminText(" · " + convertTo12Hour(r.rescheduledStartTime) + "–" + convertTo12Hour(r.rescheduledEndTime)) : ""}</div>
             <div style="color:#7c2d12;">Reason: ${escapeAdminText(r.rescheduleReason || "No reason provided")}</div>
         </div>`
@@ -613,7 +613,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
           r.adminRescheduleNote
             ? `
         <div style="margin-top:10px;font-size:13px;padding:10px 12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;">
-            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#475569;text-transform:uppercase;">Admin Note (shared with requester)</strong>
+            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#475569;">Admin Note (shared with requester)</strong>
             <span style="color:#334155;">${escapeAdminText(r.adminRescheduleNote)}</span>
         </div>`
             : ""

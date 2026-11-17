@@ -41,7 +41,7 @@ function renderPayments() {
   if (!body) return;
 
   const approved = requests.filter(
-    (r) => r.status === "approved" && !r.isSchoolEvent,
+    (r) => ["approved", "accepted"].includes(r.status) && !r.isSchoolEvent,
   );
 
   // ── Collect payment totals ────────────────────────────────────────────────
