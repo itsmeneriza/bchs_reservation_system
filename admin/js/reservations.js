@@ -417,7 +417,7 @@ async function saveManualReservation() {
     purpose,
     utilities: utilities.length ? utilities : [],
     attendees,
-    status: "approved",
+    status: "pending",
     paymentStatus: isStaff ? "paid" : "unpaid",
     totalAmount,
     submittedAt: new Date().toISOString(),
@@ -656,14 +656,8 @@ function renderApproved() {
           const rowStyle = needsReschedule
             ? ' style="background:#fff7ed;"'
             : "";
-          const actionMode = needsReschedule
-            ? "RESCHEDULE_OR_REJECT"
-            : "VIEW_ONLY";
-          const actionLabel = hasAlternateSchedules
-            ? "Edit Alternate Schedules"
-            : needsReschedule
-              ? "Review Event Rescheduling"
-              : "View";
+          const actionMode = "VIEW_ONLY";
+          const actionLabel = "View";
           const safeId = escapeAdminJsArgument(req.id);
           const badgeCell = needsReschedule
             ? `<td><span style="font-size:11px;font-weight:700;background:#fff7ed;color:#92400e;padding:2px 8px;border-radius:999px;">${hasAlternateSchedules ? "Awaiting Requester Selection" : "Needs Reschedule"}</span>
