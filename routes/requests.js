@@ -990,22 +990,44 @@ export function createRequestsRouter() {
           message: "Choose a valid reservation date.",
         });
       }
-      const conflict = await findReservationConflict(
-        client,
-        {
-          date: payload.date || existing.date,
-          start_time: payload.start_time || existing.start_time,
-          end_time: payload.end_time || existing.end_time,
-          facility_id: payload.facility_id ?? existing.facility_id,
-          status: payload.status || existing.status,
-        },
-        req.params.id,
-      );
-      if (conflict) {
-        return res.status(409).json({
-          success: false,
-          message: "That facility and time are already reserved. Choose another time.",
-        });
+
+      const scheduleChanged =
+        (Object.hasOwn(payload, "date") && payload.date !== existing.date) ||
+        (Object.hasOwn(payload, "start_time") &&
+          payload.start_time !== existing.start_time) ||
+        (Object.hasOwn(payload, "end_time") &&
+          payload.end_time !== existing.end_time) ||
+        (Object.hasOwn(payload, "facility_id") &&
+          payload.facility_id !== existing.facility_id);
+      const statusChanged =
+        Object.hasOwn(payload, "status") && payload.status !== existing.status;
+
+      if (scheduleChanged || statusChanged) {
+        const conflict = await findReservationConflict(
+          client,
+          {
+            date: Object.hasOwn(payload, "date") ? payload.date : existing.date,
+            start_time: Object.hasOwn(payload, "start_time")
+              ? payload.start_time
+              : existing.start_time,
+            end_time: Object.hasOwn(payload, "end_time")
+              ? payload.end_time
+              : existing.end_time,
+            facility_id: Object.hasOwn(payload, "facility_id")
+              ? payload.facility_id
+              : existing.facility_id,
+            status: Object.hasOwn(payload, "status")
+              ? payload.status
+              : existing.status,
+          },
+          req.params.id,
+        );
+        if (conflict) {
+          return res.status(409).json({
+            success: false,
+            message: "That facility and time are already reserved. Choose another time.",
+          });
+        }
       }
       if (
         requiresCancellationOtp &&

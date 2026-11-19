@@ -34,6 +34,7 @@ function renderAll() {
 
 function needsRescheduleReview(request) {
   return !!(
+    request.blockReschedulePending ||
     request.rescheduleRequestedAt ||
     request.rescheduleReason ||
     request.rescheduledDate ||
@@ -46,7 +47,8 @@ function getReschedulingRequests() {
   return requests
     .filter(
       (request) =>
-        ["approved", "accepted"].includes(request.status) &&
+        (["approved", "accepted"].includes(request.status) ||
+          (request.status === "pending" && request.blockReschedulePending)) &&
         !request.isSchoolEvent &&
         !request.isFullDayBlock &&
         needsRescheduleReview(request),
@@ -453,6 +455,7 @@ function renderQueue() {
   const pending = requests.filter(
     (r) =>
       r.status === "pending" &&
+      r.blockReschedulePending !== true &&
       (!r.appointmentDate || r.appointmentDate.trim() === ""),
   );
   document.getElementById("pendingCount").textContent =
@@ -536,7 +539,8 @@ function renderConfirmed() {
         r.appointmentTime &&
         r.appointmentTime.trim() !== "") ||
         (Array.isArray(r.visitOptions) && r.visitOptions.length > 0)) &&
-      !["approved", "rejected", "refused", "cancelled"].includes(r.status),
+      !["approved", "rejected", "refused", "cancelled"].includes(r.status) &&
+      r.blockReschedulePending !== true,
   );
   document.getElementById("confirmedCount").textContent =
     `${confirmed.length} confirmed`;
@@ -634,6 +638,7 @@ function renderApproved() {
     .filter(
       (r) =>
         ["approved", "accepted"].includes(r.status) &&
+        r.blockReschedulePending !== true &&
         !r.isSchoolEvent &&
         !r.isFullDayBlock,
     )
@@ -688,11 +693,17 @@ function renderReschedulingRequests() {
   const reschedulingRequests = getReschedulingRequests();
   document.getElementById("reschedulingCount").textContent =
     `${reschedulingRequests.length} requests`;
+  const hasBlockReschedules = reschedulingRequests.some(
+    (request) => request.blockReschedulePending === true,
+  );
+  const tabTrigger = document.getElementById("reschedulingTabTrigger");
+  tabTrigger?.classList.toggle("has-block-reschedules", hasBlockReschedules);
   const badge = document.getElementById("rescheduling-badge");
   if (badge) {
     badge.textContent = reschedulingRequests.length;
     badge.style.display =
       reschedulingRequests.length > 0 ? "inline-flex" : "none";
+    badge.classList.toggle("is-block-reschedule", hasBlockReschedules);
   }
 
   body.innerHTML = reschedulingRequests.length
@@ -700,17 +711,19 @@ function renderReschedulingRequests() {
         .map((request) => {
           const safeId = escapeAdminJsArgument(request.id);
           const requestedSchedule =
-            `${request.rescheduledDate ? formatDateSimple(request.rescheduledDate) : "Date not specified"}${request.rescheduledStartTime ? ` · ${escapeAdminText(convertTo12Hour(request.rescheduledStartTime))}–${escapeAdminText(convertTo12Hour(request.rescheduledEndTime))}` : ""}`;
+            `${request.rescheduledDate ? formatDateSimple(request.rescheduledDate) : request.blockReschedulePending ? "Choose a new schedule" : "Date not specified"}${request.rescheduledStartTime ? ` · ${escapeAdminText(convertTo12Hour(request.rescheduledStartTime))}–${escapeAdminText(convertTo12Hour(request.rescheduledEndTime))}` : ""}`;
           const canAcceptRequestedSchedule =
             request.rescheduledDate &&
             request.rescheduledStartTime &&
             request.rescheduledEndTime;
-          return `<tr style="background:#fff7ed;">
-            <td><strong>${escapeAdminText(request.name)}</strong></td>
+          const isBlockReschedule = request.blockReschedulePending === true;
+          const reason = request.blockRescheduleReason || request.rescheduleReason || "No reason provided";
+          return `<tr${isBlockReschedule ? ' style="background:#fff7ed;border-left:4px solid #f97316;"' : ""}>
+            <td><strong>${escapeAdminText(request.name)}</strong>${isBlockReschedule ? '<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;background:#ffedd5;color:#c2410c;font-size:10px;font-weight:700;">BLOCKED</span>' : ""}</td>
             <td><span class="badge badge-secondary">${escapeAdminText(getFacilityName(request.facilityId))}</span></td>
             <td>${formatDateSimple(request.date)} · ${escapeAdminText(convertTo12Hour(request.startTime))}–${escapeAdminText(convertTo12Hour(request.endTime))}</td>
             <td>${requestedSchedule}</td>
-            <td>${escapeAdminText(request.rescheduleReason || "No reason provided")}</td>
+            <td${isBlockReschedule ? ' style="color:#c2410c;font-weight:700;"' : ""}>${escapeAdminText(reason)}</td>
             <td><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
               ${canAcceptRequestedSchedule ? `<button class="btn btn-primary btn-sm" onclick="acceptRescheduleSchedule(${safeId})">Accept Reschedule</button>` : ""}
               <button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},'RESCHEDULE_OR_REJECT')">Review Request</button>
@@ -718,7 +731,7 @@ function renderReschedulingRequests() {
           </tr>`;
         })
         .join("")
-    : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">No event rescheduling requests</td></tr>';
+    : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">No rescheduling requests</td></tr>';
 }
 
 // ─── Render Upcoming ──────────────────────────────────────────────────────────
@@ -734,7 +747,9 @@ function renderUpcoming() {
   const up = requests
     .filter((r) => {
       const isUp =
-        (r.status === "approved" || r.status === "blocked") && r.date >= today;
+        (r.status === "blocked" ||
+          (r.status === "approved" && r.blockReschedulePending !== true)) &&
+        r.date >= today;
       const matchesFacility =
         facilityFilter === "all" || r.facilityId === facilityFilter;
       const matchSearch =

@@ -518,7 +518,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     PAYMENT_ONLY: "Request Details",
     CONFIRMED_EDIT: "Edit Reservation Details",
     CONFIRMED_MANAGE: "Manage Confirmed Appointment",
-    RESCHEDULE_OR_REJECT: "Review Event Rescheduling Request",
+    RESCHEDULE_OR_REJECT: "Review Event Rescheduling",
     QUEUE_REVIEW: "Review Reservation Request",
   };
   document.getElementById("editModalTitle").textContent =

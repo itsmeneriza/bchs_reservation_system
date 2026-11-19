@@ -17,6 +17,7 @@ window.addEventListener("bchs:admin-authenticated", async () => {
   setupCalendarControls();
 
   await loadData();
+  await reconcileExistingFacilityBlocks();
   adminRefreshTimer = setInterval(loadData, 30000);
 });
 

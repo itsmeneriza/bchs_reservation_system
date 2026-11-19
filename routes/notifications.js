@@ -332,7 +332,7 @@ export function createNotificationRouter() {
     }
   });
 
-  // --- Block Cancellation Notification (existing) ------------------------------
+  // --- Facility Block Rescheduling Notification -------------------------------
 
   router.post("/api/notify-cancellation", requireAdmin, async (req, res) => {
     const { email, name, facilityName, date, startTime, endTime, reason } =
@@ -348,11 +348,11 @@ export function createNotificationRouter() {
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: email,
-      subject: `Reservation Cancelled: ${facilityName} on ${formatDateOnly(date) || date}`,
+      subject: `Reservation Needs Rescheduling: ${facilityName} on ${formatDateOnly(date) || date}`,
       html: buildEmailHtml(
-        "?? Reservation Cancelled by Administration",
+        "Reservation Needs Rescheduling",
         `<p>Dear <strong>${name}</strong>,</p>
-         <p>We regret to inform you that your reservation has been <strong>cancelled</strong> due to a facility block applied by the administration.</p>
+         <p>Your reservation needs to be rescheduled because administration blocked the facility for this date and time.</p>
          ${buildDetailTable([
            { label: "Facility", value: facilityName },
            { label: "Date", value: formatDateOnly(date) || date },
@@ -360,19 +360,19 @@ export function createNotificationRouter() {
            { label: "Reason", value: reason, highlight: true },
          ])}
          <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:6px;padding:12px 16px;margin:16px 0;font-size:13px;color:#92400e;">
-           <strong>Next Steps:</strong> Please contact the Administration Office to reschedule your reservation at an available date.
+           <strong>Next Steps:</strong> Please review your reservation for alternate schedules or contact the Administration Office for assistance.
          </div>`,
-        { titleColor: "#991b1b" },
+        { titleColor: "#92400e" },
       ),
     };
 
     try {
       await transporter.sendMail(mailOptions);
-      console.log(`? Cancellation notice sent to ${email}`);
+      console.log(`Facility block rescheduling notice sent to ${email}`);
       res.status(200).json({ success: true });
     } catch (err) {
       console.error(
-        `? Failed to send cancellation notice to ${email}:`,
+        `Failed to send facility block rescheduling notice to ${email}:`,
         err.message,
       );
       res.status(500).json({ success: false, message: err.message });

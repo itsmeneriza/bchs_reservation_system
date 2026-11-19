@@ -1,4 +1,5 @@
 const SESSION_KEY = "bchs_admin_auth_session";
+const ADMIN_SESSION_DURATION = 60 * 60;
 const loginForm = document.getElementById("adminLoginForm");
 const loginScreen = document.getElementById("adminLoginScreen");
 const adminApp = document.getElementById("adminApp");
@@ -8,16 +9,34 @@ const submitButton = loginForm.querySelector('button[type="submit"]');
 let supabaseConfigPromise;
 let currentSession = readStoredSession();
 let refreshTimer;
+let sessionExpiryTimer;
 
 function readStoredSession() {
   try {
-    const value = sessionStorage.getItem(SESSION_KEY);
-    return value ? JSON.parse(value) : null;
+    const value =
+      localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+    if (!value) return null;
+
+    const session = JSON.parse(value);
+    if (!session.admin_session_expires_at) {
+      session.admin_session_expires_at = Math.min(
+        session.expires_at || 0,
+        Math.floor(Date.now() / 1000) + ADMIN_SESSION_DURATION,
+      );
+    }
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    sessionStorage.removeItem(SESSION_KEY);
+    return session;
   } catch (error) {
     console.error("Could not read the saved admin session:", error);
+    localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_KEY);
     return null;
   }
+}
+
+function isNetworkError(error) {
+  return error instanceof TypeError || navigator.onLine === false;
 }
 
 async function getSupabaseConfig() {
@@ -75,14 +94,22 @@ async function verifyAdminSession(accessToken) {
 
 function saveSession(session) {
   currentSession = session;
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  sessionStorage.removeItem(SESSION_KEY);
+  window.clearTimeout(sessionExpiryTimer);
+  sessionExpiryTimer = window.setTimeout(() => {
+    clearSession();
+    showLogin("Your sign-in expired. Please sign in again.");
+  }, Math.max(1000, session.admin_session_expires_at * 1000 - Date.now()));
   scheduleRefresh();
 }
 
 function clearSession() {
   currentSession = null;
+  localStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(SESSION_KEY);
   window.clearTimeout(refreshTimer);
+  window.clearTimeout(sessionExpiryTimer);
 }
 
 function showLogin(message = "") {
@@ -102,7 +129,10 @@ function showAdmin() {
 }
 
 async function refreshSession() {
-  if (!currentSession?.refresh_token) {
+  if (
+    !currentSession?.refresh_token ||
+    currentSession.admin_session_expires_at * 1000 <= Date.now()
+  ) {
     clearSession();
     showLogin("Your sign-in expired. Please sign in again.");
     return false;
@@ -116,10 +146,12 @@ async function refreshSession() {
       access_token: refreshed.access_token,
       refresh_token: refreshed.refresh_token,
       expires_at: Math.floor(Date.now() / 1000) + refreshed.expires_in,
+      admin_session_expires_at: currentSession.admin_session_expires_at,
     });
     return true;
   } catch (error) {
     console.error("Could not refresh the admin session:", error);
+    if (isNetworkError(error)) return false;
     clearSession();
     showLogin("Your sign-in expired. Please sign in again.");
     return false;
@@ -129,10 +161,10 @@ async function refreshSession() {
 function scheduleRefresh() {
   window.clearTimeout(refreshTimer);
   if (!currentSession?.expires_at) return;
-  const refreshIn = Math.max(
-    1000,
+  const refreshIn = Math.max(1000, Math.min(
     currentSession.expires_at * 1000 - Date.now() - 60_000,
-  );
+    currentSession.admin_session_expires_at * 1000 - Date.now(),
+  ));
   refreshTimer = window.setTimeout(refreshSession, refreshIn);
 }
 
@@ -140,9 +172,14 @@ async function getValidAccessToken() {
   if (!currentSession?.access_token) {
     throw new Error("Please sign in as an administrator.");
   }
+  if (currentSession.admin_session_expires_at * 1000 <= Date.now()) {
+    clearSession();
+    showLogin("Your sign-in expired. Please sign in again.");
+    throw new Error("Your sign-in expired. Please sign in again.");
+  }
   if (currentSession.expires_at * 1000 - Date.now() < 60_000) {
     if (!(await refreshSession())) {
-      throw new Error("Your sign-in expired. Please sign in again.");
+      throw new Error("Could not refresh your sign-in. Check your connection and try again.");
     }
   }
   return currentSession.access_token;
@@ -196,6 +233,8 @@ loginForm.addEventListener("submit", async (event) => {
       access_token: signedIn.access_token,
       refresh_token: signedIn.refresh_token,
       expires_at: Math.floor(Date.now() / 1000) + signedIn.expires_in,
+      admin_session_expires_at:
+        Math.floor(Date.now() / 1000) + ADMIN_SESSION_DURATION,
     });
 
     await verifyAdminSession(signedIn.access_token);
@@ -231,14 +270,27 @@ async function restoreAdminSession() {
     return;
   }
 
+  if (currentSession.admin_session_expires_at * 1000 <= Date.now()) {
+    clearSession();
+    showLogin("Your sign-in expired. Please sign in again.");
+    return;
+  }
+
   try {
     if (currentSession.expires_at * 1000 - Date.now() < 60_000) {
-      if (!(await refreshSession())) return;
+      if (!(await refreshSession())) {
+        if (currentSession) showAdmin();
+        return;
+      }
     }
     await verifyAdminSession(currentSession.access_token);
     showAdmin();
   } catch (error) {
     console.error("Could not restore the admin session:", error);
+    if (isNetworkError(error) && currentSession) {
+      showAdmin();
+      return;
+    }
     clearSession();
     showLogin(
       error.status === 503
@@ -247,5 +299,9 @@ async function restoreAdminSession() {
     );
   }
 }
+
+window.addEventListener("online", () => {
+  if (currentSession) void restoreAdminSession();
+});
 
 void restoreAdminSession();

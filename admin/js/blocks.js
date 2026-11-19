@@ -14,11 +14,20 @@ async function requestBlockApi(url, options, fallbackMessage) {
   return result;
 }
 
+function formatBlockRescheduleReason(reason) {
+  const detail = String(reason || "facility unavailable").replace(
+    /^BLOCKED:\s*/i,
+    "",
+  );
+  return `BLOCKED: ${detail}`;
+}
+
 // ─── Open Block Modal ─────────────────────────────────────────────────────────
 
 async function openQuickBlock(dateStr) {
-  document.getElementById("quickBlockDateLabel").textContent =
-    formatDateSimple(dateStr);
+  const dateLabel = document.getElementById("quickBlockDateLabel");
+  dateLabel.textContent = formatDateSimple(dateStr);
+  dateLabel.dataset.isoDate = dateStr;
   document.getElementById("quickBlockReason").value = "";
 
   const startSel = document.getElementById("quickBlockStartTime");
@@ -119,14 +128,161 @@ window.openEditBlockModal = async (blockId, dateStr) => {
   );
 };
 
+async function rescheduleBlockConflicts(blocks) {
+  const rescheduledRequests = [];
+  const updateFailures = [];
+  const notificationFailures = [];
+  const processedConflictIds = new Set();
+
+  for (const block of blocks) {
+    const reason = formatBlockRescheduleReason(
+      String(block.purpose || "").replace("ADMIN MANUAL BLOCK: ", ""),
+    );
+    const conflicts = requests.filter((r) => {
+      if (!["approved", "accepted", "pending"].includes(r.status)) return false;
+      if (r.blockReschedulePending === true || r.isSchoolEvent) return false;
+      if (r.date !== block.date) return false;
+      const isGlobal = block.facilityId === "global";
+      if (!isGlobal && r.facilityId !== block.facilityId) return false;
+      if (block.isFullDayBlock) return true;
+      return r.startTime < block.endTime && r.endTime > block.startTime;
+    });
+
+    for (const conflict of conflicts) {
+      if (processedConflictIds.has(conflict.id)) continue;
+      processedConflictIds.add(conflict.id);
+
+      try {
+        await requestBlockApi(
+          `/api/requests/${conflict.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              blockReschedulePending: true,
+              blockRescheduleReason: formatBlockRescheduleReason(reason),
+            }),
+          },
+          `Could not update conflicting reservation ${conflict.id}.`,
+        );
+      } catch (error) {
+        updateFailures.push(error.message);
+        continue;
+      }
+
+      conflict.blockReschedulePending = true;
+      conflict.blockRescheduleReason = formatBlockRescheduleReason(reason);
+
+      if (conflict.email) {
+        try {
+          await requestBlockApi(
+            "/api/notify-cancellation",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: conflict.email,
+                name: conflict.name,
+                facilityName: conflict.facilityName,
+                date: conflict.date,
+                startTime: conflict.startTime,
+                endTime: conflict.endTime,
+                reason: conflict.blockRescheduleReason,
+              }),
+            },
+            `Could not notify ${conflict.email}.`,
+          );
+        } catch (error) {
+          notificationFailures.push(error.message);
+        }
+      }
+      rescheduledRequests.push(conflict);
+    }
+  }
+
+  return { rescheduledRequests, updateFailures, notificationFailures };
+}
+
+async function reconcileExistingFacilityBlocks() {
+  const reasonUpdateFailures = [];
+  let normalizedReasonCount = 0;
+  for (const request of requests) {
+    if (
+      request.blockReschedulePending !== true ||
+      !request.blockRescheduleReason ||
+      /^BLOCKED:\s*/i.test(request.blockRescheduleReason)
+    ) {
+      continue;
+    }
+
+    const reason = formatBlockRescheduleReason(request.blockRescheduleReason);
+    try {
+      await requestBlockApi(
+        `/api/requests/${request.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ blockRescheduleReason: reason }),
+        },
+        `Could not update the block reason for reservation ${request.id}.`,
+      );
+      request.blockRescheduleReason = reason;
+      normalizedReasonCount++;
+    } catch (error) {
+      reasonUpdateFailures.push(error.message);
+    }
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const existingBlocks = requests.filter(
+    (request) =>
+      request.status === "blocked" &&
+      request.source === "walk_in" &&
+      request.purpose?.startsWith("ADMIN MANUAL BLOCK: ") &&
+      request.date >= today,
+  );
+  const result = await rescheduleBlockConflicts(existingBlocks);
+  const { rescheduledRequests, updateFailures, notificationFailures } = result;
+  const pendingBlockReschedules = requests.some(
+    (request) => request.blockReschedulePending === true,
+  );
+
+  if (rescheduledRequests.length > 0 || normalizedReasonCount > 0) {
+    renderAll();
+  }
+  if (rescheduledRequests.length > 0 || pendingBlockReschedules) {
+    window.activateTab("rescheduling");
+  }
+
+  const failures = [
+    ...reasonUpdateFailures,
+    ...updateFailures,
+    ...notificationFailures,
+  ];
+  if (rescheduledRequests.length > 0 || failures.length > 0) {
+    showToast(
+      `${rescheduledRequests.length} existing block conflict(s) moved to Rescheduling Requests. ${failures.join(" ")}`,
+      failures.length > 0 ? "error" : "success",
+    );
+  }
+}
+
 // ─── Confirm Block ────────────────────────────────────────────────────────────
 
 async function confirmQuickBlock() {
-  const dateStr = document.getElementById("quickBlockDateLabel").textContent;
+  const dateStr = document.getElementById("quickBlockDateLabel").dataset.isoDate;
   const reason = document.getElementById("quickBlockReason").value.trim();
 
+  if (!dateStr) {
+    showToast(
+      "Could not determine the date to block. Please reopen the block dialog.",
+      "error",
+    );
+    return;
+  }
+
   if (!reason) {
-    alert("Please provide a reason for the facility cancellation.");
+    alert("Please provide a reason for blocking the facility.");
     return;
   }
 
@@ -194,79 +350,14 @@ async function confirmQuickBlock() {
     return;
   }
 
-  // Move conflicting reservations to Confirmed tab for rescheduling
-  const rescheduledRequests = [];
-  const updateFailures = [];
-  const notificationFailures = [];
-  for (const block of createdBlocks) {
-    const conflicts = requests.filter((r) => {
-      if (r.status !== "approved" && r.status !== "pending") return false;
-      if (r.date !== block.date) return false;
-      const isGlobal = block.facilityId === "global";
-      if (!isGlobal && r.facilityId !== block.facilityId) return false;
-      return r.startTime < block.endTime && r.endTime > block.startTime;
-    });
-
-    for (const conflict of conflicts) {
-      // Set appointmentDate to today with a past time so getConfirmedEditMode → RESCHEDULE_OR_REJECT
-      const now = new Date();
-      const todayStr = now.toISOString().split("T")[0];
-      const pastHour = now.getHours() - 2;
-      const pastTime = `${String(Math.max(0, pastHour)).padStart(2, "0")}:00`;
-
-      try {
-        await requestBlockApi(
-          `/api/requests/${conflict.id}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              status: "pending",
-              appointmentDate: todayStr,
-              appointmentTime: pastTime,
-              blockReschedulePending: true,
-              blockRescheduleReason: reason,
-            }),
-          },
-          `Could not update conflicting reservation ${conflict.id}.`,
-        );
-      } catch (error) {
-        updateFailures.push(error.message);
-        continue;
-      }
-
-      if (conflict.email) {
-        try {
-          await requestBlockApi(
-            "/api/notify-cancellation",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: conflict.email,
-                name: conflict.name,
-                facilityName: conflict.facilityName,
-                date: conflict.date,
-                startTime: conflict.startTime,
-                endTime: conflict.endTime,
-                reason,
-              }),
-            },
-            `Could not notify ${conflict.email}.`,
-          );
-        } catch (error) {
-          notificationFailures.push(error.message);
-        }
-      }
-      rescheduledRequests.push(conflict);
-    }
-  }
+  const { rescheduledRequests, updateFailures, notificationFailures } =
+    await rescheduleBlockConflicts(createdBlocks);
 
   const summary = [
     blockCreationFailure
       ? `${createdBlocks.length} of ${newBlocks.length} facility block(s) saved. ${blockCreationFailure.message}`
       : "Facilities blocked successfully.",
-    `${rescheduledRequests.length} conflicting reservation(s) moved to Confirmed for rescheduling.`,
+    `${rescheduledRequests.length} conflicting reservation(s) moved to Rescheduling Requests.`,
     ...updateFailures,
     ...notificationFailures,
   ].join(" ");
@@ -280,7 +371,7 @@ async function confirmQuickBlock() {
   );
 
   if (rescheduledRequests.length > 0) {
-    window.activateTab("confirmed");
+    window.activateTab("rescheduling");
   }
 }
 

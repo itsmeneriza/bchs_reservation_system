@@ -105,8 +105,8 @@
           <button class="tab-trigger" data-tab="payments">
             Payment Status
           </button>
-          <button class="tab-trigger" data-tab="rescheduling">
-            Rescheduling Request
+          <button class="tab-trigger" data-tab="rescheduling" id="reschedulingTabTrigger">
+            Reschedule
             <span
               class="tab-badge"
               id="rescheduling-badge"
@@ -493,11 +493,11 @@
           </div>
         </div>
 
-        <!-- Event Rescheduling Requests Tab Content -->
+        <!-- Rescheduling Requests Tab Content -->
         <div id="rescheduling-tab" class="tab-content">
           <div class="card">
             <div class="card-header">
-              <h2>Event Rescheduling Requests</h2>
+              <h2>Rescheduling Requests</h2>
               <span class="badge badge-secondary" id="reschedulingCount"
                 >0 requests</span
               >
@@ -509,7 +509,7 @@
                     <th>Name</th>
                     <th>Facility</th>
                     <th>Current Event Date</th>
-                    <th>Rescheduling Request</th>
+                    <th>Reschedule</th>
                     <th>Reason</th>
                     <th></th>
                   </tr>

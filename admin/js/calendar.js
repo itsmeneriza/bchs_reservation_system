@@ -20,7 +20,9 @@ function renderCalendar() {
   const first = new Date(year, month, 1).getDay();
   const days = new Date(year, month + 1, 0).getDate();
   const active = requests.filter(
-    (r) => r.status === "approved" || r.status === "blocked",
+    (r) =>
+      r.status === "blocked" ||
+      (r.status === "approved" && r.blockReschedulePending !== true),
   );
 
   const currentFacilityFilter = document.getElementById("facilityFilter").value;
@@ -106,7 +108,11 @@ async function handleDayToggle(dateStr) {
     (r) => r.status === "blocked" && r.isFullDayBlock && r.date === dateStr,
   );
   const dayReservations = requests.filter(
-    (r) => r.status === "approved" && !r.isSchoolEvent && r.date === dateStr,
+    (r) =>
+      r.status === "approved" &&
+      r.blockReschedulePending !== true &&
+      !r.isSchoolEvent &&
+      r.date === dateStr,
   );
   const existing = [...dayEvents, ...dayBlocks, ...dayReservations];
 
