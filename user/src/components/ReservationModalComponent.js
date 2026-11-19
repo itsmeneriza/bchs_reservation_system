@@ -286,6 +286,12 @@ export class ReservationModal {
         if (state.user.isStaff) {
           if (state.user.name) this.inputs.name.value = state.user.name;
           if (state.user.email) this.inputs.email.value = state.user.email;
+          [this.inputs.name, this.inputs.email].forEach((input) => {
+            input.readOnly = true;
+            input.style.background = "#f1f5f9";
+            input.style.color = "#64748b";
+            input.style.cursor = "not-allowed";
+          });
         }
       }
       this.updateAvailableTimes();
@@ -293,6 +299,19 @@ export class ReservationModal {
         this.inputs.startTime.value = prefill.startTime || "";
         this.inputs.endTime.value = prefill.endTime || "";
       }
+    }
+
+    if (state.user?.isStaff) {
+      const contactLabel = document.getElementById("req-contact-label");
+      const staffId = state.user.staff_id || state.user.staffId || "";
+      if (contactLabel) contactLabel.textContent = "Staff ID Number *";
+      this.inputs.contact.type = "text";
+      this.inputs.contact.placeholder = "Enter your staff ID";
+      this.inputs.contact.value = staffId;
+      this.inputs.contact.readOnly = true;
+      this.inputs.contact.style.background = "#f1f5f9";
+      this.inputs.contact.style.color = "#64748b";
+      this.inputs.contact.style.cursor = "not-allowed";
     }
 
     if (options.utilitiesOnly) {
@@ -627,6 +646,10 @@ export class ReservationModal {
     // Hide date picker (only shown in edit mode)
     const dateGroup = document.getElementById("req-date-group");
     if (dateGroup) dateGroup.style.display = "none";
+    const contactLabel = document.getElementById("req-contact-label");
+    if (contactLabel) contactLabel.textContent = "Contact Number *";
+    this.inputs.contact.type = "tel";
+    this.inputs.contact.placeholder = "e.g., 09123456789";
     // Unlock identity fields
     ["req-name", "req-email", "req-contact"].forEach((id) => {
       const el = document.getElementById(id);
