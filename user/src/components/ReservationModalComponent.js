@@ -153,11 +153,13 @@ export class ReservationModal {
         selectedDateStr,
       );
       const isBlocked = dayreservations.some(
-        (b) => b.status === "blocked" && b.isFullDayBlock,
+        (b) =>
+          b.isSchoolEvent === true ||
+          (b.status === "blocked" && b.isFullDayBlock),
       );
       if (isBlocked) {
         showToast(
-          "This facility is unavailable on the selected date.",
+          "This date is unavailable for reservations.",
           "error",
         );
         return;

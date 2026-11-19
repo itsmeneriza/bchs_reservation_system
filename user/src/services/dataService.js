@@ -86,15 +86,15 @@ export class DataService {
       const data = await eventsRes.json();
       eventReservations = (data.events || []).map((ev) => {
         const [start, end] = this._parseEventTime(ev.time);
-        const facilityId = ev.facilityId || ev.location.toLowerCase();
         return {
           id: "evt_" + ev.id,
-          facilityId,
+          facilityId: "global",
           facilityName: ev.location,
           name: ev.title,
           contact: "School Event",
           email: "admin@bchs.edu",
           date: ev.date,
+          endDate: ev.endDate || ev.date,
           startTime: start,
           endTime: end,
           purpose: ev.description || ev.title,

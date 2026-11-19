@@ -408,6 +408,16 @@ async function findReservationConflict(client, candidate, excludeCode = null) {
   if (!ACTIVE_RESERVATION_STATUSES.includes(candidate.status)) return null;
   if (candidate.status === "blocked") return null;
 
+  const { data: events, error: eventError } = await client
+    .from("events")
+    .select("id,title")
+    .lte("start_date", candidate.date)
+    .gte("end_date", candidate.date);
+  if (eventError) throw eventError;
+
+  const schoolEvent = (events || [])[0];
+  if (schoolEvent) return { ...schoolEvent, isSchoolEvent: true };
+
   let query = client
     .from("reservations")
     .select("reservation_code,facility_id,start_time,end_time")
@@ -432,22 +442,7 @@ async function findReservationConflict(client, candidate, excludeCode = null) {
     return sameFacility && rowStart < end && rowEnd > start;
   }) || null;
   if (reservationConflict) return reservationConflict;
-
-  const { data: events, error: eventError } = await client
-    .from("events")
-    .select("id,facility_id,start_date,end_date,start_time,end_time")
-    .lte("start_date", candidate.date)
-    .gte("end_date", candidate.date);
-  if (eventError) throw eventError;
-
-  return (events || []).find((event) => {
-    const sameFacility =
-      candidate.facility_id === null ||
-      event.facility_id === candidate.facility_id;
-    const eventStart = timeToMinutes(event.start_time);
-    const eventEnd = timeToMinutes(event.end_time);
-    return sameFacility && eventStart < end && eventEnd > start;
-  }) || null;
+  return null;
 }
 
 function getRequestOwnerMatches(actor) {
@@ -681,7 +676,9 @@ export function createRequestsRouter() {
       if (conflict) {
         return res.status(409).json({
           success: false,
-          message: "That facility and time are already reserved. Choose another time.",
+          message: conflict.isSchoolEvent
+            ? "A school event makes this date unavailable for reservations."
+            : "That facility and time are already reserved. Choose another time.",
         });
       }
       if (payload.source !== "walk_in") {
@@ -982,7 +979,9 @@ export function createRequestsRouter() {
         if (conflict) {
           return res.status(409).json({
             success: false,
-            message: "That alternate schedule is no longer available. Please contact the administration office.",
+            message: conflict.isSchoolEvent
+              ? "A school event makes this date unavailable for reservations."
+              : "That alternate schedule is no longer available. Please contact the administration office.",
           });
         }
 
@@ -1068,7 +1067,9 @@ export function createRequestsRouter() {
         if (conflict) {
           return res.status(409).json({
             success: false,
-            message: "That facility and time are already reserved. Choose another time.",
+            message: conflict.isSchoolEvent
+              ? "A school event makes this date unavailable for reservations."
+              : "That facility and time are already reserved. Choose another time.",
           });
         }
       }

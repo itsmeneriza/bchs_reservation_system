@@ -37,6 +37,8 @@ html {
   --calendar-busy-bg: #f8d7de;
   --calendar-full-bg: #800020;
   --calendar-pending-bg: #fef3c7;
+  --calendar-unavailable-bg: #4b5563;
+  --calendar-past-bg: #e5e7eb;
 
   /* Chat Identity */
   --chat-user-msg: var(--primary-color);

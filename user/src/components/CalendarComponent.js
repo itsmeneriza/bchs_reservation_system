@@ -99,18 +99,19 @@ export class Calendar {
     const dayOfWeek = date.getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const isPast = date < today;
+    const isGroundsWeekend =
+      state.selectedFacility.id === "grounds" && isWeekend;
+    const isUnavailable =
+      isAdminBlocked || hasSchoolEvent || isGroundsWeekend;
 
-    // Hard disabled states: Past dates or Grounds on weekends
-    const isDisabled =
-      isPast || (state.selectedFacility.id === "grounds" && isWeekend);
+    // Disabled dates: past days, unavailable dates, and Grounds weekends
+    const isDisabled = isPast || isUnavailable;
 
     let bgColor = "transparent";
-    if (isAdminBlocked) {
-      bgColor = "#4b5563"; // Admin Blocked Dark Gray
-    } else if (isDisabled) {
-      bgColor = isPast && !isWeekend ? "#e5e7eb" : "#4b5563";
-    } else if (hasSchoolEvent) {
-      bgColor = "#4b5563";
+    if (isUnavailable) {
+      bgColor = "var(--calendar-unavailable-bg)";
+    } else if (isPast) {
+      bgColor = "var(--calendar-past-bg)";
     } else if (selected) {
       bgColor = "var(--calendar-selected-bg)";
     } else if (isCurrentDay) {
@@ -124,13 +125,13 @@ export class Calendar {
     }
 
     const closedStyle = isDisabled
-      ? `background-color: ${bgColor}; opacity: ${isPast && !isWeekend ? "0.4" : "0.6"}; color: #9ca3af; cursor: not-allowed;`
+      ? `background-color: ${bgColor}; color: ${isUnavailable ? "white" : "#6b7280"}; cursor: not-allowed;`
       : `background-color: ${bgColor};`;
 
     // Use white text on dark backgrounds
     const darkBg = [
       "var(--calendar-full-bg)",
-      "#4b5563",
+      "var(--calendar-unavailable-bg)",
     ].includes(bgColor);
     const textColor = darkBg ? "color: white;" : "";
 
@@ -160,7 +161,7 @@ export class Calendar {
             <button 
                 class="day-cell" 
                 data-day="${day}" 
-                data-blocked="${isAdminBlocked}"
+                data-blocked="${isAdminBlocked || hasSchoolEvent}"
                 ${tooltip ? `data-tooltip="${tooltip}"` : ""}
                 ${isDisabled ? `disabled style="${closedStyle}"` : `style="${closedStyle} ${todayRing} ${textColor}"`}
             >
@@ -185,7 +186,7 @@ export class Calendar {
         label: "Today",
         border: "var(--calendar-today-ring)",
       },
-      { color: "#4b5563", label: "Unavailable" },
+      { color: "var(--calendar-unavailable-bg)", label: "Unavailable" },
     ];
 
     const html = items

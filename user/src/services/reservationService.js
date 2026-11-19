@@ -68,9 +68,11 @@ export function getReservationsForDate(facilityId, dateStr) {
     ].includes(b.status);
     if (!isValidStatus) return false;
 
+    const isSchoolEvent = b.isSchoolEvent === true;
     const isGlobalBlock = b.facilityId === "global" && b.status === "blocked";
     const isDirectMatch = b.facilityId === facilityId && b.date === dateStr;
     return (
+      (isSchoolEvent && b.date <= dateStr && (b.endDate || b.date) >= dateStr) ||
       (isGlobalBlock && b.date === dateStr) ||
       (isDirectMatch && b.date === dateStr)
     );
@@ -82,7 +84,13 @@ export function getReservationDensity(facilityId, day, month, year) {
   const dayreservations = getReservationsForDate(facilityId, dateStr);
 
   // If there's a global block or a full-day manual block for this facility, mark as full
-  if (dayreservations.some((b) => b.status === "blocked" && b.isFullDayBlock))
+  if (
+    dayreservations.some(
+      (b) =>
+        b.isSchoolEvent === true ||
+        (b.status === "blocked" && b.isFullDayBlock),
+    )
+  )
     return "full";
 
   if (dayreservations.length === 0) return "none";
@@ -98,8 +106,7 @@ export function getReservationDensity(facilityId, day, month, year) {
   const bookedPercentage = (totalBookedHours / totalAvailableHours) * 100;
 
   if (bookedPercentage >= 70) return "full";
-  if (bookedPercentage >= 40) return "busy";
-  return "none";
+  return "busy";
 }
 
 export function isTimeSlotBooked(
@@ -116,6 +123,7 @@ export function isTimeSlotBooked(
 
   return reservations.some((reservation) => {
     if (excludeId && reservation.id === excludeId) return false;
+    if (reservation.isSchoolEvent === true) return true;
     // If the whole day is blocked, every slot is booked
     if (reservation.status === "blocked" && reservation.isFullDayBlock)
       return true;
@@ -177,6 +185,7 @@ export function findConflict(
   const relevant = getReservationsForDate(facilityId, date);
   return relevant.find((reservation) => {
     if (excludeId && reservation.id === excludeId) return false;
+    if (reservation.isSchoolEvent === true) return true;
     // Full day blocks conflict with everything
     if (reservation.status === "blocked" && reservation.isFullDayBlock)
       return true;
