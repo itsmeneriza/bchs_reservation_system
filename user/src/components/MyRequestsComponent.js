@@ -61,6 +61,20 @@ export class MyRequests {
   setupVisitSlotPicker() {
     window.selectRescheduleOption = async (requestId, optionIndex) => {
       try {
+        const request = this.currentRequests?.find((r) => r.id === requestId);
+        if (
+          request &&
+          request.blockReschedulePending !== true &&
+          (getCalendarDaysUntil(request.date) === null ||
+            getCalendarDaysUntil(request.date) < 3)
+        ) {
+          const { showToast } = await import("./NotificationComponent.js");
+          showToast(
+            "Rescheduling must be completed at least 3 days before the event.",
+            "error",
+          );
+          return;
+        }
         const response = await fetch(`/api/requests/${requestId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -167,7 +181,7 @@ export class MyRequests {
       modal.innerHTML = `
                 <div style="background: white; border-radius: 1rem; padding: 2rem; max-width: 520px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
                     <h3 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Request Event Rescheduling</h3>
-                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1.25rem;">Please provide a reason and choose a new date and time for your event reservation.</p>
+                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1.25rem;">Rescheduling requests must be submitted at least 3 days before the event. Please provide a reason and choose a new date and time for your event reservation.</p>
 
                     <div style="margin-bottom: 1rem;">
                         <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Reschedule Reason *</label>
@@ -209,6 +223,13 @@ export class MyRequests {
 
       const request =
         this.currentRequests?.find((r) => r.id === requestId) || null;
+      if (request && request.blockReschedulePending !== true) {
+        const daysUntilEvent = getCalendarDaysUntil(request.date);
+        if (daysUntilEvent === null || daysUntilEvent < 3) {
+          alert("Rescheduling requests must be submitted at least 3 days before the event.");
+          return;
+        }
+      }
       dateInput.min = getLocalISODate(new Date());
       if (request) {
         dateInput.value = request.date || "";
@@ -257,6 +278,15 @@ export class MyRequests {
         const request = this.currentRequests?.find(
           (r) => r.id === this.currentRescheduleId,
         );
+        const daysUntilEvent =
+          request ? getCalendarDaysUntil(request.date) : null;
+        if (
+          request?.blockReschedulePending !== true &&
+          (daysUntilEvent === null || daysUntilEvent < 3)
+        ) {
+          alert("Rescheduling requests must be submitted at least 3 days before the event.");
+          return;
+        }
         const conflict =
           request &&
           findConflict(
@@ -765,6 +795,20 @@ export class MyRequests {
           daysUntilEvent !== null &&
           daysUntilEvent >= 1 &&
           daysUntilEvent <= 3));
+    const canRequestReschedule =
+      !isPast &&
+      !hasRescheduleOptions &&
+      (isBlockForced ||
+        (isAcceptedReservation &&
+          daysUntilEvent !== null &&
+          daysUntilEvent >= 3));
+    const rescheduleDeadlineNotice =
+      isAcceptedReservation &&
+      !isBlockForced &&
+      !hasRescheduleOptions &&
+      daysUntilEvent !== null &&
+      daysUntilEvent >= 0 &&
+      daysUntilEvent < 3;
     const canRemove =
       isPast || ["rejected", "refused", "cancelled"].includes(req.status);
 
@@ -825,9 +869,7 @@ export class MyRequests {
                             : ""
                         }
                         ${
-                          isAcceptedReservation &&
-                          !isPast &&
-                          !hasRescheduleOptions
+                          canRequestReschedule
                             ? `
                         <button onclick="window.requestReschedule('${req.id}')"
                             style="background:#dcfce7;color:#166534;border:1px solid #86efac;padding:0.25rem 0.6rem;border-radius:0.375rem;font-size:0.7rem;font-weight:600;cursor:pointer;white-space:nowrap;"
@@ -842,6 +884,15 @@ export class MyRequests {
                         </span>
                     </div>
                 </div>
+
+                ${
+                  rescheduleDeadlineNotice
+                    ? `
+                <div style="background:#fff7ed;border-top:1px solid #fed7aa;padding:0.55rem 0.75rem;color:#9a3412;font-size:0.72rem;">
+                    Rescheduling is unavailable within 3 days of the event. Requests must be submitted at least 3 days in advance.
+                </div>`
+                    : ""
+                }
 
                 ${
                   hasRescheduleOptions

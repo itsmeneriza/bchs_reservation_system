@@ -1071,6 +1071,8 @@ window.acceptRescheduleSchedule = async (id, optionIndex = null) => {
     rescheduledStartTime: null,
     rescheduledEndTime: null,
     adminRescheduleNote: null,
+    blockReschedulePending: false,
+    blockRescheduleReason: null,
   };
   if (request.facilityId) {
     update.facilityId = request.facilityId;
@@ -1165,8 +1167,7 @@ async function savereservationChanges() {
       // The requester will choose one offered schedule to update the main reservation.
       update = {
         rescheduleOptions: pendingVisitOptions,
-        blockReschedulePending: false,
-        blockRescheduleReason: null,
+        blockReschedulePending: request?.blockReschedulePending === true,
         adminRescheduleNote:
           document.getElementById("adminRescheduleNote")?.value.trim() || "",
         // Clear any pending user reschedule metadata since admin responded

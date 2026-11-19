@@ -12,6 +12,7 @@ const DEFAULT_CHIPS = [
   "Facility prices",
   "Facility capacity",
   "How to cancel?",
+  "How to reschedule?",
   "Check availability",
 ];
 const CHAT_REQUEST_TIMEOUT_MS = 55000;
@@ -69,6 +70,8 @@ const getOfflineReply = (question) => {
     "online",
     "cancel",
     "cancellation",
+    "reschedule",
+    "rescheduling",
     "refund",
     "facility",
     "gym",
@@ -105,7 +108,11 @@ const getOfflineReply = (question) => {
   const asksCapacity = /capacit|how many|people|pax|attendee/.test(normalized);
 
   if (/cancel|cancellation|refund/.test(normalized)) {
-    return "To cancel, select your reservation in the Daily Schedule and follow the email verification steps. Cancellations are not accepted within 1 week of the event, and the required down payment is non-refundable. Contact the Administration Office for help.";
+    return "To cancel, select your reservation in My Requests and follow the email verification steps. Submit your request at least 7 days before the event; cancellations are not accepted less than 7 days before it. The down payment is non-refundable. Contact the Administration Office for help.";
+  }
+
+  if (/reschedul/.test(normalized)) {
+    return "Submit a rescheduling request from My Requests at least 3 days before the event; requests are not accepted within 3 days of the event. Include a reason and your proposed new date and time. The new schedule must be available, and your request is subject to administrator review.";
   }
 
   if (/discount|negotiat/.test(normalized)) {
@@ -168,7 +175,7 @@ export class Chat {
     if (state.chatMessages.length === 0) {
       addChatMessage({
         sender: "assistant",
-        text: "Hello! I'm your <strong>BCHS Reservation Assistant</strong>.<br><br>I can help you with:<br>• Pricing &amp; payment information<br>• Facility capacity and recommendations<br>• Checking availability<br>• Reservation procedures<br>• Cancellation &amp; refund policies<br>• Facility details and features<br><br>What would you like to know?",
+        text: "Hello! I'm your <strong>BCHS Reservation Assistant</strong>.<br><br>I can help you with:<br>• Pricing &amp; payment information<br>• Facility capacity and recommendations<br>• Checking availability<br>• Reservation procedures<br>• Cancellation, rescheduling &amp; refund policies<br>• Facility details and features<br><br>What would you like to know?",
         chips: DEFAULT_CHIPS,
       });
     }

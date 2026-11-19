@@ -800,6 +800,35 @@ export function createRequestsRouter() {
             });
           }
         }
+        const isRescheduleSubmission =
+          Object.hasOwn(changes, "rescheduleOptionIndex") ||
+          (Object.hasOwn(changes, "rescheduleReason") &&
+            typeof changes.rescheduleReason === "string" &&
+            changes.rescheduleReason.trim()) ||
+          (Object.hasOwn(changes, "rescheduledDate") &&
+            typeof changes.rescheduledDate === "string" &&
+            changes.rescheduledDate.trim());
+        const isDirectScheduleChange =
+          (Object.hasOwn(changes, "date") &&
+            nullableDate(changes.date) !== existing.date) ||
+          (Object.hasOwn(changes, "startTime") &&
+            changes.startTime !== existing.start_time) ||
+          (Object.hasOwn(changes, "endTime") &&
+            changes.endTime !== existing.end_time);
+        if (
+          req.auth.kind === "user" &&
+          (isRescheduleSubmission || isDirectScheduleChange) &&
+          existing.block_reschedule_pending !== true
+        ) {
+          const daysUntilEvent = daysUntilDate(existing.date);
+          if (daysUntilEvent === null || daysUntilEvent < 3) {
+            return res.status(403).json({
+              success: false,
+              message:
+                "Rescheduling requests must be submitted at least 3 days before the event.",
+            });
+          }
+        }
         if (
           ["approved", "accepted"].includes(existing.status) &&
           changes._isEdit === true &&
@@ -919,6 +948,14 @@ export function createRequestsRouter() {
           startTime,
           endTime,
           rescheduleOptions: [],
+          blockReschedulePending: false,
+          blockRescheduleReason: null,
+          rescheduleReason: null,
+          rescheduleRequestedAt: null,
+          rescheduledDate: null,
+          rescheduledStartTime: null,
+          rescheduledEndTime: null,
+          adminRescheduleNote: null,
           ...authorizedChanges,
         };
         delete effectiveChanges.rescheduleOptionIndex;

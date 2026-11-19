@@ -38,12 +38,16 @@ export default function createChatRouter() {
   Important: Unpaid reservations may be cancelled if a priority school event arises.
   
   == CANCELLATION POLICY ==
-  - Find your reservation in the Daily Schedule sidebar and click on it
+  - Find your reservation in My Requests
   - A 6-digit verification code is sent to your registered email
   - Enter the code, provide a cancellation reason, then confirm
-  - Cancellations are NOT accepted within 1 week of the event date
+  - Cancellation requests must be submitted at least 7 days before the event; cancellations are NOT accepted less than 7 days before the event
   - The down payment is non-refundable
-  - Recommend giving at least 1 week notice
+
+  == RESCHEDULING POLICY ==
+  - Rescheduling requests must be submitted at least 3 days before the event; requests are NOT accepted within 3 days of the event
+  - Submit the request from My Requests with a reason and proposed new date and time
+  - The proposed schedule must be available, and the request is subject to administrator review; do not promise approval
   
   == GENERAL RULES ==
   - Keep facilities clean after use; report any damage immediately
