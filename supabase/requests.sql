@@ -21,7 +21,7 @@ create table if not exists public.reservations (
   purpose varchar(255),
   additional_notes text,
   status varchar(30) not null default 'pending' check (status in ('pending', 'approved', 'accepted', 'rejected', 'refused', 'cancelled', 'completed', 'blocked')),
-  payment_status varchar(30) not null default 'unpaid' check (payment_status in ('half_paid', 'paid', 'unpaid')),
+  payment_status varchar(30) not null default 'unpaid' check (payment_status in ('half_paid', 'paid', 'unpaid', 'free')),
   appointment_date date,
   appointment_time varchar(50),
   total_amount numeric(10,2) not null default 0.00,
@@ -41,9 +41,14 @@ alter table public.reservations
 update public.reservations
 set payment_status = 'half_paid'
 where payment_status = 'pending';
+update public.reservations
+set payment_status = 'free'
+where is_staff
+   or user_type = 'staff'
+   or source = 'staff';
 alter table public.reservations
   add constraint reservations_payment_status_check
-  check (payment_status in ('half_paid', 'paid', 'unpaid'));
+  check (payment_status in ('half_paid', 'paid', 'unpaid', 'free'));
 alter table public.reservations
   alter column payment_status set default 'unpaid';
 
@@ -74,7 +79,7 @@ begin
   if new.is_staff or new.user_type = 'staff' or new.source = 'staff' then
     new.is_staff = true;
     new.user_type = 'staff';
-    new.payment_status = 'paid';
+    new.payment_status = 'free';
     new.total_amount = 0.00;
     new.down_payment_paid = false;
     new.remaining_balance_paid = false;
@@ -133,7 +138,7 @@ update public.reservations
 set
   is_staff = true,
   user_type = 'staff',
-  payment_status = 'paid',
+  payment_status = 'free',
   total_amount = 0.00,
   down_payment_paid = false,
   remaining_balance_paid = false

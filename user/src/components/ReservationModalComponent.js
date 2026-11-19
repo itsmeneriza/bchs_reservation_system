@@ -1002,7 +1002,7 @@ export class ReservationModal {
       facilityId: state.selectedFacility.id,
       facilityName: state.selectedFacility.name,
       totalAmount: totalAmount,
-      paymentStatus: isStaff ? "paid" : "unpaid",
+      paymentStatus: isStaff ? "free" : "unpaid",
       isStaff: isStaff,
       source: isStaff ? "staff" : "guest",
       staffId: isStaff ? state.user?.id || null : null,

@@ -191,7 +191,10 @@ export function toDbReservation(payload = {}) {
     purpose: body.purpose || "",
     additional_notes: body.additionalNotes ?? body.additional_notes ?? null,
     status: body.status || "pending",
-    payment_status: body.paymentStatus || body.payment_status || "unpaid",
+    payment_status:
+      userType === "staff"
+        ? "free"
+        : body.paymentStatus || body.payment_status || "unpaid",
     appointment_date: nullableDate(
       body.appointmentDate ?? body.appointment_date,
     ),
@@ -218,7 +221,7 @@ export function toDbReservation(payload = {}) {
   // Staff reservations are payment-exempt. Do not rely on the browser to
   // submit the correct amount or payment status.
   if (userType === "staff") {
-    reservation.payment_status = "paid";
+    reservation.payment_status = "free";
     reservation.total_amount = 0;
     reservation.down_payment_paid = false;
     reservation.remaining_balance_paid = false;
@@ -254,7 +257,10 @@ export function fromDbReservation(row) {
     purpose: row.purpose,
     additionalNotes: row.additional_notes,
     status: row.status,
-    paymentStatus: row.payment_status,
+    paymentStatus:
+      row.is_staff || row.user_type === "staff" || row.source === "staff"
+        ? "free"
+        : row.payment_status,
     appointmentDate: row.appointment_date,
     appointmentTime: row.appointment_time,
     totalAmount: Number(row.total_amount ?? 0),
@@ -624,7 +630,7 @@ export function createRequestsRouter() {
         payload.staff_id = isStaff ? req.auth.user.sub : null;
         payload.guest_id = isStaff ? null : req.auth.user.sub;
         payload.status = "pending";
-        payload.payment_status = isStaff ? "paid" : "unpaid";
+        payload.payment_status = isStaff ? "free" : "unpaid";
         payload.down_payment_paid = false;
         payload.remaining_balance_paid = false;
         payload.appointment_date = null;

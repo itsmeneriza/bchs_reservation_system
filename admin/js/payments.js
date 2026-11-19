@@ -107,7 +107,7 @@ function renderPayments() {
           const downPaymentAmount = computeDownPayment(totalAmount);
           const remainingBalance = Math.max(0, totalAmount - downPaymentAmount);
           const effectiveStatus = isStaff
-            ? "paid"
+            ? "free"
             : ["pending", "half_paid"].includes(b.paymentStatus)
               ? "half_paid"
               : b.paymentStatus || "unpaid";
@@ -123,6 +123,7 @@ function renderPayments() {
             <td>${formatDateSimple(b.date)}</td>
             <td><strong>₱${totalAmount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
             <td>
+                ${isStaff ? `<span class="badge badge-secondary">FREE</span>` : `
                 <div style="display:flex;gap:6px;margin-bottom:6px;">
                     <button class="btn btn-sm ${downPaid ? "btn-success" : "btn-outline"}"
                             onclick="${isStaff ? "" : `toggleDownPayment(${safeId},${!downPaid})`}"
@@ -136,13 +137,13 @@ function renderPayments() {
                             style="flex:1;font-size:11px;padding:6px 8px;${remainingPaid ? "background:#22c55e;color:white;border-color:#22c55e;" : ""}">
                         ${remainingPaid ? "Paid" : "Unpaid"} Balance (₱${remainingBalance.toLocaleString("en-PH", { minimumFractionDigits: 0 })})
                     </button>
-                </div>
+                </div>`}
             </td>
             <td>
                 <span class="badge badge-interactive ${getPaymentBadgeClass(effectiveStatus)}"
                       onclick="${isStaff ? "" : `cyclePaymentStatus(${safeId},${escapeAdminJsArgument(effectiveStatus)})`}"
                       style="${isStaff ? "cursor:default;opacity:0.85;" : ""}">
-                    ${isStaff ? "PAID (Staff)" : effectiveStatus === "half_paid" ? "HALF PAID" : effectiveStatus.toUpperCase()}
+                    ${isStaff ? "FREE (Staff)" : effectiveStatus === "half_paid" ? "HALF PAID" : effectiveStatus.toUpperCase()}
                 </span>
             </td>
             <td>
@@ -157,6 +158,7 @@ function renderPayments() {
 }
 
 function getPaymentBadgeClass(status) {
+  if (status === "free") return "badge-secondary";
   if (status === "paid") return "badge-paid";
   if (status === "unpaid") return "badge-unpaid";
   if (status === "half_paid") return "badge-half-paid";

@@ -420,7 +420,7 @@ async function saveManualReservation() {
     utilities: utilities.length ? utilities : [],
     attendees,
     status: "pending",
-    paymentStatus: isStaff ? "paid" : "unpaid",
+    paymentStatus: isStaff ? "free" : "unpaid",
     totalAmount,
     submittedAt: new Date().toISOString(),
   };
@@ -472,7 +472,7 @@ function renderQueue() {
           const staffReq = isStaffRequest(req);
           const safeId = escapeAdminJsArgument(req.id);
           const paymentCell = staffReq
-            ? `<td><span class="badge badge-paid" style="font-weight:700;">PAID</span></td>`
+            ? `<td><span class="badge badge-secondary" style="font-weight:700;">FREE</span></td>`
             : `<td><span style="font-size:12px;color:#94a3b8;">—</span></td>`;
           const editedTag = req.userEditReason
             ? `<div style="display:inline-block;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:4px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:5px;vertical-align:middle;">EDITED</div>`
@@ -664,6 +664,12 @@ function renderApproved() {
           const actionMode = "VIEW_ONLY";
           const actionLabel = "View";
           const safeId = escapeAdminJsArgument(req.id);
+          const staffReq = isStaffRequest(req);
+          const paymentStatus = staffReq
+            ? "Free"
+            : ["pending", "half_paid"].includes(req.paymentStatus)
+              ? "Half Paid"
+              : req.paymentStatus || "unpaid";
           const badgeCell = needsReschedule
             ? `<td><span style="font-size:11px;font-weight:700;background:#fff7ed;color:#92400e;padding:2px 8px;border-radius:999px;">${hasAlternateSchedules ? "Awaiting Requester Selection" : "Needs Reschedule"}</span>
                             <div style="font-size:11px;color:#64748b;margin-top:3px;">${hasAlternateSchedules ? `${req.rescheduleOptions.length} alternate schedule${req.rescheduleOptions.length === 1 ? "" : "s"} offered` : `Requested: ${req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—"} ${req.rescheduledStartTime ? escapeAdminText(" " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime)) : ""}`}</div></td>`
@@ -678,7 +684,7 @@ function renderApproved() {
             <td><div class="truncate" title="${escapeAdminText(req.purpose)}">${escapeAdminText(req.purpose)}</div>
                 ${needsReschedule ? `<div style="font-size:11px;color:#64748b;margin-top:6px;">${hasAlternateSchedules ? "The requester has alternate event schedules to choose from." : `Requested reschedule: <strong style="color:#92400e;">${escapeAdminText(req.rescheduledDate ? formatDateSimple(req.rescheduledDate) : "—")}</strong> ${req.rescheduledStartTime ? escapeAdminText("· " + convertTo12Hour(req.rescheduledStartTime) + "–" + convertTo12Hour(req.rescheduledEndTime)) : ""}<div style="font-size:11px;color:#7c2d12;margin-top:4px;">Reason: ${escapeAdminText(req.rescheduleReason || "No reason provided")}</div>`}</div>` : ""}
             </td>
-            <td><span class="badge ${req.paymentStatus === "paid" ? "badge-success" : ["pending", "half_paid"].includes(req.paymentStatus) ? "badge-half-paid" : "badge-secondary"}">${escapeAdminText(["pending", "half_paid"].includes(req.paymentStatus) ? "Half Paid" : req.paymentStatus || "unpaid")}</span></td>
+            <td><span class="badge ${staffReq ? "badge-secondary" : req.paymentStatus === "paid" ? "badge-success" : ["pending", "half_paid"].includes(req.paymentStatus) ? "badge-half-paid" : "badge-secondary"}">${escapeAdminText(paymentStatus)}</span></td>
             <td><button class="btn btn-outline btn-sm" onclick="openEditModal(${safeId},${escapeAdminJsArgument(actionMode)})">${actionLabel}</button></td>
         </tr>`;
         })
@@ -1028,7 +1034,9 @@ window.openHistoryView = (id) => {
             <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;">${escapeAdminText(label)}</span>
             <span style="font-size:0.82rem;color:#1e293b;font-weight:500;flex:1;word-break:break-word;">${escapeAdminText(value)}</span>
         </div>`;
-  const paymentRow = ["pending", "half_paid"].includes(r.paymentStatus)
+  const paymentRow = isStaffRequest(r)
+    ? row("Payment", "Free")
+    : ["pending", "half_paid"].includes(r.paymentStatus)
     ? `
         <div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid #f1f5f9;">
             <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;min-width:110px;flex-shrink:0;">Payment</span>

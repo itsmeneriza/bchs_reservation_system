@@ -51,7 +51,11 @@ export function createNotificationRouter() {
           paymentStatus: row.payment_status,
           totalAmount: Number(row.total_amount || 0),
         };
-        if (!req.email || req.paymentStatus === "paid" || req.reminderSent)
+        if (
+          !req.email ||
+          ["paid", "free"].includes(req.paymentStatus) ||
+          req.reminderSent
+        )
           continue;
 
         const daysLeft = getWorkingDaysUntil(req.date);

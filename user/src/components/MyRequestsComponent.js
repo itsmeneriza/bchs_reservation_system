@@ -483,7 +483,7 @@ export class MyRequests {
     // Check for payment reminders (approved + unpaid + within 5 working days)
     const paymentReminders = userRequests.filter((req) => {
       if (req.status !== "approved") return false;
-      if (req.paymentStatus === "paid") return false;
+      if (["paid", "free"].includes(req.paymentStatus)) return false;
       const workingDaysLeft = this.getWorkingDaysUntil(req.date);
       return workingDaysLeft >= 0 && workingDaysLeft <= 5;
     });
