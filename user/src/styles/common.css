@@ -34,8 +34,8 @@ html {
   --calendar-today-bg: #ffd700;
   --calendar-today-ring: #b8960c;
   --calendar-selected-bg: #7ba76a;
-  --calendar-busy-bg: #800020;
-  --calendar-full-bg: #4a0010;
+  --calendar-busy-bg: #f8d7de;
+  --calendar-full-bg: #800020;
   --calendar-pending-bg: #fef3c7;
 
   /* Chat Identity */

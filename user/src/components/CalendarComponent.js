@@ -130,7 +130,6 @@ export class Calendar {
     // Use white text on dark backgrounds
     const darkBg = [
       "var(--calendar-full-bg)",
-      "var(--calendar-busy-bg)",
       "#4b5563",
     ].includes(bgColor);
     const textColor = darkBg ? "color: white;" : "";
