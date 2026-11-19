@@ -149,11 +149,7 @@ export function toDbReservation(payload = {}) {
     body.is_staff === true
       ? "staff"
       : "guest";
-  const id = String(
-    body.id ||
-      body.reservationCode ||
-      `req_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
-  );
+  const id = String(body.id || body.reservationCode || "");
   const requestData = Object.fromEntries(
     Object.entries(body).filter(([key]) => !INTERNAL_FIELDS.has(key)),
   );
@@ -331,6 +327,32 @@ function toDbReservationPatch(existing, changes) {
   }
 
   return patch;
+}
+
+function getReservationCodePrefix(payload) {
+  return payload.is_staff ||
+    payload.user_type === "staff" ||
+    payload.source === "staff"
+    ? "BCHS-I"
+    : "BCHS-G";
+}
+
+async function allocateReservationCode(client, payload) {
+  const prefix = getReservationCodePrefix(payload);
+  const pattern = new RegExp(`^${prefix}-(\\d+)$`);
+  let nextNumber = 1;
+  const { data, error } = await client
+    .from("reservations")
+    .select("reservation_code")
+    .like("reservation_code", `${prefix}-%`);
+  if (error) throw error;
+
+  for (const row of data || []) {
+    const match = String(row.reservation_code || "").match(pattern);
+    if (match) nextNumber = Math.max(nextNumber, Number(match[1]) + 1);
+  }
+
+  return `${prefix}-${nextNumber}`;
 }
 
 function handleSupabaseError(res, error, action) {
@@ -689,11 +711,20 @@ export function createRequestsRouter() {
         }
       }
 
-      const { data, error } = await client
-        .from("reservations")
-        .insert([payload])
-        .select(RESERVATION_SELECT)
-        .single();
+      let data;
+      let error;
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        payload.reservation_code = await allocateReservationCode(client, payload);
+        const inserted = await client
+          .from("reservations")
+          .insert([payload])
+          .select(RESERVATION_SELECT)
+          .single();
+        data = inserted.data;
+        error = inserted.error;
+        if (!error) break;
+        if (error.code !== "23505") break;
+      }
       if (error) throw error;
       return res.status(201).json({
         success: true,

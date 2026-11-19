@@ -89,6 +89,46 @@ before insert or update on public.reservations
 for each row
 execute function public.normalize_staff_reservation_payment();
 
+create or replace function public.assign_reservation_code()
+returns trigger as $$
+declare
+  prefix text;
+  next_number bigint;
+  existing_number text;
+begin
+  if new.is_staff or new.user_type = 'staff' or new.source = 'staff' then
+    prefix := 'BCHS-I';
+  else
+    prefix := 'BCHS-G';
+  end if;
+
+  existing_number := substring(
+    coalesce(new.reservation_code, '')
+    from '^' || prefix || '-([0-9]+)$'
+  );
+
+  if existing_number is not null then
+    return new;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtext(prefix));
+
+  select coalesce(max((substring(reservation_code from '^' || prefix || '-([0-9]+)$'))::bigint), 0) + 1
+  into next_number
+  from public.reservations
+  where reservation_code ~ ('^' || prefix || '-[0-9]+$');
+
+  new.reservation_code := prefix || '-' || next_number::text;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_assign_reservation_code on public.reservations;
+create trigger trg_assign_reservation_code
+before insert on public.reservations
+for each row
+execute function public.assign_reservation_code();
+
 update public.reservations
 set
   is_staff = true,

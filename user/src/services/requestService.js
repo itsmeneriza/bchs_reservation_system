@@ -11,7 +11,7 @@ export class RequestService {
     async saveRequest(request) {
         const newRequest = {
             ...request,
-            id: request.id || this.generateId(),
+            id: request.id || "",
             status: request.status || 'pending',
             submittedAt: request.submittedAt || new Date().toISOString()
         };
@@ -51,10 +51,6 @@ export class RequestService {
         if (!res.ok) throw new Error('Failed to fetch requests from server');
         const data = await res.json();
         return data.requests || [];
-    }
-
-    generateId() {
-        return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 }
 
