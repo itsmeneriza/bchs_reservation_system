@@ -95,17 +95,35 @@ export function getReservationDensity(facilityId, day, month, year) {
 
   if (dayreservations.length === 0) return "none";
 
-  let totalBookedHours = 0;
-  dayreservations.forEach((reservation) => {
-    const start = parseInt(reservation.startTime.split(":")[0], 10);
-    const end = parseInt(reservation.endTime.split(":")[0], 10);
-    totalBookedHours += end - start;
+  const intervals = dayreservations
+    .map((reservation) => {
+      const toMinutes = (time) => {
+        const [hours, minutes = "0"] = time.split(":").map(Number);
+        return hours * 60 + minutes;
+      };
+      return [
+        toMinutes(reservation.startTime),
+        toMinutes(reservation.endTime),
+      ];
+    })
+    .filter(([start, end]) => Number.isFinite(start) && end > start)
+    .sort(([startA], [startB]) => startA - startB);
+
+  let totalBookedMinutes = 0;
+  let intervalStart = null;
+  let intervalEnd = null;
+  intervals.forEach(([start, end]) => {
+    if (intervalEnd === null || start > intervalEnd) {
+      if (intervalStart !== null) totalBookedMinutes += intervalEnd - intervalStart;
+      intervalStart = start;
+      intervalEnd = end;
+    } else {
+      intervalEnd = Math.max(intervalEnd, end);
+    }
   });
+  if (intervalStart !== null) totalBookedMinutes += intervalEnd - intervalStart;
 
-  const totalAvailableHours = 11; // 7 AM - 6 PM
-  const bookedPercentage = (totalBookedHours / totalAvailableHours) * 100;
-
-  if (bookedPercentage >= 70) return "full";
+  if (totalBookedMinutes > 6 * 60) return "full";
   return "busy";
 }
 

@@ -1005,8 +1005,17 @@ body.forecast-tab-active #calendar-legend {
 }
 
 /* Day cell hover tooltip */
+.day-cell-wrapper {
+  position: relative;
+  display: block;
+}
+
 .day-cell {
   position: relative;
+}
+
+.day-cell:disabled {
+  pointer-events: none;
 }
 
 .day-tooltip {
@@ -1037,7 +1046,7 @@ body.forecast-tab-active #calendar-legend {
   border-top-color: rgba(15, 23, 42, 0.88);
 }
 
-.day-cell:hover .day-tooltip {
+.day-cell-wrapper:hover .day-tooltip {
   display: block;
 }
 

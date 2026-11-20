@@ -155,9 +155,11 @@ export class Calendar {
     let tooltipParts = [];
     if (approvedCount > 0) tooltipParts.push(`${approvedCount} reserved`);
     if (pendingCount > 0) tooltipParts.push(`${pendingCount} pending`);
-    const tooltip = tooltipParts.length > 0 ? tooltipParts.join(" · ") : "";
+    const tooltip =
+      !isPast && tooltipParts.length > 0 ? tooltipParts.join(" · ") : "";
 
     return `
+            <span class="day-cell-wrapper">
             <button 
                 class="day-cell" 
                 data-day="${day}" 
@@ -167,8 +169,9 @@ export class Calendar {
             >
                 ${pendingMarker}
                 <span>${day}</span>
-                ${tooltip ? `<span class="day-tooltip">${tooltip}</span>` : ""}
             </button>
+                ${tooltip ? `<span class="day-tooltip">${tooltip}</span>` : ""}
+            </span>
         `;
   }
 
