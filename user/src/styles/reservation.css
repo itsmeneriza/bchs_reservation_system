@@ -284,6 +284,7 @@ input:checked + .slider:before {
   height: 100%;
   overflow-y: auto;
   padding-bottom: 1.5rem;
+  grid-column: 1;
 }
 
 .sidebar .request-btn {
@@ -526,6 +527,7 @@ input:checked + .slider:before {
   height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
+  grid-column: 2;
 }
 
 .tabs {
@@ -715,6 +717,7 @@ body.forecast-tab-active #calendar-legend {
   height: 100%;
   overflow-y: auto;
   min-width: 0;
+  grid-column: 3;
 }
 
 .timeslots-sidebar.visible {
@@ -847,7 +850,7 @@ body.forecast-tab-active #calendar-legend {
 
 @media (max-width: 1200px) {
   .content-wrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: 220px minmax(0, 1fr) 280px;
     height: auto;
   }
 }

@@ -32,6 +32,13 @@ class ReservationApp {
 
   async init() {
     try {
+      // Keep the selected-date panel as the third grid column.
+      const contentWrapper = document.querySelector(".content-wrapper");
+      const timeslotsSidebar = document.querySelector(".timeslots-sidebar");
+      if (contentWrapper && timeslotsSidebar) {
+        contentWrapper.appendChild(timeslotsSidebar);
+      }
+
       this.chat.init();
 
       const dataLoaded = await loadData();
@@ -156,6 +163,9 @@ class ReservationApp {
 
     if (contentWrapper) {
       contentWrapper.style.gridTemplateColumns = isCalendar ? "" : "1fr";
+    }
+    if (mainContent) {
+      mainContent.style.gridColumn = isCalendar ? "" : "1 / -1";
     }
     if (mainContent) {
       const noScrollTabs = ["my-requests"];
