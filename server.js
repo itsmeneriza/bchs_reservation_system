@@ -10,6 +10,7 @@ import createChatRouter from './routes/chat.js';
 import { createNotificationRouter } from './routes/notifications.js';
 import { createRequestsRouter } from './routes/requests.js';
 import { requireAdmin } from './middleware/requireAdmin.js';
+import { createServiceRoleSupabaseClient } from './services/supabaseClient.js';
 
 const projectDir = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -62,6 +63,38 @@ app.get('/api/admin/session', requireAdmin, (req, res) => {
       role: req.adminUser.app_metadata.role,
     },
   });
+});
+app.get('/api/admin/staff/:staffId', requireAdmin, async (req, res) => {
+  const staffId = String(req.params.staffId || '').trim();
+  if (!staffId) {
+    return res.status(400).json({ message: 'Staff ID is required.' });
+  }
+
+  try {
+    const client = createServiceRoleSupabaseClient();
+    const { data, error } = await client
+      .from('staffs')
+      .select('id, staff_id, full_name, email')
+      .eq('staff_id', staffId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) {
+      return res.status(404).json({ message: 'No staff record found for that ID.' });
+    }
+    return res.json({
+      staff: {
+        id: data.id,
+        staffId: String(data.staff_id || ''),
+        fullName: data.full_name,
+        email: data.email,
+      },
+    });
+  } catch (error) {
+    console.error('Could not look up staff for manual reservation:', error);
+    return res.status(error.status || 500).json({
+      message: 'Could not look up staff details. Please try again.',
+    });
+  }
 });
 app.use('/api/events', createEventsRouter());
 

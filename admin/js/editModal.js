@@ -60,6 +60,11 @@ document
   .getElementById("rescheduleDuration")
   ?.addEventListener("change", () => {
     selectedVisitTimes = [];
+    selectedVisitDates = selectedVisitDates.filter(
+      (date) => getRescheduleDateAvailability(date).available > 0,
+    );
+    renderVisitCalendar();
+    updateVisitDateSelectionCount();
     renderVisitTimeOptions();
   });
 
@@ -75,6 +80,30 @@ function _toISODate(d) {
 
 function _isAllowedVisitDate(date) {
   return !date || date >= _getEarliestVisitDate();
+}
+
+function getRescheduleDateAvailability(date) {
+  const request = requests.find((item) => item.id === selectedRequestToEdit);
+  if (!request || !_isAllowedVisitDate(date)) {
+    return { available: 0, total: 0 };
+  }
+
+  const choices = getVisitTimeChoices();
+  const available = choices.filter((choice) => {
+    const startMinutes = parseTimeToMinutes(choice.value);
+    if (startMinutes === null) return false;
+    const formatTime = (minutes) =>
+      `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+    return !adminCheckConflict(
+      request.facilityId,
+      date,
+      choice.value,
+      formatTime(startMinutes + getRescheduleDurationMinutes()),
+      request.id,
+    );
+  }).length;
+
+  return { available, total: choices.length };
 }
 
 function renderVisitCalendar() {
@@ -104,16 +133,30 @@ function renderVisitCalendar() {
   for (let day = 1; day <= daysInMonth; day++) {
     const date = _toISODate(new Date(year, month, day));
     const selected = selectedVisitDates.includes(date);
-    const unavailable = !_isAllowedVisitDate(date);
+    const availability = isRescheduleMode
+      ? getRescheduleDateAvailability(date)
+      : { available: 1, total: 1 };
+    const hasAvailabilityData = isRescheduleMode && availability.total > 0;
+    const full =
+      hasAvailabilityData &&
+      availability.available === 0 &&
+      _isAllowedVisitDate(date);
+    const partial =
+      hasAvailabilityData &&
+      availability.available > 0 &&
+      availability.available < availability.total;
+    const unavailable = !_isAllowedVisitDate(date) || full;
     const classes = [
       "visit-calendar-day",
       selected ? "selected" : "",
+      full ? "full" : "",
+      partial ? "partial" : "",
       unavailable ? "unavailable" : "",
     ]
       .filter(Boolean)
       .join(" ");
     cells.push(
-      `<button type="button" class="${classes}" onclick="toggleVisitDate('${date}')" aria-label="${date}" aria-pressed="${selected}" ${unavailable ? "disabled" : ""}>${day}</button>`,
+      `<button type="button" class="${classes}" onclick="toggleVisitDate('${date}')" aria-label="${date}${full ? ", fully booked" : partial ? `, partially available: ${availability.available} of ${availability.total} times` : ""}" title="${full ? "No available times for this duration" : partial ? `${availability.available} of ${availability.total} times available` : ""}" aria-pressed="${selected}" ${unavailable ? "disabled" : ""}>${day}</button>`,
     );
   }
 
@@ -126,7 +169,8 @@ function renderVisitCalendar() {
         <div class="visit-calendar-grid" role="group" aria-label="${isRescheduleMode ? "Choose alternate event dates" : "Choose visit dates"}">
             ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => `<span class="visit-calendar-weekday">${day}</span>`).join("")}
             ${cells.join("")}
-        </div>`;
+        </div>
+        ${isRescheduleMode ? `<div class="visit-calendar-legend"><span><i class="partial"></i>Some times unavailable</span><span><i class="full"></i>Fully booked</span></div>` : ""}`;
 }
 
 function setFinancialsExpanded(expanded) {
@@ -149,7 +193,35 @@ document.getElementById("financialsToggle")?.addEventListener("click", () => {
 function renderVisitTimeOptions() {
   const container = document.getElementById("visitTimeOptions");
   if (!container) return;
-  const choices = getVisitTimeChoices();
+  let choices = getVisitTimeChoices();
+  if (currentModalMode === "RESCHEDULE_OR_REJECT" && selectedVisitDates.length) {
+    const request = requests.find((item) => item.id === selectedRequestToEdit);
+    if (!request) {
+      choices = [];
+    } else {
+      const formatTime = (minutes) =>
+        `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+      choices = choices.filter((choice) => {
+        const startMinutes = parseTimeToMinutes(choice.value);
+        return (
+          startMinutes !== null &&
+          selectedVisitDates.every(
+            (date) =>
+              !adminCheckConflict(
+                request.facilityId,
+                date,
+                choice.value,
+                formatTime(startMinutes + getRescheduleDurationMinutes()),
+                request.id,
+              ),
+          )
+        );
+      });
+      selectedVisitTimes = selectedVisitTimes.filter((time) =>
+        choices.some((choice) => choice.value === time),
+      );
+    }
+  }
   container.innerHTML = choices
     .map((choice, index) => {
       const selected = selectedVisitTimes.includes(choice.value);
@@ -273,6 +345,12 @@ window.changeVisitCalendarMonth = function (offset) {
 
 window.toggleVisitDate = function (date) {
   if (!_isAllowedVisitDate(date)) return;
+  if (
+    currentModalMode === "RESCHEDULE_OR_REJECT" &&
+    getRescheduleDateAvailability(date).available === 0
+  ) {
+    return;
+  }
   if (selectedVisitDates.includes(date)) {
     selectedVisitDates = selectedVisitDates.filter(
       (selected) => selected !== date,
@@ -286,6 +364,7 @@ window.toggleVisitDate = function (date) {
   }
   updateVisitDateSelectionCount();
   renderVisitCalendar();
+  renderVisitTimeOptions();
 };
 
 window.toggleVisitTime = function (index) {

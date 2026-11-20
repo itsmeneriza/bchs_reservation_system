@@ -18,6 +18,121 @@ function _getAdminFacilityPrice(facilityId) {
   return _getAdminFacilities().find((r) => r.id === facilityId)?.pricePerHour ?? 0;
 }
 
+let manualStaffProfile = null;
+let manualStaffLookupVersion = 0;
+
+function setManualStaffLookupStatus(message, color = "#64748b") {
+  const status = document.getElementById("manualStaffLookupStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.style.color = color;
+}
+
+function clearManualStaffDetails() {
+  manualStaffProfile = null;
+  ["manualName", "manualEmail"].forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.value = "";
+    input.readOnly = false;
+    input.style.removeProperty("background");
+    input.style.removeProperty("color");
+    input.style.removeProperty("cursor");
+  });
+}
+
+window.invalidateManualStaffLookup = function () {
+  manualStaffLookupVersion += 1;
+  clearManualStaffDetails();
+  setManualStaffLookupStatus("Staff ID changed. Leave the field to look up details.");
+};
+
+window.toggleManualRequesterType = function () {
+  const staffToggle = document.getElementById("manualIsStaff");
+  if (!staffToggle) return;
+  staffToggle.checked = !staffToggle.checked;
+  updateManualRequesterFields();
+  updateManualPricing();
+};
+
+function updateManualRequesterFields() {
+  const isStaff = document.getElementById("manualIsStaff")?.checked || false;
+  const staffIdGroup = document.getElementById("manualStaffIdGroup");
+  const nameGroup = document.getElementById("manualNameGroup");
+  const contactNumberGroup = document.getElementById("manualContactNumberGroup");
+  const nameLabel = document.getElementById("manualNameLabel");
+  const contactNumber = document.getElementById("manualContactNumber");
+
+  if (staffIdGroup) staffIdGroup.style.display = isStaff ? "block" : "none";
+  if (staffIdGroup) staffIdGroup.classList.toggle("full-width", !isStaff);
+  if (nameGroup) nameGroup.classList.toggle("full-width", !isStaff);
+  if (contactNumberGroup)
+    contactNumberGroup.style.display = isStaff ? "none" : "block";
+  if (nameLabel)
+    nameLabel.textContent = isStaff
+      ? "Full Name *"
+      : "Event Name / Organization Name *";
+  if (contactNumber) {
+    contactNumber.value = "";
+  }
+  const staffIdInput = document.getElementById("manualStaffId");
+  if (staffIdInput) staffIdInput.value = "";
+  manualStaffLookupVersion += 1;
+  clearManualStaffDetails();
+  setManualStaffLookupStatus(
+    isStaff ? "Enter the staff ID number to load staff details." : "",
+  );
+}
+
+window.lookupManualStaff = async function () {
+  const isStaff = document.getElementById("manualIsStaff")?.checked || false;
+  const staffId = document.getElementById("manualStaffId")?.value.trim() || "";
+  if (!isStaff || !staffId) return;
+  if (manualStaffProfile?.staffId === staffId) return;
+
+  const lookupVersion = ++manualStaffLookupVersion;
+  manualStaffProfile = null;
+  setManualStaffLookupStatus("Looking up staff details...");
+
+  try {
+    const response = await window.adminFetch(
+      `/api/admin/staff/${encodeURIComponent(staffId)}`,
+    );
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.message || "Could not find that staff ID.");
+    }
+    if (
+      lookupVersion !== manualStaffLookupVersion ||
+      staffId !== document.getElementById("manualStaffId")?.value.trim()
+    ) {
+      return;
+    }
+
+    const staff = result.staff;
+    if (!staff?.id || !staff.fullName || !staff.email) {
+      throw new Error("This staff record is missing a name or email address.");
+    }
+
+    manualStaffProfile = staff;
+    ["manualName", "manualEmail"].forEach((id) => {
+      const input = document.getElementById(id);
+      if (!input) return;
+      input.readOnly = true;
+      input.style.background = "#f1f5f9";
+      input.style.color = "#64748b";
+      input.style.cursor = "not-allowed";
+    });
+    document.getElementById("manualName").value = staff.fullName;
+    document.getElementById("manualEmail").value = staff.email;
+    setManualStaffLookupStatus(`Staff found: ${staff.fullName}`, "#15803d");
+  } catch (error) {
+    if (lookupVersion !== manualStaffLookupVersion) return;
+    clearManualStaffDetails();
+    setManualStaffLookupStatus(error.message, "#b91c1c");
+  }
+};
+
 // ─── Render All Tabs ──────────────────────────────────────────────────────────
 
 function renderAll() {
@@ -152,6 +267,7 @@ function openAddReservationModal() {
   document.getElementById("manualDate").value = new Date()
     .toISOString()
     .split("T")[0];
+  document.getElementById("manualAttendees").value = "";
   document.getElementById("manualStartTime").value = "08:00";
   document.getElementById("manualEndTime").value = "10:00";
   document.getElementById("admin-facility-suggestion").style.display = "none";
@@ -177,7 +293,6 @@ window.closeAddReservationModal = () => {
   document.getElementById("addReservationModal").classList.remove("active");
   [
     "manualName",
-    "manualContact",
     "manualContactNumber",
     "manualEmail",
     "manualPurpose",
@@ -187,7 +302,7 @@ window.closeAddReservationModal = () => {
   });
   document.getElementById("purposeOtherBox").style.display = "none";
   document.getElementById("purposeOtherBox").value = "";
-  document.getElementById("manualAttendees").value = "0";
+  document.getElementById("manualAttendees").value = "";
   document.getElementById("manualFacility").value = "";
   document
     .querySelectorAll('#manualUtilities input[type="checkbox"]')
@@ -200,6 +315,7 @@ window.closeAddReservationModal = () => {
   document.getElementById("admin-min-pax-warning").style.display = "none";
   const staffToggle = document.getElementById("manualIsStaff");
   if (staffToggle) staffToggle.checked = false;
+  updateManualRequesterFields();
   updateManualPricing();
 };
 
@@ -345,11 +461,23 @@ async function saveManualReservation() {
   const attendees =
     parseInt(document.getElementById("manualAttendees").value) || 0;
   const isStaff = document.getElementById("manualIsStaff")?.checked || false;
-  const contact =
-    document.getElementById("manualContactNumber").value.trim() || "N/A";
-  const email =
-    document.getElementById("manualEmail").value.trim() || "admin@bchs.edu";
-  const contactPerson = document.getElementById("manualContact").value.trim();
+  const staffId = document.getElementById("manualStaffId")?.value.trim() || "";
+  if (
+    isStaff &&
+    (!manualStaffProfile || manualStaffProfile.staffId !== staffId)
+  ) {
+    showToast(
+      "Enter a valid staff ID and wait for the staff details to load.",
+      "error",
+    );
+    return;
+  }
+  const contact = isStaff
+    ? manualStaffProfile.staffId
+    : document.getElementById("manualContactNumber").value.trim() || "N/A";
+  const email = isStaff
+    ? manualStaffProfile.email
+    : document.getElementById("manualEmail").value.trim() || "admin@bchs.edu";
   const utilities = Array.from(
     document.querySelectorAll(
       '#manualUtilities input[type="checkbox"]:checked',
@@ -360,8 +488,17 @@ async function saveManualReservation() {
       : cb.value,
   );
 
-  if (!name || !date || !startTime || !endTime || !purpose) {
-    alert("Please fill in all required fields (Name, Date, Times, Purpose).");
+  if (!name || !date || !startTime || !endTime || !purpose || attendees < 1) {
+    alert(
+      "Please fill in all required fields (Name, Date, Times, Purpose, and Number of Pax).",
+    );
+    return;
+  }
+  if (
+    purposeVal === "Other" &&
+    !document.getElementById("purposeOtherBox").value.trim()
+  ) {
+    alert("Please specify the purpose of the reservation.");
     return;
   }
   if (startTime >= endTime) {
@@ -407,12 +544,12 @@ async function saveManualReservation() {
     id: "admin_" + Date.now(),
     source: "walk_in",
     isStaff,
+    staffId: isStaff ? manualStaffProfile.id : null,
     facilityId,
     facilityName,
     name,
     contact,
     email,
-    contactPerson: contactPerson || name,
     date,
     startTime,
     endTime,

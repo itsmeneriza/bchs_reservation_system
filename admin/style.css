@@ -482,6 +482,56 @@ html {
   cursor: default;
 }
 
+.visit-calendar-day.partial {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.visit-calendar-day.partial.selected {
+  border-color: #800020;
+  background: #800020;
+  color: #fff;
+}
+
+.visit-calendar-day.full:disabled {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #b91c1c;
+  text-decoration: line-through;
+}
+
+.visit-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.visit-calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.visit-calendar-legend i {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+}
+
+.visit-calendar-legend i.partial {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.visit-calendar-legend i.full {
+  border-color: #fecaca;
+  background: #fee2e2;
+}
+
 .visit-time-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1293,6 +1343,29 @@ body {
 
 .form-group.full-width {
   grid-column: 1 / -1;
+}
+
+.manual-reservation-modal .form-grid {
+  gap: 1rem;
+}
+
+.manual-reservation-modal .form-group {
+  gap: 0.35rem;
+}
+
+.manual-reservation-modal .form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.manual-reservation-modal .input,
+.manual-reservation-modal .select,
+.manual-reservation-modal .textarea {
+  padding: 0.65rem 0.85rem;
+  border-color: #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .form-group label {

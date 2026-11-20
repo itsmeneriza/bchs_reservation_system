@@ -115,6 +115,7 @@ function mergeAdminEventsIntoRequests() {
       facilityName: event.location,
       name: event.title,
       date: event.date,
+      endDate: event.endDate || event.date,
       startTime: start,
       endTime: end,
       purpose: event.description || event.title,

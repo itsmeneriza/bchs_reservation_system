@@ -285,7 +285,10 @@ function adminCheckConflict(
         return false;
       const matchesFacility =
         r.facilityId === facilityId || r.facilityId === "global";
-      if (!matchesFacility || r.date !== dateStr) return false;
+      const matchesDate = r.isSchoolEvent
+        ? r.date <= dateStr && (r.endDate || r.date) >= dateStr
+        : r.date === dateStr;
+      if (!matchesFacility || !matchesDate) return false;
       if (r.status === "blocked" && r.isFullDayBlock) return true;
       // Overlap: existing starts before new ends AND existing ends after new starts
       return r.startTime < endTime && r.endTime > startTime;
