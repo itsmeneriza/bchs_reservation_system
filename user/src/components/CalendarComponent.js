@@ -43,7 +43,7 @@ export class Calendar {
     const daysInMonth = getDaysInMonth(state.currentMonth, state.currentYear);
     const firstDay = getFirstDayOfMonth(state.currentMonth, state.currentYear);
 
-    let html = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
       .map((day) => `<div class="day-header">${day}</div>`)
       .join("");
 
