@@ -1,5 +1,5 @@
 const SESSION_KEY = "bchs_admin_auth_session";
-const ADMIN_SESSION_DURATION = 60 * 60;
+const ADMIN_SESSION_DURATION = 2 * 60 * 60;
 const loginForm = document.getElementById("adminLoginForm");
 const loginScreen = document.getElementById("adminLoginScreen");
 const adminApp = document.getElementById("adminApp");
