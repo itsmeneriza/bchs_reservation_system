@@ -385,6 +385,21 @@
   font-weight: 800;
 }
 
+.macro-insight-value-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.macro-insight-purpose {
+  color: #64748b;
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .macro-insight .forecast-selection-note {
   grid-column: 1 / -1;
   margin: 0;
@@ -1225,6 +1240,13 @@
   fill: #1f2937;
   font-size: 0.45em;
   font-weight: 700;
+  text-anchor: middle;
+}
+
+.utilization-label {
+  fill: #64748b;
+  font-size: 0.28em;
+  font-weight: 600;
   text-anchor: middle;
 }
 

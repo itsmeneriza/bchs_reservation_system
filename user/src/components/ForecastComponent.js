@@ -246,7 +246,10 @@ export class Forecast {
               <p>Projected utilization based on historical activity, live bookings, and seasonal guidance.</p>
               <div class="macro-insight macro-insight-inline">
                 <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
-                <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
+                <div class="macro-insight-value-block">
+                  <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
+                  <span class="macro-insight-purpose">Demand</span>
+                </div>
                 <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
               </div>
             </aside>
