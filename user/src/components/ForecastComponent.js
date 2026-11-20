@@ -195,65 +195,21 @@ export class Forecast {
     const selectedMacro = visibleMacro[0];
     this.container.innerHTML = `
       <div class="user-forecast">
-        <div class="forecast-facility-toolbar">
-          <label class="macro-facility-control">Facility
-            <select class="forecast-facility-select">
-              ${facilities.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === facility.id ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")}
-            </select>
-          </label>
-        </div>
         <section class="user-forecast-card">
+          <div class="forecast-facility-toolbar" aria-label="Select facility">
+            ${facilities.map((item) => `
+              <button type="button"
+                class="forecast-facility-button${item.id === facility.id ? " active" : ""}"
+                data-facility-id="${escapeHtml(item.id)}"
+                aria-pressed="${item.id === facility.id ? "true" : "false"}">
+                ${escapeHtml(item.name)}
+              </button>
+            `).join("")}
+          </div>
           <div class="macro-card-heading">
             <h3>12-Month Usage Forecast (Month &amp; Week)</h3>
           </div>
-          <div class="macro-forecast-layout">
-            <div class="macro-forecast-main">
-              <div class="macro-forecast-scroll">
-                <div class="macro-chart">
-                  <div class="macro-y-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>
-                  <div class="macro-forecast-grid">
-                  ${visibleMacro.map((item) => {
-                    const value = item.forecasted_pct;
-                    const label = "Forecast";
-                    const color = TIER_COLORS[item.demand_tier];
-                    const dateRange = getMacroDateRange(item);
-                    return `
-                      <button type="button" class="macro-forecast-bar macro-bar-incoming" data-period="${escapeHtml(item.periodKey)}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${value}%" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
-                        <span class="macro-bar-value">${value}%</span>
-                        <span class="macro-bar macro-bar-single" style="height:${Math.max(4, value)}%;background:${color}" aria-label="${label} ${value}%"></span>
-                        <span class="macro-bar-label">${escapeHtml(item.week)}</span>
-                      </button>`;
-                  }).join("")}
-                  </div>
-                  <div class="macro-month-labels">
-                    ${monthLabels.map((label) => `<span>${escapeHtml(label)}</span>`).join("")}
-                  </div>
-                </div>
-              </div>
-              <div class="macro-forecast-toolbar">
-                <button type="button" class="macro-nav-button macro-nav-previous" aria-label="Show previous three months" ${this.macroOffset === 0 ? "disabled" : ""}>&lt;</button>
-                <strong>${escapeHtml(monthRange)}</strong>
-                <button type="button" class="macro-nav-button macro-nav-next" aria-label="Show next three months" ${this.macroOffset + 12 >= macro.length ? "disabled" : ""}>&gt;</button>
-              </div>
-              <div class="forecast-legend">
-                <span><i style="background:${TIER_COLORS.High}"></i>High ≥70%</span>
-                <span><i style="background:${TIER_COLORS.Moderate}"></i>Moderate 35–69%</span>
-                <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
-              </div>
-            </div>
-            <aside class="macro-summary-panel">
-              <h4>12-month forecast for ${escapeHtml(facility.name)}</h4>
-              <p>Projected utilization based on historical activity, live bookings, and seasonal guidance.</p>
-              <div class="macro-insight macro-insight-inline">
-                <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
-                <div class="macro-insight-value-block">
-                  <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
-                  <span class="macro-insight-purpose">Demand</span>
-                </div>
-                <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
-              </div>
-            </aside>
-          </div>
+          ${this.getMacroLayoutHtml(facility, macro)}
         </section>
 
         <section class="user-forecast-card">
@@ -285,19 +241,128 @@ export class Forecast {
     this.bindEvents();
   }
 
+  getMacroLayoutHtml(facility, macro) {
+    const visibleMacro = macro.slice(this.macroOffset, this.macroOffset + 12);
+    const monthLabels = [...new Set(visibleMacro.map((item) => item.monthLabel))];
+    const monthRange = monthLabels.length
+      ? `${monthLabels[0]} – ${monthLabels[monthLabels.length - 1]}`
+      : "12-month outlook";
+    const selectedMacro = visibleMacro[0];
+
+    return `
+      <div class="macro-forecast-layout">
+        <div class="macro-forecast-main">
+          <div class="macro-forecast-scroll">
+            <div class="macro-chart">
+              <div class="macro-y-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>
+              <div class="macro-forecast-grid">
+                ${visibleMacro.map((item) => {
+                  const value = item.forecasted_pct;
+                  const label = "Forecast";
+                  const color = TIER_COLORS[item.demand_tier];
+                  const dateRange = getMacroDateRange(item);
+                  return `
+                    <button type="button" class="macro-forecast-bar macro-bar-incoming" data-period="${escapeHtml(item.periodKey)}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${value}%" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
+                      <span class="macro-bar-value">${value}%</span>
+                      <span class="macro-bar macro-bar-single" style="height:${Math.max(4, value)}%;background:${color}" aria-label="${label} ${value}%"></span>
+                      <span class="macro-bar-label">${escapeHtml(item.week)}</span>
+                    </button>`;
+                }).join("")}
+              </div>
+              <div class="macro-month-labels">
+                ${monthLabels.map((label) => `<span>${escapeHtml(label)}</span>`).join("")}
+              </div>
+            </div>
+          </div>
+          <div class="macro-forecast-toolbar">
+            <button type="button" class="macro-nav-button macro-nav-previous" aria-label="Show previous three months" ${this.macroOffset === 0 ? "disabled" : ""}>&lt;</button>
+            <strong>${escapeHtml(monthRange)}</strong>
+            <button type="button" class="macro-nav-button macro-nav-next" aria-label="Show next three months" ${this.macroOffset + 12 >= macro.length ? "disabled" : ""}>&gt;</button>
+          </div>
+          <div class="forecast-legend">
+            <span><i style="background:${TIER_COLORS.High}"></i>High ≥70%</span>
+            <span><i style="background:${TIER_COLORS.Moderate}"></i>Moderate 35–69%</span>
+            <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
+          </div>
+        </div>
+        <aside class="macro-summary-panel">
+          <h4>12-month forecast for ${escapeHtml(facility.name)}</h4>
+          <p>Projected utilization based on historical activity, live bookings, and seasonal guidance.</p>
+          <div class="macro-insight macro-insight-inline">
+            <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
+            <div class="macro-insight-value-block">
+              <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
+              <span class="macro-insight-purpose">Demand</span>
+            </div>
+            <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
+          </div>
+        </aside>
+      </div>`;
+  }
+
+  refreshMacroForecast(facility) {
+    const layout = this.container.querySelector(".user-forecast-card .macro-forecast-layout");
+    if (!layout) return;
+    layout.outerHTML = this.getMacroLayoutHtml(facility, this.forecast.macro);
+    this.bindEvents();
+  }
+
   bindEvents() {
     this.container.querySelector(".macro-nav-previous")?.addEventListener("click", () => {
       this.macroOffset = Math.max(0, this.macroOffset - 12);
-      this.renderForecast();
+      const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
+      this.refreshMacroForecast(facility);
     });
     this.container.querySelector(".macro-nav-next")?.addEventListener("click", () => {
       this.macroOffset = Math.min(this.forecast.macro.length - 12, this.macroOffset + 12);
-      this.renderForecast();
+      const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
+      this.refreshMacroForecast(facility);
     });
-    this.container.querySelector(".forecast-facility-select")?.addEventListener("change", (event) => {
-      this.selectedFacilityId = event.target.value;
-      this.macroOffset = 0;
-      this.render();
+    this.container.querySelectorAll(".forecast-facility-button").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const facilityId = button.dataset.facilityId;
+        this.selectedFacilityId = facilityId;
+        this.macroOffset = 0;
+
+        this.container.querySelectorAll(".forecast-facility-button").forEach((facilityButton) => {
+          const active = facilityButton.dataset.facilityId === facilityId;
+          facilityButton.classList.toggle("active", active);
+          facilityButton.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+
+        const layout = this.container.querySelector(".macro-forecast-layout");
+        if (layout) {
+          layout.setAttribute("aria-busy", "true");
+          layout.classList.add("macro-loading");
+        }
+
+        try {
+          const params = new URLSearchParams({
+            facilityId,
+            referenceDate: this.referenceDate,
+          });
+          const response = await fetch(`/api/forecast/user?${params}`, { cache: "no-store" });
+          const payload = await response.json();
+          if (!response.ok || !payload.forecast) {
+            throw new Error(payload.message || `Forecast API returned ${response.status}.`);
+          }
+
+          this.forecast.macro = payload.forecast.macro || [];
+          if (payload.forecast.facilities?.length) {
+            this.forecast.facilities = payload.forecast.facilities;
+          }
+          const facility = this.forecast.facilities.find(({ id }) => id === facilityId) || payload.forecast.facilities?.[0];
+          const appFacility = facility ? state.facilities.find(({ id }) => id === facility.id) : null;
+          if (appFacility) setSelectedFacility(appFacility);
+          if (facility) this.refreshMacroForecast(facility);
+        } catch (error) {
+          console.error("Could not load the selected facility forecast:", error);
+          if (layout) {
+            layout.removeAttribute("aria-busy");
+            layout.classList.remove("macro-loading");
+          }
+        }
+      });
     });
     this.container.querySelectorAll(".macro-forecast-bar").forEach((bar) => {
       bar.addEventListener("click", () => {

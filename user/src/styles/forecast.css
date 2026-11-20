@@ -86,6 +86,12 @@
   align-items: stretch;
 }
 
+.macro-forecast-layout.macro-loading {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
 .macro-forecast-main {
   min-width: 0;
 }
@@ -141,32 +147,41 @@
 
 .forecast-facility-toolbar {
   display: flex;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.forecast-facility-button {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.45rem;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.forecast-facility-button:hover {
+  border-color: #800020;
+  background: #fff7f8;
+}
+
+.forecast-facility-button.active {
+  border-color: #800020;
+  background: #fff1f2;
+  color: #800020;
+  box-shadow: 0 0 0 2px rgb(128 0 32 / 10%);
 }
 
 .macro-card-heading h3 {
   margin: 0;
   color: #334155;
-}
-
-.macro-facility-control {
-  display: grid;
-  gap: 0.3rem;
-  min-width: 9rem;
-  color: #64748b;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.macro-facility-control select {
-  min-height: 2rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.35rem;
-  background: white;
-  color: #172033;
-  font-size: 0.75rem;
 }
 
 .forecast-step {
