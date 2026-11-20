@@ -137,6 +137,12 @@ class ReservationApp {
     const isCalendar = tab === "calendar";
     const isMobile = window.innerWidth <= 768;
     document.body.classList.toggle("forecast-tab-active", tab === "forecast");
+    if (contentWrapper) {
+      contentWrapper.classList.toggle("policy-page-scroll", tab === "policy");
+    }
+    if (mainContent) {
+      mainContent.classList.toggle("policy-page-scroll", tab === "policy");
+    }
 
     if (sidebar) sidebar.style.display = isCalendar ? "" : "none";
     if (timeslotsSidebar)
