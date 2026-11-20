@@ -873,6 +873,30 @@ export function createRequestsRouter() {
         }
       }
       let effectiveChanges = authorizedChanges;
+      if (req.auth.kind !== "user") {
+        if (
+          Object.hasOwn(authorizedChanges, "visitOptions") &&
+          (!Array.isArray(authorizedChanges.visitOptions) ||
+            (authorizedChanges.visitOptions.length > 0 &&
+              authorizedChanges.visitOptions.length < 5))
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "At least 5 visit options are required.",
+          });
+        }
+        if (
+          Object.hasOwn(authorizedChanges, "rescheduleOptions") &&
+          (!Array.isArray(authorizedChanges.rescheduleOptions) ||
+            (authorizedChanges.rescheduleOptions.length > 0 &&
+              authorizedChanges.rescheduleOptions.length < 5))
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "At least 5 alternate schedules are required.",
+          });
+        }
+      }
       if (
         req.auth.kind === "user" &&
         typeof changes.appointmentDate === "string" &&

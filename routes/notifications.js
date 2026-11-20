@@ -187,10 +187,13 @@ export function createNotificationRouter() {
       return res
         .status(400)
         .json({ success: false, message: "No email provided" });
-    if (!Array.isArray(visitOptions) || visitOptions.length === 0)
+    if (!Array.isArray(visitOptions) || visitOptions.length < 5)
       return res
         .status(400)
-        .json({ success: false, message: "No visit options provided" });
+        .json({
+          success: false,
+          message: "At least 5 visit options are required.",
+        });
 
     const optionRows = visitOptions
       .map(

@@ -152,7 +152,7 @@ class ReservationApp {
       contentWrapper.style.gridTemplateColumns = isCalendar ? "" : "1fr";
     }
     if (mainContent) {
-      const noScrollTabs = ["my-requests", "policy"];
+      const noScrollTabs = ["my-requests"];
       mainContent.classList.toggle(
         "fullscreen-tab",
         noScrollTabs.includes(tab),

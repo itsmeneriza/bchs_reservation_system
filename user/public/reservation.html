@@ -273,20 +273,48 @@
           <div id="policy-tab" class="tab-content">
             <div id="policy-container">
               <div class="policy-hero">
-                <div class="policy-hero-icon"></div>
-                <h2>Facility Usage Policy</h2>
-                <p>
-                  Please read and understand all guidelines before submitting a
-                  reservation request.
-                </p>
+                <div class="policy-hero-copy">
+                  <span class="policy-eyebrow">Reservation Guidelines</span>
+                  <h2>Facility Usage Policy</h2>
+                  <p>Please review these guidelines before submitting a reservation request.</p>
+                </div>
+                <div class="policy-hero-status">
+                  <span class="policy-status-dot"></span>
+                  Policy in effect
+                </div>
               </div>
 
-              <div class="policy-columns">
+              <div class="policy-layout">
+                <aside class="policy-contact-strip" aria-label="Contact the Administration Office">
+                  <div class="policy-contact-heading">
+                    <span class="policy-contact-icon" aria-hidden="true"></span>
+                    <div>
+                      <span>Need assistance?</span>
+                      <strong>Contact the Administration Office</strong>
+                    </div>
+                  </div>
+                  <div class="policy-contact-items">
+                    <div class="policy-contact-item">
+                      <span class="policy-contact-label">Email</span>
+                      <a href="mailto:admin@bchs.edu">admin@bchs.edu</a>
+                    </div>
+                    <div class="policy-contact-item">
+                      <span class="policy-contact-label">Office hours</span>
+                      <span>Monday–Friday, 8:00 AM–5:00 PM</span>
+                    </div>
+                    <div class="policy-contact-item">
+                      <span class="policy-contact-label">Location</span>
+                      <span>Administration Office, BCHS</span>
+                    </div>
+                  </div>
+                </aside>
+
+                <div class="policy-columns">
                 <!-- Left column -->
                 <div class="policy-col">
                   <div class="policy-card">
                     <div class="policy-card-header">
-                      <span class="policy-card-icon"></span>
+                      <span class="policy-card-icon policy-card-icon--rules" aria-hidden="true"></span>
                       <h3>General Policies</h3>
                     </div>
                     <ul class="policy-list">
@@ -319,7 +347,7 @@
 
                   <div class="policy-card">
                     <div class="policy-card-header">
-                      <span class="policy-card-icon"></span>
+                      <span class="policy-card-icon policy-card-icon--equipment" aria-hidden="true"></span>
                       <h3>Equipment & Parking</h3>
                     </div>
                     <ul class="policy-list">
@@ -343,6 +371,7 @@
                 <div class="policy-col">
                   <div class="policy-card">
                     <div class="policy-card-header">
+                      <span class="policy-card-icon policy-card-icon--payment" aria-hidden="true"></span>
                       <h3>Payment & Fees</h3>
                     </div>
                     <div class="policy-highlight policy-highlight--red">
@@ -366,6 +395,7 @@
 
                   <div class="policy-card">
                     <div class="policy-card-header">
+                      <span class="policy-card-icon policy-card-icon--cancel" aria-hidden="true"></span>
                       <h3>Cancellation Policy</h3>
                     </div>
                     <ul class="policy-list">
@@ -384,6 +414,7 @@
 
                   <div class="policy-card">
                     <div class="policy-card-header">
+                      <span class="policy-card-icon policy-card-icon--calendar" aria-hidden="true"></span>
                       <h3>Rescheduling Policy</h3>
                     </div>
                     <div class="policy-highlight policy-highlight--amber">
@@ -407,6 +438,8 @@
                     By submitting a request, you confirm that you have read and
                     understood all BCHS facility guidelines.
                   </div>
+                </div>
+              </div>
                 </div>
               </div>
             </div>
@@ -1674,6 +1707,33 @@
             I have read and understood all BCHS facility guidelines, including
             general policies, payment requirements, cancellation restrictions,
             and equipment/parking information.
+          </div>
+
+          <!-- Contact Information -->
+          <div
+            style="
+              margin-top: 1.25rem;
+              background: #800020;
+              color: white;
+              padding: 1rem;
+              border-radius: 0.5rem;
+            "
+          >
+            <strong style="display: block; margin-bottom: 0.55rem">
+              Administration Office
+            </strong>
+            <div style="display: grid; gap: 0.35rem; font-size: 0.82rem">
+              <span>
+                Email:
+                <a
+                  href="mailto:admin@bchs.edu"
+                  style="color: white; text-decoration: underline"
+                  >admin@bchs.edu</a
+                >
+              </span>
+              <span>Hours: Monday–Friday, 8:00 AM–5:00 PM</span>
+              <span>Location: BCHS Administration Office</span>
+            </div>
           </div>
 
           <!-- Edit-reason section (shown instead of policy when user is editing a request) -->

@@ -42,6 +42,7 @@ const VISIT_TIME_OPTIONS = [
   "4:00 PM – 5:00 PM",
 ];
 const MAX_VISIT_TIME_SELECTION = 9;
+const MIN_REQUIRED_ALTERNATE_OPTIONS = 5;
 const RESCHEDULE_SLOT_DURATION_MINUTES = 60;
 
 function getRescheduleDurationMinutes() {
@@ -430,6 +431,20 @@ function renderVisitSlotList() {
   if (!list) return;
   if (pendingVisitOptions.length === 0) {
     list.innerHTML = `<p style="font-size:12px;color:#94a3b8;margin:0;">${currentModalMode === "RESCHEDULE_OR_REJECT" ? "No alternate schedules added yet." : "No visit slots added yet."}</p>`;
+    const saveBtn = document.getElementById("saveEdit");
+    if (
+      saveBtn &&
+      (currentModalMode === "QUEUE_REVIEW" ||
+        currentModalMode === "RESCHEDULE_OR_REJECT")
+    ) {
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = "0.55";
+      saveBtn.style.cursor = "not-allowed";
+      saveBtn.textContent =
+        currentModalMode === "RESCHEDULE_OR_REJECT"
+          ? "Add 5 Alternate Schedules (Minimum)"
+          : "Add 5 Visit Options (Minimum)";
+    }
     return;
   }
   list.innerHTML = pendingVisitOptions
@@ -449,14 +464,17 @@ function renderVisitSlotList() {
     (currentModalMode === "QUEUE_REVIEW" ||
       currentModalMode === "RESCHEDULE_OR_REJECT")
   ) {
+    const hasMinimumOptions =
+      pendingVisitOptions.length >= MIN_REQUIRED_ALTERNATE_OPTIONS;
+    saveBtn.disabled = !hasMinimumOptions;
+    saveBtn.style.opacity = hasMinimumOptions ? "" : "0.55";
+    saveBtn.style.cursor = hasMinimumOptions ? "" : "not-allowed";
     saveBtn.textContent =
-      pendingVisitOptions.length > 0
+      hasMinimumOptions
         ? currentModalMode === "RESCHEDULE_OR_REJECT"
           ? "Offer Alternate Schedules"
           : "Send Visit Options"
-        : currentModalMode === "RESCHEDULE_OR_REJECT"
-          ? "Offer Alternate Schedules"
-          : "Set Visit";
+        : `Add ${MIN_REQUIRED_ALTERNATE_OPTIONS - pendingVisitOptions.length} More Option${MIN_REQUIRED_ALTERNATE_OPTIONS - pendingVisitOptions.length === 1 ? "" : "s"} (Minimum 5)`;
   }
 }
 
@@ -561,13 +579,18 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
         ? "inline-flex"
         : "none";
   if (saveEditBtn)
+  {
+    saveEditBtn.disabled = readOnlyAll;
+    saveEditBtn.style.opacity = readOnlyAll ? "0.55" : "";
+    saveEditBtn.style.cursor = readOnlyAll ? "not-allowed" : "";
     saveEditBtn.textContent = isQueueMode
-      ? "Set Visit"
+      ? "Add 5 Visit Options (Minimum)"
       : isConfirmedEditMode
         ? "Update & Approve"
         : isRescheduleMode
-          ? "Offer Alternate Schedules"
+          ? "Add 5 Alternate Schedules (Minimum)"
           : "Update & Save";
+  }
   // Summary
   document.getElementById("edit-summary").innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -1128,7 +1151,7 @@ async function savereservationChanges() {
     };
   } else if (currentModalMode === "QUEUE_REVIEW") {
     // ── Multi-slot path ──
-    if (pendingVisitOptions.length > 0) {
+    if (pendingVisitOptions.length >= MIN_REQUIRED_ALTERNATE_OPTIONS) {
       update = {
         visitOptions: pendingVisitOptions,
         appointmentDate: "",
@@ -1139,29 +1162,21 @@ async function savereservationChanges() {
         adminRevisionReason,
       };
     } else {
-      // Fallback: single-slot (backward compat)
-      const singleDate = document.getElementById("editAppointmentDate").value;
-      const singleTime = document.getElementById("editAppointmentTime").value;
-      if (!singleDate || !singleTime) {
-        showToast("Please add at least one visit slot.", "error");
-        return;
-      }
-      update = {
-        appointmentDate: singleDate,
-        appointmentTime: singleTime,
-        visitOptions: [],
-        status: document.getElementById("editStatus").value,
-        blockReschedulePending: false,
-        blockRescheduleReason: null,
-        adminRevisionReason,
-      };
+      showToast(
+        `Please add at least ${MIN_REQUIRED_ALTERNATE_OPTIONS} visit time options before submitting.`,
+        "error",
+      );
+      return;
     }
   } else if (
     ["CONFIRMED_MANAGE", "RESCHEDULE_OR_REJECT"].includes(currentModalMode)
   ) {
     if (currentModalMode === "RESCHEDULE_OR_REJECT") {
-      if (pendingVisitOptions.length === 0) {
-        showToast("Please add at least one alternate event schedule.", "error");
+      if (pendingVisitOptions.length < MIN_REQUIRED_ALTERNATE_OPTIONS) {
+        showToast(
+          `Please add at least ${MIN_REQUIRED_ALTERNATE_OPTIONS} alternate event schedules.`,
+          "error",
+        );
         return;
       }
       // The requester will choose one offered schedule to update the main reservation.
