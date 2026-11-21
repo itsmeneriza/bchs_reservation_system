@@ -629,15 +629,16 @@ export class MyRequests {
       endTime: "End Time",
       attendees: "Pax",
       purpose: "Purpose",
+      additionalNotes: "Equipment / Utilities",
       totalAmount: "Amount",
     };
     const fmt = (field, val) => {
       if (!val && val !== 0) return "—";
       if (field === "startTime" || field === "endTime")
-        return convertTo12Hour(val);
+        return escapeHtml(convertTo12Hour(val));
       if (field === "totalAmount")
         return `₱${parseFloat(val).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
-      return String(val);
+      return escapeHtml(val);
     };
 
     const rows = Object.entries(snapshot.changes)
@@ -885,6 +886,8 @@ export class MyRequests {
                     </div>
                 </div>
 
+                ${req.userEditSnapshot ? this.renderUserEditBanner(req.userEditSnapshot) : ""}
+
                 ${
                   rescheduleDeadlineNotice
                     ? `
@@ -1031,7 +1034,6 @@ export class MyRequests {
                         : ""
                     }
                     ${req.adminEditSnapshot ? this.renderEditBanner(req.adminEditSnapshot) : ""}
-                    ${req.userEditSnapshot ? this.renderUserEditBanner(req.userEditSnapshot) : ""}
 
                     <!-- footer -->
                     <div style="padding-top:0.4rem;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;margin-top:0.4rem;">
