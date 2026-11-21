@@ -1,5 +1,19 @@
 /* reservation Page Styles */
 
+.reservation-logo {
+  width: 50px;
+  flex: 0 0 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reservation-logo img {
+  width: 100%;
+  height: auto;
+  opacity: 0.9;
+}
+
 .main-container {
   max-width: 1600px;
   margin: 0 auto;
@@ -1779,6 +1793,11 @@ body.forecast-tab-active #calendar-legend {
 
   .header-title {
     font-size: 0.95rem;
+  }
+
+  .reservation-logo {
+    width: 40px;
+    flex-basis: 40px;
   }
 
   .auth-nav-container {
