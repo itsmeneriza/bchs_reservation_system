@@ -218,14 +218,16 @@ export class Forecast {
         <section class="user-forecast-card">
           <div class="forecast-step-heading">
             <div><h3>Weekly Hourly Demand Guide (${escapeHtml(getCurrentWeekRange())})</h3><p>Estimated busy hours for the ${escapeHtml(facility.name)} based on bookings from the past 4 weeks.</p></div>
-            <label class="forecast-weekly-facility-select">
-              <span>Facility</span>
-              <select aria-label="Select facility for weekly hourly demand">
-                ${facilities.map((item) => `
-                  <option value="${escapeHtml(item.id)}"${item.id === facility.id ? " selected" : ""}>${escapeHtml(item.name)}</option>
-                `).join("")}
-              </select>
-            </label>
+          </div>
+          <div class="forecast-facility-toolbar micro-facility-toolbar" aria-label="Select facility for weekly hourly demand">
+            ${facilities.map((item) => `
+              <button type="button"
+                class="forecast-facility-button${item.id === facility.id ? " active" : ""}"
+                data-facility-id="${escapeHtml(item.id)}"
+                aria-pressed="${item.id === facility.id ? "true" : "false"}">
+                ${escapeHtml(item.name)}
+              </button>
+            `).join("")}
           </div>
           <div class="forecast-legend">
             <span><i class="slot-dot busy" style="background:${MICRO_TIER_COLORS.High}"></i>High demand</span>
@@ -330,8 +332,6 @@ export class Forecast {
         facilityButton.classList.toggle("active", active);
         facilityButton.setAttribute("aria-pressed", active ? "true" : "false");
       });
-      const weeklySelect = this.container.querySelector(".forecast-weekly-facility-select select");
-      if (weeklySelect) weeklySelect.value = facilityId;
 
       const layout = this.container.querySelector(".macro-forecast-layout");
       if (layout) {
@@ -365,8 +365,6 @@ export class Forecast {
           facilityButton.classList.toggle("active", active);
           facilityButton.setAttribute("aria-pressed", active ? "true" : "false");
         });
-        const weeklySelect = this.container.querySelector(".forecast-weekly-facility-select select");
-        if (weeklySelect) weeklySelect.value = this.loadedFacilityId;
         if (layout) {
           layout.removeAttribute("aria-busy");
           layout.classList.remove("macro-loading");
@@ -397,13 +395,6 @@ export class Forecast {
       button.dataset.bound = "true";
       button.addEventListener("click", () => loadSelectedFacility(button.dataset.facilityId));
     });
-    const weeklySelect = this.container.querySelector(".forecast-weekly-facility-select select");
-    if (weeklySelect && weeklySelect.dataset.bound !== "true") {
-      weeklySelect.dataset.bound = "true";
-      weeklySelect.addEventListener("change", (event) => {
-        loadSelectedFacility(event.target.value);
-      });
-    }
     this.container.querySelectorAll(".macro-forecast-bar").forEach((bar) => {
       bar.addEventListener("click", () => {
         const item = this.forecast.macro.find(({ periodKey }) => periodKey === bar.dataset.period);
