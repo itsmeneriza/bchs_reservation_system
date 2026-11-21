@@ -971,8 +971,28 @@ export class MyRequests {
                     <!-- purpose -->
                     <div style="font-size:0.72rem;color:#475569;margin-bottom:0.5rem;">
                         <span style="font-weight:600;color:#94a3b8;font-size:0.62rem;">Purpose</span><br>
-                        <span>${req.purpose}</span>
+                        <span>${escapeHtml(req.purpose)}</span>
                     </div>
+
+                    ${
+                      req.additionalNotes
+                        ? `
+                    <div style="font-size:0.72rem;color:#475569;margin-bottom:0.5rem;">
+                        <span style="font-weight:600;color:#94a3b8;font-size:0.62rem;">Equipment / Utilities</span><br>
+                        <span>${escapeHtml(req.additionalNotes)}</span>
+                    </div>`
+                        : ""
+                    }
+
+                    ${
+                      req.userEditReason
+                        ? `
+                    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:0.375rem;padding:0.4rem 0.6rem;margin-bottom:0.4rem;font-size:0.72rem;">
+                        <span style="color:#1e40af;font-weight:700;">Your edit reason:</span>
+                        <span style="color:#1e3a8a;margin-left:0.25rem;">${escapeHtml(req.userEditReason)}</span>
+                    </div>`
+                        : ""
+                    }
 
                     ${
                       req.rejectionReason

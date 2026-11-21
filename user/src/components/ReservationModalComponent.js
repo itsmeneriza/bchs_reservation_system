@@ -1,4 +1,4 @@
-﻿/**
+/**
  * reservation Modal Component
  * Handles reservation request form interactions, dynamic time filtering, and purpose-based venue suggestions.
  */

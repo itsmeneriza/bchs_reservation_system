@@ -141,6 +141,8 @@ export class Forecast {
     this.referenceDate = todayAsDateString();
     this.forecast = null;
     this.macroOffset = 0;
+    this.facilityRequestId = 0;
+    this.loadedFacilityId = this.selectedFacilityId;
   }
 
   async render() {
@@ -181,6 +183,7 @@ export class Forecast {
     const microRows = normalizeMicroRows(micro);
     const facility = facilities.find(({ id }) => id === this.selectedFacilityId) || facilities[0];
     this.selectedFacilityId = facility.id;
+    this.loadedFacilityId = facility.id;
     const appFacility = state.facilities.find(({ id }) => id === facility.id);
     if (appFacility && state.selectedFacility?.id !== appFacility.id) {
       new FacilityList().selectFacility(appFacility);
@@ -215,6 +218,14 @@ export class Forecast {
         <section class="user-forecast-card">
           <div class="forecast-step-heading">
             <div><h3>Weekly Hourly Demand Guide (${escapeHtml(getCurrentWeekRange())})</h3><p>Estimated busy hours for the ${escapeHtml(facility.name)} based on bookings from the past 4 weeks.</p></div>
+            <label class="forecast-weekly-facility-select">
+              <span>Facility</span>
+              <select aria-label="Select facility for weekly hourly demand">
+                ${facilities.map((item) => `
+                  <option value="${escapeHtml(item.id)}"${item.id === facility.id ? " selected" : ""}>${escapeHtml(item.name)}</option>
+                `).join("")}
+              </select>
+            </label>
           </div>
           <div class="forecast-legend">
             <span><i class="slot-dot busy" style="background:${MICRO_TIER_COLORS.High}"></i>High demand</span>
@@ -308,62 +319,91 @@ export class Forecast {
   }
 
   bindEvents() {
-    this.container.querySelector(".macro-nav-previous")?.addEventListener("click", () => {
-      this.macroOffset = Math.max(0, this.macroOffset - 12);
-      const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
-      this.refreshMacroForecast(facility);
-    });
-    this.container.querySelector(".macro-nav-next")?.addEventListener("click", () => {
-      this.macroOffset = Math.min(this.forecast.macro.length - 12, this.macroOffset + 12);
-      const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
-      this.refreshMacroForecast(facility);
-    });
-    this.container.querySelectorAll(".forecast-facility-button").forEach((button) => {
-      button.addEventListener("click", async () => {
-        const facilityId = button.dataset.facilityId;
-        this.selectedFacilityId = facilityId;
-        this.macroOffset = 0;
+    const loadSelectedFacility = async (facilityId) => {
+      if (!facilityId) return;
+      const requestId = ++this.facilityRequestId;
+      this.selectedFacilityId = facilityId;
+      this.macroOffset = 0;
 
+      this.container.querySelectorAll(".forecast-facility-button").forEach((facilityButton) => {
+        const active = facilityButton.dataset.facilityId === facilityId;
+        facilityButton.classList.toggle("active", active);
+        facilityButton.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      const weeklySelect = this.container.querySelector(".forecast-weekly-facility-select select");
+      if (weeklySelect) weeklySelect.value = facilityId;
+
+      const layout = this.container.querySelector(".macro-forecast-layout");
+      if (layout) {
+        layout.setAttribute("aria-busy", "true");
+        layout.classList.add("macro-loading");
+      }
+
+      try {
+        const params = new URLSearchParams({
+          facilityId,
+          referenceDate: this.referenceDate,
+        });
+        const response = await fetch(`/api/forecast/user?${params}`, { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok || !payload.forecast) {
+          throw new Error(payload.message || `Forecast API returned ${response.status}.`);
+        }
+
+        if (requestId !== this.facilityRequestId) return;
+        this.forecast = payload.forecast;
+        const facility = this.forecast.facilities.find(({ id }) => id === facilityId) || this.forecast.facilities[0];
+        const appFacility = facility ? state.facilities.find(({ id }) => id === facility.id) : null;
+        if (appFacility) setSelectedFacility(appFacility);
+        this.renderForecast();
+      } catch (error) {
+        if (requestId !== this.facilityRequestId) return;
+        console.error("Could not load the selected facility forecast:", error);
+        this.selectedFacilityId = this.loadedFacilityId;
         this.container.querySelectorAll(".forecast-facility-button").forEach((facilityButton) => {
-          const active = facilityButton.dataset.facilityId === facilityId;
+          const active = facilityButton.dataset.facilityId === this.loadedFacilityId;
           facilityButton.classList.toggle("active", active);
           facilityButton.setAttribute("aria-pressed", active ? "true" : "false");
         });
-
-        const layout = this.container.querySelector(".macro-forecast-layout");
+        const weeklySelect = this.container.querySelector(".forecast-weekly-facility-select select");
+        if (weeklySelect) weeklySelect.value = this.loadedFacilityId;
         if (layout) {
-          layout.setAttribute("aria-busy", "true");
-          layout.classList.add("macro-loading");
+          layout.removeAttribute("aria-busy");
+          layout.classList.remove("macro-loading");
         }
+      }
+    };
 
-        try {
-          const params = new URLSearchParams({
-            facilityId,
-            referenceDate: this.referenceDate,
-          });
-          const response = await fetch(`/api/forecast/user?${params}`, { cache: "no-store" });
-          const payload = await response.json();
-          if (!response.ok || !payload.forecast) {
-            throw new Error(payload.message || `Forecast API returned ${response.status}.`);
-          }
-
-          this.forecast.macro = payload.forecast.macro || [];
-          if (payload.forecast.facilities?.length) {
-            this.forecast.facilities = payload.forecast.facilities;
-          }
-          const facility = this.forecast.facilities.find(({ id }) => id === facilityId) || payload.forecast.facilities?.[0];
-          const appFacility = facility ? state.facilities.find(({ id }) => id === facility.id) : null;
-          if (appFacility) setSelectedFacility(appFacility);
-          if (facility) this.refreshMacroForecast(facility);
-        } catch (error) {
-          console.error("Could not load the selected facility forecast:", error);
-          if (layout) {
-            layout.removeAttribute("aria-busy");
-            layout.classList.remove("macro-loading");
-          }
-        }
+    const previousButton = this.container.querySelector(".macro-nav-previous");
+    if (previousButton && previousButton.dataset.bound !== "true") {
+      previousButton.dataset.bound = "true";
+      previousButton.addEventListener("click", () => {
+      this.macroOffset = Math.max(0, this.macroOffset - 12);
+      const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
+      this.refreshMacroForecast(facility);
       });
+    }
+    const nextButton = this.container.querySelector(".macro-nav-next");
+    if (nextButton && nextButton.dataset.bound !== "true") {
+      nextButton.dataset.bound = "true";
+      nextButton.addEventListener("click", () => {
+      this.macroOffset = Math.min(this.forecast.macro.length - 12, this.macroOffset + 12);
+      const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
+      this.refreshMacroForecast(facility);
+      });
+    }
+    this.container.querySelectorAll(".forecast-facility-button").forEach((button) => {
+      if (button.dataset.bound === "true") return;
+      button.dataset.bound = "true";
+      button.addEventListener("click", () => loadSelectedFacility(button.dataset.facilityId));
     });
+    const weeklySelect = this.container.querySelector(".forecast-weekly-facility-select select");
+    if (weeklySelect && weeklySelect.dataset.bound !== "true") {
+      weeklySelect.dataset.bound = "true";
+      weeklySelect.addEventListener("change", (event) => {
+        loadSelectedFacility(event.target.value);
+      });
+    }
     this.container.querySelectorAll(".macro-forecast-bar").forEach((bar) => {
       bar.addEventListener("click", () => {
         const item = this.forecast.macro.find(({ periodKey }) => periodKey === bar.dataset.period);

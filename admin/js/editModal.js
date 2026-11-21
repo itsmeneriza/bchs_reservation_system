@@ -633,6 +633,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     "CONFIRMED_EDIT",
     "QUEUE_REVIEW",
   ].includes(mode);
+  const readOnlyAll = mode === "VIEW_ONLY";
   setFinancialsExpanded(showPaymentDetails);
   const financialsToggle = document.getElementById("financialsToggle");
   if (financialsToggle)
@@ -725,7 +726,6 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     mode === "CONFIRMED_MANAGE" || mode === "RESCHEDULE_OR_REJECT";
   const isConfirmedEdit = mode === "CONFIRMED_EDIT";
   const lockFields = mode === "PAYMENT_ONLY" || mode === "VIEW_ONLY";
-  const readOnlyAll = mode === "VIEW_ONLY";
   const isQueueReview = mode === "QUEUE_REVIEW";
 
   document.querySelectorAll(".edit-field-locked").forEach((el) => {

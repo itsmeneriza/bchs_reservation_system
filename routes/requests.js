@@ -758,6 +758,7 @@ export function createRequestsRouter() {
 
       const changes = req.body || {};
       let authorizedChanges = changes;
+      let pendingUserEditFacility = null;
       if (req.auth.kind === "user") {
         const allowedFields = new Set([
           "_editedByUser",
@@ -783,9 +784,38 @@ export function createRequestsRouter() {
           "cancellationReason",
           "cancellationRequestedAt",
         ]);
+        const isPendingUserEdit =
+          existing.status === "pending" &&
+          changes._isEdit === true &&
+          changes._editedByUser === true;
+        if (isPendingUserEdit) allowedFields.add("facilityId");
         authorizedChanges = Object.fromEntries(
           Object.entries(changes).filter(([key]) => allowedFields.has(key)),
         );
+        if (isPendingUserEdit) {
+          const facilityId = authorizedChanges.facilityId;
+          if (typeof facilityId !== "string" || !facilityId.trim()) {
+            return res.status(400).json({
+              success: false,
+              message: "Choose a valid facility.",
+            });
+          }
+          const { data: facility, error: facilityError } = await client
+            .from("facilities")
+            .select("id,name,price_per_hour")
+            .eq("id", facilityId)
+            .maybeSingle();
+          if (facilityError) throw facilityError;
+          if (!facility) {
+            return res.status(400).json({
+              success: false,
+              message: "Choose a valid facility.",
+            });
+          }
+          pendingUserEditFacility = facility;
+          authorizedChanges.facilityId = facility.id;
+          authorizedChanges.facilityName = facility.name;
+        }
         if (
           ["approved", "accepted"].includes(existing.status) &&
           Object.hasOwn(changes, "additionalNotes")
@@ -1033,6 +1063,48 @@ export function createRequestsRouter() {
       }
 
       const payload = toDbReservationPatch(existing, authorizedChanges);
+      if (pendingUserEditFacility) {
+        const startMinutes = getTimeMinutes(
+          authorizedChanges.startTime ?? existing.start_time,
+        );
+        const endMinutes = getTimeMinutes(
+          authorizedChanges.endTime ?? existing.end_time,
+        );
+        if (
+          startMinutes === null ||
+          endMinutes === null ||
+          endMinutes <= startMinutes
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Choose a valid reservation time.",
+          });
+        }
+
+        const durationHours = (endMinutes - startMinutes) / 60;
+        const pricePerHour = Number(pendingUserEditFacility.price_per_hour);
+        if (!Number.isFinite(pricePerHour) || pricePerHour < 0) {
+          throw new Error("Facility has an invalid hourly rate.");
+        }
+        const additionalNotes = Object.hasOwn(
+          authorizedChanges,
+          "additionalNotes",
+        )
+          ? authorizedChanges.additionalNotes
+          : existing.additional_notes;
+        const hasUtilities =
+          typeof additionalNotes === "string" && additionalNotes.trim();
+        const isStaff =
+          existing.is_staff === true || existing.user_type === "staff";
+        const totalAmount = isStaff
+          ? 0
+          : pricePerHour * durationHours +
+            (durationHours >= 8 ? 800 : 0) +
+            (hasUtilities ? 800 : 0);
+
+        payload.total_amount = totalAmount;
+        payload.request_data.totalAmount = totalAmount;
+      }
       if (
         req.auth.kind === "user" &&
         ["approved", "accepted"].includes(existing.status) &&
