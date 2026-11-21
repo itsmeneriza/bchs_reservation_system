@@ -216,9 +216,6 @@ export class Forecast {
         </section>
 
         <section class="user-forecast-card">
-          <div class="forecast-step-heading">
-            <div><h3>Weekly Hourly Demand Guide (${escapeHtml(getCurrentWeekRange())})</h3><p>Estimated busy hours for the ${escapeHtml(facility.name)} based on bookings from the past 4 weeks.</p></div>
-          </div>
           <div class="forecast-facility-toolbar micro-facility-toolbar" aria-label="Select facility for weekly hourly demand">
             ${facilities.map((item) => `
               <button type="button"
@@ -228,6 +225,9 @@ export class Forecast {
                 ${escapeHtml(item.name)}
               </button>
             `).join("")}
+          </div>
+          <div class="forecast-step-heading">
+            <div><h3>Weekly Hourly Demand Guide (${escapeHtml(getCurrentWeekRange())})</h3><p>Estimated busy hours for the ${escapeHtml(facility.name)} based on bookings from the past 4 weeks.</p></div>
           </div>
           <div class="forecast-legend">
             <span><i class="slot-dot busy" style="background:${MICRO_TIER_COLORS.High}"></i>High demand</span>
