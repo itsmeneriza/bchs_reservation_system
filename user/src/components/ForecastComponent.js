@@ -354,7 +354,7 @@ export class Forecast {
               ? (selectedMacro?.observed_pct ?? 0)
               : (selectedMacro?.forecasted_pct ?? 0);
             return `
-          <h4>Utilization ${selectedObserved ? "Observed" : "Forecast"} for ${escapeHtml(facility.name)}</h4>
+          <h4>${selectedObserved ? "Observed utilization" : "Utilization Forecast"} for ${escapeHtml(facility.name)}</h4>
           <div class="macro-insight macro-insight-inline">
             <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
             <div class="macro-insight-demand-line">
@@ -475,7 +475,7 @@ export class Forecast {
           note.textContent = getMacroAdvice(observedItem);
           if (heading) {
             const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
-            heading.textContent = `Utilization ${observed ? "Observed" : "Forecast"} for ${facility?.name || "Facility"}`;
+            heading.textContent = `${observed ? "Observed utilization" : "Utilization Forecast"} for ${facility?.name || "Facility"}`;
           }
         }
       });
