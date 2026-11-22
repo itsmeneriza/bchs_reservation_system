@@ -5,11 +5,28 @@ const loginScreen = document.getElementById("adminLoginScreen");
 const adminApp = document.getElementById("adminApp");
 const errorBox = document.getElementById("adminLoginError");
 const submitButton = loginForm.querySelector('button[type="submit"]');
+const passwordInput = document.getElementById("adminPassword");
+const passwordToggle = document.getElementById("toggleAdminPassword");
 
 let supabaseConfigPromise;
 let currentSession = readStoredSession();
 let refreshTimer;
 let sessionExpiryTimer;
+
+function setPasswordVisibility(showPassword) {
+  passwordInput.type = showPassword ? "text" : "password";
+  passwordToggle.classList.toggle("is-visible", showPassword);
+  passwordToggle.setAttribute("aria-pressed", String(showPassword));
+  passwordToggle.setAttribute(
+    "aria-label",
+    showPassword ? "Hide password" : "Show password",
+  );
+  passwordToggle.title = showPassword ? "Hide password" : "Show password";
+}
+
+passwordToggle.addEventListener("click", () => {
+  setPasswordVisibility(passwordInput.type === "password");
+});
 
 function readStoredSession() {
   try {
@@ -113,6 +130,7 @@ function clearSession() {
 }
 
 function showLogin(message = "") {
+  setPasswordVisibility(false);
   loginScreen.style.display = "flex";
   adminApp.style.display = "none";
   errorBox.textContent = message;

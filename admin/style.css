@@ -1587,6 +1587,50 @@ body {
   margin-bottom: 24px;
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field .input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: #800020;
+  background: #f8fafc;
+  outline: none;
+}
+
+.password-eye-hide {
+  display: none;
+}
+
+.password-toggle.is-visible .password-eye-show {
+  display: none;
+}
+
+.password-toggle.is-visible .password-eye-hide {
+  display: block;
+}
+
 /* Tab notification badges */
 .tab-badge {
   display: inline-flex;
