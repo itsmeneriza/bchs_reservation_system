@@ -57,23 +57,31 @@ function getMicroHeatmapColor(slot) {
 }
 
 function todayAsDateString() {
-  const today = new Date();
-  const pad = (value) => String(value).padStart(2, "0");
-  return `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
 function getCurrentWeekRange() {
-  const sunday = new Date();
-  sunday.setHours(0, 0, 0, 0);
-  sunday.setDate(sunday.getDate() - sunday.getDay());
+  const [year, month, day] = todayAsDateString().split("-").map(Number);
+  const sunday = new Date(Date.UTC(year, month - 1, day));
+  sunday.setUTCDate(sunday.getUTCDate() - sunday.getUTCDay());
   const saturday = new Date(sunday);
-  saturday.setDate(sunday.getDate() + 6);
-  const format = (date, options) => date.toLocaleDateString("en-US", options);
+  saturday.setUTCDate(sunday.getUTCDate() + 6);
+  const format = (date, options) => date.toLocaleDateString("en-US", {
+    ...options,
+    timeZone: "Asia/Manila",
+  });
 
-  if (sunday.getFullYear() !== saturday.getFullYear()) {
+  if (sunday.getUTCFullYear() !== saturday.getUTCFullYear()) {
     return `${format(sunday, { month: "short", day: "numeric", year: "numeric" })}-${format(saturday, { month: "short", day: "numeric", year: "numeric" })}`;
   }
-  if (sunday.getMonth() !== saturday.getMonth()) {
+  if (sunday.getUTCMonth() !== saturday.getUTCMonth()) {
     return `${format(sunday, { month: "short", day: "numeric" })}-${format(saturday, { month: "short", day: "numeric", year: "numeric" })}`;
   }
   return `${format(sunday, { month: "short" })} ${sunday.getDate()}-${saturday.getDate()}, ${saturday.getFullYear()}`;
@@ -110,6 +118,9 @@ export function formatMacroPeriod(item) {
 }
 
 function getMacroAdvice(item) {
+  if (item?.isObserved === true) {
+    return "This completed week is based on recorded reservation and event activity.";
+  }
   switch (item?.demand_tier) {
     case "High":
       return "High demand is expected. Submit your reservation early and consider alternate dates.";
@@ -155,10 +166,26 @@ export class Forecast {
     this.selectedMacroPeriodKey = null;
     this.facilityRequestId = 0;
     this.loadedFacilityId = this.selectedFacilityId;
+    this.referenceDateTimer = window.setInterval(() => {
+      if (this.updateReferenceDate()) this.render();
+    }, 60 * 1000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && this.updateReferenceDate()) this.render();
+    });
+  }
+
+  updateReferenceDate() {
+    const referenceDate = todayAsDateString();
+    if (referenceDate === this.referenceDate) return false;
+    this.referenceDate = referenceDate;
+    this.macroOffset = 0;
+    this.selectedMacroPeriodKey = null;
+    return true;
   }
 
   async render() {
     if (!this.container) return;
+    this.updateReferenceDate();
     this.container.innerHTML = `
       <div class="forecast-loading" role="status">
         <div class="spinner"></div>
@@ -287,20 +314,23 @@ export class Forecast {
             <span><i style="background:${TIER_COLORS.High}"></i>High ≥70%</span>
             <span><i style="background:${TIER_COLORS.Moderate}"></i>Moderate 35–69%</span>
             <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
+            <span><i style="background:#94a3b8"></i>Observed</span>
           </div>
           <div class="macro-forecast-scroll">
             <div class="macro-chart">
               <div class="macro-y-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>
               <div class="macro-forecast-grid">
                 ${visibleMacro.map((item) => {
-                  const value = item.forecasted_pct;
+                  const observed = item.isObserved === true || item.endDate < this.referenceDate;
+                  const value = observed ? (item.observed_pct ?? 0) : item.forecasted_pct;
                   const label = "Forecast";
                   const color = TIER_COLORS[item.demand_tier];
                   const dateRange = getMacroDateRange(item);
                   const selected = item.periodKey === selectedMacro?.periodKey;
+                  const barColor = observed ? "#94a3b8" : color;
                   return `
-                    <button type="button" class="macro-forecast-bar macro-bar-incoming${selected ? " selected" : ""}" data-period="${escapeHtml(item.periodKey)}" aria-pressed="${selected}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${value}%" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
-                      <span class="macro-bar macro-bar-single" style="height:${Math.max(4, value)}%;background:${color}" aria-label="${label} ${value}%"></span>
+                    <button type="button" class="macro-forecast-bar macro-bar-incoming${observed ? " observed" : ""}${selected ? " selected" : ""}" data-period="${escapeHtml(item.periodKey)}" aria-pressed="${selected}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${observed ? "observed" : `${value}%`}" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${observed ? "Observed" : `${label}: ${value}%`} — ${escapeHtml(item.anchor_event_note)}">
+                      <span class="macro-bar macro-bar-single" style="height:${Math.max(4, value)}%;background:${barColor}" aria-label="${observed ? "Observed" : `${label} ${value}%`}"></span>
                       <span class="macro-bar-label">${escapeHtml(item.week)}</span>
                     </button>`;
                 }).join("")}
@@ -317,15 +347,23 @@ export class Forecast {
           </div>
         </div>
         <aside class="macro-summary-panel">
-          <h4>Utilization Forecast for ${escapeHtml(facility.name)}</h4>
+          ${(() => {
+            const selectedObserved = selectedMacro?.isObserved === true ||
+              (selectedMacro?.endDate && selectedMacro.endDate < this.referenceDate);
+            const selectedValue = selectedObserved
+              ? (selectedMacro?.observed_pct ?? 0)
+              : (selectedMacro?.forecasted_pct ?? 0);
+            return `
+          <h4>Utilization ${selectedObserved ? "Observed" : "Forecast"} for ${escapeHtml(facility.name)}</h4>
           <div class="macro-insight macro-insight-inline">
             <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
             <div class="macro-insight-demand-line">
-              <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
-              <span class="macro-insight-tier">Demand</span>
+              <span class="macro-insight-value">${selectedValue}%</span>
+              <span class="macro-insight-tier">${selectedObserved ? "Observed" : "Demand"}</span>
             </div>
             <p class="forecast-selection-note">${escapeHtml(getMacroAdvice(selectedMacro))}</p>
-          </div>
+          </div>`;
+          })()}
         </aside>
       </div>`;
   }
@@ -340,6 +378,7 @@ export class Forecast {
   bindEvents() {
     const loadSelectedFacility = async (facilityId) => {
       if (!facilityId) return;
+      this.updateReferenceDate();
       const requestId = ++this.facilityRequestId;
       this.selectedFacilityId = facilityId;
       this.macroOffset = 0;
@@ -416,6 +455,7 @@ export class Forecast {
     this.container.querySelectorAll(".macro-forecast-bar").forEach((bar) => {
       bar.addEventListener("click", () => {
         const item = this.forecast.macro.find(({ periodKey }) => periodKey === bar.dataset.period);
+        const heading = this.container.querySelector(".macro-summary-panel h4");
         const title = this.container.querySelector(".macro-insight-title");
         const value = this.container.querySelector(".macro-insight-value");
         const tier = this.container.querySelector(".macro-insight-tier");
@@ -428,9 +468,15 @@ export class Forecast {
             forecastBar.setAttribute("aria-pressed", String(selected));
           });
           title.textContent = formatMacroPeriod(item);
-          value.textContent = `${item.forecasted_pct}%`;
-          tier.textContent = "Demand";
-          note.textContent = getMacroAdvice(item);
+          const observed = item.isObserved === true || item.endDate < this.referenceDate;
+          const observedItem = observed ? { ...item, isObserved: true } : item;
+          value.textContent = `${observed ? (item.observed_pct ?? 0) : item.forecasted_pct}%`;
+          tier.textContent = observed ? "Observed" : "Demand";
+          note.textContent = getMacroAdvice(observedItem);
+          if (heading) {
+            const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
+            heading.textContent = `Utilization ${observed ? "Observed" : "Forecast"} for ${facility?.name || "Facility"}`;
+          }
         }
       });
     });

@@ -53,6 +53,17 @@ function dateKey(date) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
 }
 
+function philippineDateString(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
 function formatMacroDateRange(start, end) {
   const startMonth = MONTHS[start.getUTCMonth()];
   const endMonth = MONTHS[end.getUTCMonth()];
@@ -192,7 +203,7 @@ function getTier(value) {
 }
 
 function buildMacroForecast(activity, facilityId, referenceDate) {
-  const start = dateParts(referenceDate) || new Date();
+  const start = dateParts(referenceDate) || dateParts(philippineDateString());
   const startMonth = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
   const forecastYears = [startMonth.getUTCFullYear() - 2, startMonth.getUTCFullYear() - 1, startMonth.getUTCFullYear()];
   const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
@@ -205,7 +216,6 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
     const year = forecastMonth.getUTCFullYear();
     for (const [weekNumber, weekLabel] of WEEK_LABELS.entries()) {
       const forecastRange = getMacroWeekRange(year, monthIndex, weekNumber);
-      if (forecastRange.end < start) continue;
       const observedByYear = forecastYears.map((observedYear) => {
         const observedRange = getMacroWeekRange(observedYear, monthIndex, weekNumber);
         const hours = facilityActivity.reduce((total, entry) => {
@@ -226,6 +236,15 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
           observedByYear[0] * 0.15 + observedByYear[1] * 0.3 + observedByYear[2] * 0.55 + adjustment,
         ),
       );
+      const observedHours = facilityActivity.reduce((total, entry) => {
+        const date = dateParts(entry.date);
+        return date &&
+          date >= forecastRange.start &&
+          date <= forecastRange.end
+          ? total + (entry.endMinute - entry.startMinute) / 60
+          : total;
+      }, 0);
+      const observedPct = Math.round(Math.min(100, (observedHours / 54) * 100));
       macro.push({
         periodKey: `${month} ${year} W${weekNumber + 1}`,
         monthLabel: `${month} ${year}`,
@@ -235,6 +254,8 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
         year,
         month: monthIndex + 1,
         week: weekLabel,
+        isObserved: forecastRange.end < start,
+        observed_pct: observedPct,
         forecasted_pct: Math.round(forecasted),
         demand_tier: getTier(forecasted),
         anchor_event_note: monthIndex === 3 || monthIndex === 4
@@ -250,7 +271,7 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
 }
 
 function buildMicroForecast(activity, facilityId, referenceDate) {
-  const target = dateParts(referenceDate) || new Date();
+  const target = dateParts(referenceDate) || dateParts(philippineDateString());
   const sunday = new Date(target);
   sunday.setUTCDate(sunday.getUTCDate() - sunday.getUTCDay());
   const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
@@ -290,7 +311,7 @@ function buildMicroForecast(activity, facilityId, referenceDate) {
 }
 
 async function computeUserForecast(facilityId, referenceDate) {
-  const targetDate = dateParts(referenceDate) || new Date();
+  const targetDate = dateParts(referenceDate) || dateParts(philippineDateString());
   const client = createServiceRoleSupabaseClient();
   const [{ data: facilities, error: facilitiesError }, activity] = await Promise.all([
     client.from("facilities").select("id,name").order("name", { ascending: true }),
