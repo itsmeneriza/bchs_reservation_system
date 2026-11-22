@@ -838,7 +838,9 @@ export class MyRequests {
       : "";
 
     return `
-            <div style="background: white; border: ${isBlockForced ? "2px solid #f59e0b" : hasRescheduleOptions || hasVisitOptions ? "2px solid #93c5fd" : "1px solid #e2e8f0"}; border-radius: 0.5rem; transition: all 0.2s; font-size: 0.8rem; overflow: hidden;">
+            <div style="background: white; border: ${isBlockForced ? "2px solid #f59e0b" : hasRescheduleOptions || hasVisitOptions ? "2px solid #93c5fd" : "1px solid #e2e8f0"}; border-radius: 0.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; font-size: 0.8rem; overflow: hidden;"
+                 onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(15, 23, 42, 0.12)'"
+                 onmouseout="this.style.transform='';this.style.boxShadow=''">
 
                 <!-- ── Always-visible header (click to expand) ── -->
                 <div onclick="window.toggleRequestCard('${req.id}')"
@@ -899,8 +901,6 @@ export class MyRequests {
                         </span>
                     </div>
                 </div>
-
-                ${req.userEditSnapshot ? this.renderUserEditBanner(req.userEditSnapshot) : ""}
 
                 ${
                   rescheduleDeadlineNotice
@@ -969,22 +969,6 @@ export class MyRequests {
                 <div id="card-details-${req.id}" style="display:none;padding:0 0.75rem 0.75rem;">
                     <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 0.6rem;">
 
-                    ${blockForcedBanner}
-
-                    <!-- scheduled visit banner (user already picked) -->
-                    ${
-                      req.appointmentDate &&
-                      req.appointmentTime &&
-                      req.status !== "approved"
-                        ? `
-                    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:0.375rem;padding:0.5rem 0.7rem;margin-bottom:0.4rem;font-size:0.78rem;">
-                        <div style="font-weight:700;color:#166534;margin-bottom:0.2rem;">Visit Scheduled</div>
-                        <div style="color:#15803d;">${formatDate(req.appointmentDate)} · ${req.appointmentTime}</div>
-                        <div style="font-size:0.68rem;color:#4ade80;margin-top:0.2rem;">Please visit the Administration Office at the scheduled time.</div>
-                    </div>`
-                        : ""
-                    }
-
                     <!-- purpose -->
                     <div style="font-size:0.72rem;color:#475569;margin-bottom:0.5rem;">
                         <span style="font-weight:600;color:#94a3b8;font-size:0.62rem;">Purpose</span><br>
@@ -997,6 +981,24 @@ export class MyRequests {
                     <div style="font-size:0.72rem;color:#475569;margin-bottom:0.5rem;">
                         <span style="font-weight:600;color:#94a3b8;font-size:0.62rem;">Equipment / Utilities</span><br>
                         <span>${escapeHtml(req.additionalNotes)}</span>
+                    </div>`
+                        : ""
+                    }
+
+                    ${req.userEditSnapshot ? this.renderUserEditBanner(req.userEditSnapshot) : ""}
+
+                    ${blockForcedBanner}
+
+                    <!-- scheduled visit banner (user already picked) -->
+                    ${
+                      req.appointmentDate &&
+                      req.appointmentTime &&
+                      req.status !== "approved"
+                        ? `
+                    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:0.375rem;padding:0.5rem 0.7rem;margin-bottom:0.4rem;font-size:0.78rem;">
+                        <div style="font-weight:700;color:#166534;margin-bottom:0.2rem;">Visit Scheduled</div>
+                        <div style="color:#15803d;">${formatDate(req.appointmentDate)} · ${req.appointmentTime}</div>
+                        <div style="font-size:0.68rem;color:#4ade80;margin-top:0.2rem;">Please visit the Administration Office at the scheduled time.</div>
                     </div>`
                         : ""
                     }
