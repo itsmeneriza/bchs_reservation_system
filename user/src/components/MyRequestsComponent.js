@@ -16,6 +16,8 @@ import {
   getBookedSlots,
 } from "../services/reservationService.js";
 
+const PENDING_USER_EDIT_LIMIT = 3;
+
 const escapeHtml = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -784,6 +786,13 @@ export class MyRequests {
     const daysUntilEvent = getCalendarDaysUntil(req.date);
     const isPast = daysUntilEvent !== null && daysUntilEvent < 0;
     const isAcceptedReservation = ["approved", "accepted"].includes(req.status);
+    const pendingEditsUsed =
+      Number.isInteger(req.pendingEditCount) && req.pendingEditCount > 0
+        ? Math.min(req.pendingEditCount, PENDING_USER_EDIT_LIMIT)
+        : 0;
+    const pendingEditLimitReached =
+      req.status === "pending" &&
+      pendingEditsUsed >= PENDING_USER_EDIT_LIMIT;
     const canCancel =
       (req.status === "pending" || isAcceptedReservation) &&
       !isPast &&
@@ -791,7 +800,7 @@ export class MyRequests {
       !isBlockForced;
     const canEdit =
       !isBlockForced &&
-      ((req.status === "pending" && !isPast) ||
+      ((req.status === "pending" && !isPast && !pendingEditLimitReached) ||
         (isAcceptedReservation &&
           daysUntilEvent !== null &&
           daysUntilEvent >= 1 &&
@@ -849,6 +858,11 @@ export class MyRequests {
                     </div>
                     <!-- action btns — stop propagation so clicks don't toggle the card -->
                     <div style="display:flex;gap:0.35rem;flex-shrink:0;" onclick="event.stopPropagation()">
+                        ${
+                          req.status === "pending"
+                            ? `<span style="align-self:center;color:${pendingEditLimitReached ? "#b91c1c" : "#64748b"};font-size:0.65rem;white-space:nowrap;">${pendingEditLimitReached ? "Edit limit reached" : `Edits used: ${pendingEditsUsed}/${PENDING_USER_EDIT_LIMIT}`}</span>`
+                            : ""
+                        }
                         ${
                           canEdit
                             ? `

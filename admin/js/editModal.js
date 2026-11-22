@@ -671,6 +671,69 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
           ? "Add 5 Alternate Schedules (Minimum)"
           : "Update & Save";
   }
+  const userEditSnapshot = r.userEditSnapshot;
+  const userEditChanges =
+    userEditSnapshot?.changes && typeof userEditSnapshot.changes === "object"
+      ? userEditSnapshot.changes
+      : {};
+  const originalValue = (field, currentValue) =>
+    Object.hasOwn(userEditChanges, field)
+      ? userEditChanges[field]?.before
+      : currentValue;
+  const userEditFieldLabels = {
+    facilityName: "Facility",
+    date: "Requested Date",
+    startTime: "Start Time",
+    endTime: "End Time",
+    attendees: "Attendees",
+    purpose: "Purpose",
+    additionalNotes: "Equipment / Additional Details",
+    totalAmount: "Amount",
+  };
+  const formatUserEditValue = (field, value) => {
+    if (value === null || value === undefined || value === "") return "—";
+    if (field === "date") return escapeAdminText(formatDateSimple(value));
+    if (field === "startTime" || field === "endTime")
+      return escapeAdminText(convertTo12Hour(value));
+    if (field === "totalAmount") {
+      const amount = Number(value);
+      return Number.isFinite(amount)
+        ? `₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : escapeAdminText(value);
+    }
+    return escapeAdminText(value);
+  };
+  const userEditChangeRows = Object.entries(userEditChanges)
+    .filter(
+      ([field, change]) =>
+        Object.hasOwn(userEditFieldLabels, field) &&
+        change &&
+        typeof change === "object",
+    )
+    .map(
+      ([field, change]) => `
+        <div style="display:grid;grid-template-columns:minmax(120px,0.8fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding:7px 0;border-top:1px solid #bfdbfe;font-size:12px;">
+            <strong style="color:#1e40af;">${userEditFieldLabels[field]}</strong>
+            <span style="color:#991b1b;text-decoration:line-through;">${formatUserEditValue(field, change.before)}</span>
+            <span style="color:#166534;font-weight:700;">${formatUserEditValue(field, change.after)}</span>
+        </div>`,
+    )
+    .join("");
+  const hideEditedScheduleFields =
+    mode === "QUEUE_REVIEW" && Boolean(userEditChangeRows);
+  ["scheduleDetailsTitle", "scheduleDetailsFields"].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) element.style.display = hideEditedScheduleFields ? "none" : "";
+  });
+  const originalFacility = originalValue(
+    "facilityName",
+    getFacilityName(r.facilityId),
+  );
+  const originalDate = originalValue("date", r.date);
+  const originalStartTime = originalValue("startTime", r.startTime);
+  const originalEndTime = originalValue("endTime", r.endTime);
+  const originalAttendees = originalValue("attendees", r.attendees);
+
   // Summary
   document.getElementById("edit-summary").innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -680,10 +743,26 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
             </div>
             <span class="badge badge-secondary">${escapeAdminText(r.status.toUpperCase())}</span>
         </div>
-        <div style="margin-top:12px;font-size:14px;color:#475569;padding:10px;background:white;border-radius:6px;border:1px dashed #cbd5e1;">
-            <strong style="display:block;margin-bottom:4px;font-size:11px;color:#94a3b8;">Original Request Purpose:</strong>
-            "${escapeAdminText(r.purpose)}"
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px 16px;margin-top:12px;font-size:13px;">
+            <div><span style="color:#64748b;">Submitted:</span> <strong>${escapeAdminText(formatDateTimeSimple(r.submittedAt))}</strong></div>
+            <div><span style="color:#64748b;">Facility:</span> <strong>${escapeAdminText(originalFacility ?? "N/A")}</strong></div>
+            <div><span style="color:#64748b;">Requested Date:</span> <strong>${escapeAdminText(formatDateSimple(originalDate))}</strong></div>
+            <div><span style="color:#64748b;">Requested Time:</span> <strong>${escapeAdminText(originalStartTime && originalEndTime ? `${convertTo12Hour(originalStartTime)} – ${convertTo12Hour(originalEndTime)}` : "N/A")}</strong></div>
+            <div><span style="color:#64748b;">Attendees:</span> <strong>${escapeAdminText(originalAttendees ?? "N/A")}</strong></div>
+            <div><span style="color:#64748b;">Payment:</span> <strong>${isStaffRequest(r) ? "FREE" : "—"}</strong></div>
         </div>
+        ${
+          userEditChangeRows
+            ? `
+        <div style="margin-top:12px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">
+            <strong style="display:block;margin-bottom:4px;font-size:12px;color:#1d4ed8;">User Changes</strong>
+            <div style="display:grid;grid-template-columns:minmax(120px,0.8fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding-bottom:5px;font-size:10px;font-weight:700;color:#64748b;">
+                <span>FIELD</span><span>ORIGINAL</span><span>NEW</span>
+            </div>
+            ${userEditChangeRows}
+        </div>`
+            : ""
+        }
         ${
           r.userEditReason
             ? `

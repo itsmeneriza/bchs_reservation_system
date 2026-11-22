@@ -11,6 +11,7 @@ const INTERNAL_FIELDS = new Set([
   "_isEdit",
   "rescheduleOptionIndex",
 ]);
+const PENDING_USER_EDIT_LIMIT = 3;
 
 function nullableDate(value) {
   if (typeof value !== "string") return value ?? null;
@@ -660,6 +661,7 @@ export function createRequestsRouter() {
         payload.block_reschedule_pending = false;
         payload.block_reschedule_reason = null;
         payload.admin_edit_snapshot = null;
+        payload.request_data.pendingEditCount = 0;
         payload.submitted_at = new Date().toISOString();
         if (isStaff && req.body?.status === "blocked") {
           return res.status(403).json({
@@ -786,6 +788,7 @@ export function createRequestsRouter() {
       const changes = req.body || {};
       let authorizedChanges = changes;
       let pendingUserEditFacility = null;
+      let pendingUserEditCount = null;
       if (req.auth.kind === "user") {
         const allowedFields = new Set([
           "_editedByUser",
@@ -814,6 +817,35 @@ export function createRequestsRouter() {
         const isPendingFacilityEdit =
           existing.status === "pending" &&
           Object.hasOwn(changes, "facilityId");
+        const isPendingUserEdit =
+          existing.status === "pending" &&
+          ((changes._isEdit === true && changes._editedByUser === true) ||
+            [
+              "facilityId",
+              "date",
+              "startTime",
+              "endTime",
+              "attendees",
+              "purpose",
+              "additionalNotes",
+            ].some((field) => Object.hasOwn(changes, field)));
+        if (isPendingUserEdit) {
+          const currentEditCount = Number(
+            existing.request_data?.pendingEditCount,
+          );
+          const normalizedEditCount =
+            Number.isInteger(currentEditCount) && currentEditCount >= 0
+              ? currentEditCount
+              : 0;
+          if (normalizedEditCount >= PENDING_USER_EDIT_LIMIT) {
+            return res.status(403).json({
+              success: false,
+              message:
+                `You have used all ${PENDING_USER_EDIT_LIMIT} edits allowed while this reservation is pending.`,
+            });
+          }
+          pendingUserEditCount = normalizedEditCount + 1;
+        }
         if (isPendingFacilityEdit) allowedFields.add("facilityId");
         authorizedChanges = Object.fromEntries(
           Object.entries(changes).filter(([key]) => allowedFields.has(key)),
@@ -1091,6 +1123,9 @@ export function createRequestsRouter() {
       }
 
       const payload = toDbReservationPatch(existing, authorizedChanges);
+      if (pendingUserEditCount !== null) {
+        payload.request_data.pendingEditCount = pendingUserEditCount;
+      }
       if (pendingUserEditFacility) {
         const startMinutes = getTimeMinutes(
           authorizedChanges.startTime ?? existing.start_time,
@@ -1212,13 +1247,25 @@ export function createRequestsRouter() {
           message: "Verify the cancellation code sent to your email before cancelling this request.",
         });
       }
-      const { data, error } = await client
+      let updateQuery = client
         .from("reservations")
         .update(payload)
-        .eq("reservation_code", req.params.id)
-        .select(RESERVATION_SELECT)
-        .single();
+        .eq("reservation_code", req.params.id);
+      if (pendingUserEditCount !== null) {
+        updateQuery = updateQuery.eq("updated_at", existing.updated_at);
+      }
+      const { data, error } =
+        pendingUserEditCount === null
+          ? await updateQuery.select(RESERVATION_SELECT).single()
+          : await updateQuery.select(RESERVATION_SELECT).maybeSingle();
       if (error) throw error;
+      if (!data) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "This reservation changed while you were editing it. Reload your requests and try again.",
+        });
+      }
       return res.json({
         success: true,
         message: "Request updated successfully",
