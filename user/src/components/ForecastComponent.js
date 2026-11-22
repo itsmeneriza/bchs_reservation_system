@@ -322,7 +322,7 @@ export class Forecast {
             <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
             <div class="macro-insight-demand-line">
               <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
-              <span class="macro-insight-tier">Forecasted Demand</span>
+              <span class="macro-insight-tier">Demand</span>
             </div>
             <p class="forecast-selection-note">${escapeHtml(getMacroAdvice(selectedMacro))}</p>
           </div>
@@ -429,7 +429,7 @@ export class Forecast {
           });
           title.textContent = formatMacroPeriod(item);
           value.textContent = `${item.forecasted_pct}%`;
-          tier.textContent = "Forecasted Demand";
+          tier.textContent = "Demand";
           note.textContent = getMacroAdvice(item);
         }
       });
