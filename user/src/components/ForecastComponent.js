@@ -287,7 +287,9 @@ export class Forecast {
               </tbody>
             </table>
           </div>
-          <p class="forecast-policy-note">Forecasts are guidance; actual bookings and school events determine availability.</p>
+        </section>
+        <section class="forecast-policy-card" aria-label="Forecast notice">
+          <p class="forecast-policy-note">Note: Forecasts are a general guide only. Actual availability depends on real-time bookings and school events.</p>
         </section>
       </div>`;
 
