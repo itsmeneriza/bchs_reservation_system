@@ -220,6 +220,8 @@ window.renderAdminFacilityPicker = function (filterPax) {
       parseInt(document.getElementById("manualAttendees")?.value) || 0;
   const currentVal =
     document.getElementById("manualFacility")?.value || source[0]?.id || "";
+  const selectedDate = document.getElementById("manualDate")?.value || "";
+  const isGroundsWeekend = isAdminWeekendDate(selectedDate);
 
   if (!source.length) {
     row.innerHTML = '<p class="empty-message">No facilities are available.</p>';
@@ -228,11 +230,14 @@ window.renderAdminFacilityPicker = function (filterPax) {
   row.innerHTML = source
     .map((r) => {
       const tooSmall = filterPax > 0 && r.capacity < filterPax;
+      const groundsUnavailable =
+        isAdminGroundsFacility(r.id) && isGroundsWeekend;
       const isSelected = r.id === currentVal;
+      const unavailable = tooSmall || groundsUnavailable;
       return `<button type="button"
-            class="admin-facility-pill${isSelected ? " selected" : ""}${tooSmall ? " disabled" : ""}"
-            ${tooSmall ? "disabled" : ""}
-            title="${escapeAdminText(tooSmall ? `Capacity: ${r.capacity} pax — too small for ${filterPax} attendees` : `${r.name} · up to ${r.capacity} pax`)}"
+            class="admin-facility-pill${isSelected ? " selected" : ""}${unavailable ? " disabled" : ""}"
+            ${unavailable ? "disabled" : ""}
+            title="${escapeAdminText(groundsUnavailable ? "Grounds are unavailable on Saturdays and Sundays" : tooSmall ? `Capacity: ${r.capacity} pax — too small for ${filterPax} attendees` : `${r.name} · up to ${r.capacity} pax`)}"
             onclick="selectAdminFacility(${escapeAdminJsArgument(r.id)})">
             <span class="facility-pill-name">${escapeAdminText(r.name)}</span>
             <span class="facility-pill-cap">${r.capacity} pax</span>
@@ -242,6 +247,14 @@ window.renderAdminFacilityPicker = function (filterPax) {
 };
 
 window.selectAdminFacility = function (facilityId) {
+  const date = document.getElementById("manualDate")?.value || "";
+  if (
+    isAdminGroundsFacility(facilityId) &&
+    isAdminWeekendDate(date)
+  ) {
+    showToast("Grounds are unavailable on Saturdays and Sundays.", "error");
+    return;
+  }
   const hiddenInput = document.getElementById("manualFacility");
   if (hiddenInput) hiddenInput.value = facilityId;
   renderAdminFacilityPicker();
@@ -253,7 +266,7 @@ window.selectAdminFacility = function (facilityId) {
 
 // ─── Open / Close Manual Reservation Modal ────────────────────────────────────
 
-function openAddReservationModal() {
+function openAddReservationModal(selectedDate) {
   const modal = document.getElementById("addReservationModal");
   if (!facilities.length) {
     showToast("Facilities could not be loaded. Please try again later.", "error");
@@ -264,9 +277,11 @@ function openAddReservationModal() {
   if (hiddenFacility && !hiddenFacility.value) hiddenFacility.value = defaultFacility;
 
   populateFacilitySelects();
-  document.getElementById("manualDate").value = new Date()
-    .toISOString()
-    .split("T")[0];
+  const dateValue =
+    typeof selectedDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)
+      ? selectedDate
+      : new Date().toISOString().split("T")[0];
+  document.getElementById("manualDate").value = dateValue;
   document.getElementById("manualAttendees").value = "";
   document.getElementById("manualStartTime").value = "08:00";
   document.getElementById("manualEndTime").value = "10:00";
@@ -503,6 +518,16 @@ async function saveManualReservation() {
   }
   if (startTime >= endTime) {
     alert("Start time must be earlier than end time.");
+    return;
+  }
+  if (
+    isAdminGroundsFacility(facilityId) &&
+    isAdminWeekendDate(date)
+  ) {
+    showToast(
+      "Grounds are unavailable on Saturdays and Sundays.",
+      "error",
+    );
     return;
   }
 
@@ -920,6 +945,9 @@ function renderUpcoming() {
           const badge = isEvent
             ? `<span style="font-size:10px;font-weight:700;background:#f59e0b;color:white;padding:2px 7px;border-radius:999px;margin-left:6px;">EVENT</span>`
             : "";
+          const visitAppointment = b.appointmentTime
+            ? `<div class="res-card-row2"><span class="res-card-time">Visit appointment: ${b.appointmentDate ? `${escapeAdminText(formatDateSimple(b.appointmentDate))} at ` : ""}${escapeAdminText(formatApptTime(b.appointmentTime))}</span></div>`
+            : "";
           let actions = "";
           if (isEvent) {
             const evId = DateUtils.normalizeEventId(b.id);
@@ -937,6 +965,7 @@ function renderUpcoming() {
             <div style="flex:1;min-width:0;">
                 <div class="res-card-row1"><span class="res-card-name">${escapeAdminText(isBlock ? "UNAVAILABLE" : b.name)}</span>${badge}<span style="flex:1;"></span><span class="res-card-facility">${escapeAdminText(getFacilityName(b.facilityId))}</span></div>
                 <div class="res-card-row2"><span class="res-card-time">${formatDateSimple(b.date)} &nbsp;${escapeAdminText(convertTo12Hour(b.startTime))}–${escapeAdminText(convertTo12Hour(b.endTime))}</span><span class="res-card-purpose">${escapeAdminText(b.purpose)}</span></div>
+                ${visitAppointment}
             </div>${actions}</div>`;
         })
         .join("")

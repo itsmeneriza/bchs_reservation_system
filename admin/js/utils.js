@@ -31,6 +31,20 @@ function getFacilityName(id) {
   return facilities.find((facility) => facility.id === id)?.name || id;
 }
 
+function isAdminWeekendDate(dateStr) {
+  if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return false;
+  }
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const dayOfWeek = date.getUTCDay();
+  return dayOfWeek === 0 || dayOfWeek === 6;
+}
+
+function isAdminGroundsFacility(facilityId) {
+  return String(facilityId || "").trim().toLowerCase() === "grounds";
+}
+
 // ─── Time Formatters ─────────────────────────────────────────────────────────
 // Delegates to shared DateUtils (loaded via <script src="/scripts/DateUtils.js"> in admin.html).
 
@@ -207,6 +221,16 @@ window.refreshManualConflicts = function () {
   const startTime = document.getElementById("manualStartTime")?.value;
   const endTime = document.getElementById("manualEndTime")?.value;
   if (!facilityId || !dateStr) return;
+  const weekendWarning = document.getElementById("manual-weekend-warning");
+  const groundsUnavailable =
+    isAdminGroundsFacility(facilityId) && isAdminWeekendDate(dateStr);
+  if (weekendWarning) {
+    weekendWarning.style.display = groundsUnavailable ? "block" : "none";
+  }
+  if (groundsUnavailable) {
+    applyConflictStyling(document.getElementById("manualStartTime"), []);
+    applyConflictStyling(document.getElementById("manualEndTime"), []);
+  }
   const taken = getAdminBookedHours(facilityId, dateStr);
   applyConflictStyling(document.getElementById("manualStartTime"), taken);
   applyConflictStyling(document.getElementById("manualEndTime"), taken);

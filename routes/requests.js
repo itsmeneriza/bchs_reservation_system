@@ -18,6 +18,27 @@ function nullableDate(value) {
   return value.trim() || null;
 }
 
+function isGroundsFacilityId(value) {
+  return String(value || "").trim().toLowerCase() === "grounds";
+}
+
+function isWeekendDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return false;
+  }
+  const dayOfWeek = date.getUTCDay();
+  return dayOfWeek === 0 || dayOfWeek === 6;
+}
+
 function getManilaDateParts(now = new Date()) {
   return Object.fromEntries(
     new Intl.DateTimeFormat("en-CA", {
@@ -687,6 +708,15 @@ export function createRequestsRouter() {
           message: "Choose a valid reservation date and time.",
         });
       }
+      if (
+        isGroundsFacilityId(payload.facility_id) &&
+        isWeekendDate(payload.date)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "The Grounds are unavailable on Saturdays and Sundays.",
+        });
+      }
       if (!Number.isFinite(payload.total_amount) || payload.total_amount < 0) {
         return res.status(400).json({
           success: false,
@@ -1079,6 +1109,15 @@ export function createRequestsRouter() {
         effectiveChanges.rescheduleOptions = undefined;
         const payload = toDbReservationPatch(existing, effectiveChanges);
         payload.request_data = requestData;
+        if (
+          isGroundsFacilityId(payload.facility_id ?? existing.facility_id) &&
+          isWeekendDate(payload.date || existing.date)
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "The Grounds are unavailable on Saturdays and Sundays.",
+          });
+        }
         const conflict = await findReservationConflict(
           client,
           {
@@ -1123,6 +1162,15 @@ export function createRequestsRouter() {
       }
 
       const payload = toDbReservationPatch(existing, authorizedChanges);
+      if (
+        isGroundsFacilityId(payload.facility_id ?? existing.facility_id) &&
+        isWeekendDate(payload.date || existing.date)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "The Grounds are unavailable on Saturdays and Sundays.",
+        });
+      }
       if (pendingUserEditCount !== null) {
         payload.request_data.pendingEditCount = pendingUserEditCount;
       }

@@ -108,8 +108,9 @@ function setupModals() {
 
   // Manual reservation
   document.getElementById("openAddReservationBtn").onclick = () => {
+    const date = window._getPendingDayActionDate();
     closeDayActionModal();
-    openAddReservationModal();
+    openAddReservationModal(date);
   };
   document.getElementById("saveManualReservationBtn").onclick =
     saveManualReservation;

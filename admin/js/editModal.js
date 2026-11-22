@@ -814,7 +814,8 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   document.querySelectorAll(".edit-field-appointment").forEach((el) => {
     el.disabled = lockFields;
   });
-  document.getElementById("saveEdit").style.display = readOnlyAll
+  document.getElementById("saveEdit").style.display =
+    readOnlyAll || mode === "PAYMENT_ONLY"
     ? "none"
     : "block";
 
