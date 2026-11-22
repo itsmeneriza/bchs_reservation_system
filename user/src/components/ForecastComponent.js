@@ -106,7 +106,18 @@ function getMacroDateRange(item) {
 export function formatMacroPeriod(item) {
   const periodKey = item.periodKey || "Weekly outlook";
   const dateRange = getMacroDateRange(item);
-  return `${periodKey}${dateRange ? `(${dateRange})` : ""}`;
+  return `${periodKey}${dateRange ? ` (${dateRange})` : ""}`;
+}
+
+function getMacroAdvice(item) {
+  switch (item?.demand_tier) {
+    case "High":
+      return "High demand is expected. Submit your reservation early and consider alternate dates.";
+    case "Moderate":
+      return "Moderate demand is expected. Plan ahead and check availability before finalizing.";
+    default:
+      return "Low demand is expected. Check availability and submit your request when ready.";
+  }
 }
 
 export function normalizeMicroRows(micro) {
@@ -141,6 +152,7 @@ export class Forecast {
     this.referenceDate = todayAsDateString();
     this.forecast = null;
     this.macroOffset = 0;
+    this.selectedMacroPeriodKey = null;
     this.facilityRequestId = 0;
     this.loadedFacilityId = this.selectedFacilityId;
   }
@@ -191,11 +203,12 @@ export class Forecast {
       setSelectedFacility(appFacility);
     }
     const visibleMacro = macro.slice(this.macroOffset, this.macroOffset + 12);
-    const monthLabels = [...new Set(visibleMacro.map((item) => item.monthLabel))];
-    const monthRange = monthLabels.length
-      ? `${monthLabels[0]} – ${monthLabels[monthLabels.length - 1]}`
-      : "12-month outlook";
-    const selectedMacro = visibleMacro[0];
+    const selectedMacro = visibleMacro.find(
+      ({ periodKey }) => periodKey === this.selectedMacroPeriodKey,
+    ) || visibleMacro.find(
+      ({ startDate, endDate }) => startDate <= this.referenceDate && endDate >= this.referenceDate,
+    ) || visibleMacro[0];
+    this.selectedMacroPeriodKey = selectedMacro?.periodKey ?? null;
     this.container.innerHTML = `
       <div class="user-forecast">
         <section class="user-forecast-card">
@@ -260,11 +273,21 @@ export class Forecast {
     const monthRange = monthLabels.length
       ? `${monthLabels[0]} – ${monthLabels[monthLabels.length - 1]}`
       : "12-month outlook";
-    const selectedMacro = visibleMacro[0];
+    const selectedMacro = visibleMacro.find(
+      ({ periodKey }) => periodKey === this.selectedMacroPeriodKey,
+    ) || visibleMacro.find(
+      ({ startDate, endDate }) => startDate <= this.referenceDate && endDate >= this.referenceDate,
+    ) || visibleMacro[0];
+    this.selectedMacroPeriodKey = selectedMacro?.periodKey ?? null;
 
     return `
       <div class="macro-forecast-layout">
         <div class="macro-forecast-main">
+          <div class="forecast-legend macro-forecast-legend">
+            <span><i style="background:${TIER_COLORS.High}"></i>High ≥70%</span>
+            <span><i style="background:${TIER_COLORS.Moderate}"></i>Moderate 35–69%</span>
+            <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
+          </div>
           <div class="macro-forecast-scroll">
             <div class="macro-chart">
               <div class="macro-y-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>
@@ -274,9 +297,9 @@ export class Forecast {
                   const label = "Forecast";
                   const color = TIER_COLORS[item.demand_tier];
                   const dateRange = getMacroDateRange(item);
+                  const selected = item.periodKey === selectedMacro?.periodKey;
                   return `
-                    <button type="button" class="macro-forecast-bar macro-bar-incoming" data-period="${escapeHtml(item.periodKey)}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${value}%" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
-                      <span class="macro-bar-value">${value}%</span>
+                    <button type="button" class="macro-forecast-bar macro-bar-incoming${selected ? " selected" : ""}" data-period="${escapeHtml(item.periodKey)}" aria-pressed="${selected}" aria-label="${escapeHtml(item.periodKey)} ${escapeHtml(dateRange)}: ${value}%" title="${escapeHtml(item.periodKey)} (${escapeHtml(dateRange)}) — ${label}: ${value}% — ${escapeHtml(item.anchor_event_note)}">
                       <span class="macro-bar macro-bar-single" style="height:${Math.max(4, value)}%;background:${color}" aria-label="${label} ${value}%"></span>
                       <span class="macro-bar-label">${escapeHtml(item.week)}</span>
                     </button>`;
@@ -292,22 +315,16 @@ export class Forecast {
             <strong>${escapeHtml(monthRange)}</strong>
             <button type="button" class="macro-nav-button macro-nav-next" aria-label="Show next three months" ${this.macroOffset + 12 >= macro.length ? "disabled" : ""}>&gt;</button>
           </div>
-          <div class="forecast-legend">
-            <span><i style="background:${TIER_COLORS.High}"></i>High ≥70%</span>
-            <span><i style="background:${TIER_COLORS.Moderate}"></i>Moderate 35–69%</span>
-            <span><i style="background:${TIER_COLORS.Low}"></i>Low &lt;35%</span>
-          </div>
         </div>
         <aside class="macro-summary-panel">
-          <h4>12-month forecast for ${escapeHtml(facility.name)}</h4>
-          <p>Projected utilization based on historical activity, live bookings, and seasonal guidance.</p>
+          <h4>Utilization Forecast for ${escapeHtml(facility.name)}</h4>
           <div class="macro-insight macro-insight-inline">
             <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
-            <div class="macro-insight-value-block">
+            <div class="macro-insight-demand-line">
               <span class="macro-insight-value">${selectedMacro?.forecasted_pct ?? 0}%</span>
-              <span class="macro-insight-purpose">Demand</span>
+              <span class="macro-insight-tier">Forecasted Demand</span>
             </div>
-            <p class="forecast-selection-note">${escapeHtml(selectedMacro?.anchor_event_note || "Select a bar to see its demand driver.")}</p>
+            <p class="forecast-selection-note">${escapeHtml(getMacroAdvice(selectedMacro))}</p>
           </div>
         </aside>
       </div>`;
@@ -326,6 +343,7 @@ export class Forecast {
       const requestId = ++this.facilityRequestId;
       this.selectedFacilityId = facilityId;
       this.macroOffset = 0;
+      this.selectedMacroPeriodKey = null;
 
       this.container.querySelectorAll(".forecast-facility-button").forEach((facilityButton) => {
         const active = facilityButton.dataset.facilityId === facilityId;
@@ -400,11 +418,19 @@ export class Forecast {
         const item = this.forecast.macro.find(({ periodKey }) => periodKey === bar.dataset.period);
         const title = this.container.querySelector(".macro-insight-title");
         const value = this.container.querySelector(".macro-insight-value");
+        const tier = this.container.querySelector(".macro-insight-tier");
         const note = this.container.querySelector(".forecast-selection-note");
-        if (item && title && value && note) {
+        if (item && title && value && tier && note) {
+          this.selectedMacroPeriodKey = item.periodKey;
+          this.container.querySelectorAll(".macro-forecast-bar").forEach((forecastBar) => {
+            const selected = forecastBar === bar;
+            forecastBar.classList.toggle("selected", selected);
+            forecastBar.setAttribute("aria-pressed", String(selected));
+          });
           title.textContent = formatMacroPeriod(item);
           value.textContent = `${item.forecasted_pct}%`;
-          note.textContent = item.anchor_event_note;
+          tier.textContent = "Forecasted Demand";
+          note.textContent = getMacroAdvice(item);
         }
       });
     });

@@ -81,8 +81,8 @@
 
 .macro-forecast-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 11rem;
-  gap: 0.65rem;
+  grid-template-columns: minmax(0, 1fr) 13rem;
+  gap: 0.85rem;
   align-items: stretch;
 }
 
@@ -213,6 +213,10 @@
   font-weight: 600;
 }
 
+.macro-forecast-legend {
+  margin: 0 0 0.5rem;
+}
+
 .forecast-legend span {
   display: inline-flex;
   align-items: center;
@@ -306,18 +310,8 @@
   min-width: 32rem;
   height: 13rem;
   padding: 0.75rem 0.5rem 0;
+  border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #cbd5e1;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(50% - 1px),
-    #e2e8f0 calc(50% - 1px),
-    #e2e8f0 50%,
-    transparent 50%,
-    transparent calc(100% - 1px),
-    #e2e8f0 calc(100% - 1px),
-    #e2e8f0 100%
-  );
   overflow: hidden;
 }
 
@@ -353,11 +347,10 @@
   transform: scaleX(1.15);
 }
 
-.macro-bar-value {
-  position: absolute;
-  top: 0;
-  color: #475569;
-  font-size: 0.62rem;
+.macro-forecast-bar.selected {
+  outline: 2px solid #800020;
+  outline-offset: -2px;
+  border-radius: 0.25rem;
 }
 
 .macro-bar-label {
@@ -391,35 +384,34 @@
 }
 
 .macro-insight-inline {
-  grid-template-columns: 1fr auto;
-  margin-top: 0.35rem;
-  padding: 0.4rem 0.55rem;
+  grid-template-columns: 1fr;
+  margin-top: 0;
+  padding: 0.75rem;
+  background: #ffffff;
 }
 
 .macro-insight-title {
   color: #334155;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .macro-insight-value {
   color: #172033;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   font-weight: 800;
 }
 
-.macro-insight-value-block {
+.macro-insight-demand-line {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.macro-insight-purpose {
+.macro-insight-tier {
   color: #64748b;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  line-height: 1.2;
-  text-transform: uppercase;
 }
 
 .macro-insight .forecast-selection-note {
@@ -478,6 +470,10 @@
   text-align: left;
 }
 
+.micro-forecast-table td {
+  padding: 0;
+}
+
 .micro-forecast-table small {
   display: block;
   margin-top: 0.2rem;
@@ -489,8 +485,10 @@
 .micro-slot {
   display: block;
   width: 100%;
-  min-height: 2.4rem;
-  padding: 0.2rem 0.05rem;
+  aspect-ratio: 1;
+  height: auto;
+  min-height: 0;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: 0.3rem;
   background-color: var(--micro-slot-color);

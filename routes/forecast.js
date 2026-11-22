@@ -196,14 +196,16 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
   const startMonth = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
   const forecastYears = [startMonth.getUTCFullYear() - 2, startMonth.getUTCFullYear() - 1, startMonth.getUTCFullYear()];
   const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
+  const macro = [];
 
-  return Array.from({ length: 12 }, (_, offset) => {
+  for (let offset = 0; macro.length < 48; offset += 1) {
     const forecastMonth = new Date(Date.UTC(startMonth.getUTCFullYear(), startMonth.getUTCMonth() + offset, 1));
     const monthIndex = forecastMonth.getUTCMonth();
     const month = MONTHS[monthIndex];
     const year = forecastMonth.getUTCFullYear();
-    return WEEK_LABELS.map((weekLabel, weekNumber) => {
+    for (const [weekNumber, weekLabel] of WEEK_LABELS.entries()) {
       const forecastRange = getMacroWeekRange(year, monthIndex, weekNumber);
+      if (forecastRange.end < start) continue;
       const observedByYear = forecastYears.map((observedYear) => {
         const observedRange = getMacroWeekRange(observedYear, monthIndex, weekNumber);
         const hours = facilityActivity.reduce((total, entry) => {
@@ -224,10 +226,12 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
           observedByYear[0] * 0.15 + observedByYear[1] * 0.3 + observedByYear[2] * 0.55 + adjustment,
         ),
       );
-      return {
+      macro.push({
         periodKey: `${month} ${year} W${weekNumber + 1}`,
         monthLabel: `${month} ${year}`,
         dateRange: formatMacroDateRange(forecastRange.start, forecastRange.end),
+        startDate: dateKey(forecastRange.start),
+        endDate: dateKey(forecastRange.end),
         year,
         month: monthIndex + 1,
         week: weekLabel,
@@ -238,9 +242,11 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
           : monthIndex === 8
             ? "Peak orientation and event season adjustment"
             : "Historical activity and live bookings",
-      };
-    });
-  }).flat();
+      });
+      if (macro.length === 48) break;
+    }
+  }
+  return macro;
 }
 
 function buildMicroForecast(activity, facilityId, referenceDate) {
