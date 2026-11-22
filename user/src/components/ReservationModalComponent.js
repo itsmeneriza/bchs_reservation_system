@@ -3,7 +3,7 @@
  * Handles reservation request form interactions, dynamic time filtering, and purpose-based venue suggestions.
  */
 
-import { state } from "../core/state.js";
+import { state, setSelectedFacility } from "../core/state.js";
 import {
   convertTo12Hour,
   isPastDate,
@@ -113,10 +113,12 @@ export class ReservationModal {
       btn.innerHTML = `<span class="facility-pill-name">${facility.name}</span><span class="facility-pill-cap">${facility.capacity} pax</span>`;
       if (!tooSmall) {
         btn.addEventListener("click", () => {
+          setSelectedFacility(facility);
+          this.renderFacilityPicker(filterPax);
           import("./FacilityListComponent.js").then(({ FacilityList }) => {
             new FacilityList().selectFacility(facility);
             this.renderFacilityPicker(filterPax);
-            this.updateAvailableTimes();
+            this.updateAvailableTimes(this.modal.dataset.editId || null);
             this.updateDurationInfo();
             this.updateVenueSuggestion();
             // Refresh min pax warning for new facility
@@ -129,6 +131,8 @@ export class ReservationModal {
   }
 
   open(editingId = null, prefill = null, options = {}) {
+    if (!editingId) this.modal.dataset.editId = "";
+
     // --- AUTH CHECK ---
     if (!state.isLoggedIn) {
       showToast("Please login to request a reservation.", "info");
@@ -139,8 +143,14 @@ export class ReservationModal {
     this.setUtilitiesOnlyMode(false);
     const modalTitle = this.modal.querySelector(".modal-header h2");
     const submitButton = this.form.querySelector('button[type="submit"]');
-    if (modalTitle) modalTitle.textContent = "Reservation Request";
-    if (submitButton) submitButton.textContent = "Submit Request";
+    if (modalTitle) {
+      modalTitle.textContent = editingId
+        ? "Edit Reservation"
+        : "Reservation Request";
+    }
+    if (submitButton) {
+      submitButton.textContent = editingId ? "Save Changes" : "Submit Request";
+    }
 
     this.paymentDeadlineNotice.hidden = Boolean(state.user?.isStaff);
 
@@ -179,6 +189,14 @@ export class ReservationModal {
     if (this.inputs.date) this.inputs.date.value = dateToUse;
 
     if (editingId && prefill) {
+      this.modal.dataset.editId = editingId;
+      const startTime =
+        typeof prefill.startTime === "string"
+          ? prefill.startTime.slice(0, 5)
+          : "";
+      const endTime =
+        typeof prefill.endTime === "string" ? prefill.endTime.slice(0, 5) : "";
+
       // Editing mode — fill all fields from the existing request
       const set = (id, val) => {
         const el = document.getElementById(id);
@@ -228,14 +246,18 @@ export class ReservationModal {
       this.updateAvailableTimes(editingId);
 
       // Re-enable the request's own time options so they can be selected
-      [this.inputs.startTime, this.inputs.endTime].forEach((sel) => {
+      [this.inputs.startTime, this.inputs.endTime].forEach((sel, index) => {
         if (!sel) return;
         sel.querySelectorAll("option").forEach((opt) => {
           if (!opt.value) return;
           const h = parseInt(opt.value.split(":")[0]);
-          const reqStartH = parseInt((prefill.startTime || "").split(":")[0]);
-          const reqEndH = parseInt((prefill.endTime || "").split(":")[0]);
-          if (h >= reqStartH && h < reqEndH) {
+          const reqStartH = parseInt(startTime.split(":")[0]);
+          const reqEndH = parseInt(endTime.split(":")[0]);
+          const belongsToOwnTime =
+            index === 0
+              ? h >= reqStartH && h < reqEndH
+              : h > reqStartH && h <= reqEndH;
+          if (belongsToOwnTime) {
             opt.disabled = false;
             opt.style.color = "";
             opt.style.backgroundColor = "";
@@ -245,8 +267,8 @@ export class ReservationModal {
       });
 
       // Set times AFTER re-enabling own options
-      set("req-start-time", prefill.startTime || "");
-      set("req-end-time", prefill.endTime || "");
+      set("req-start-time", startTime);
+      set("req-end-time", endTime);
 
       // Equipment checkboxes — restore from additionalNotes (comma-separated values)
       const savedEquipment = (prefill.additionalNotes || "")
@@ -337,6 +359,8 @@ export class ReservationModal {
     const dateVal = this.inputs.date.value;
     if (!dateVal) return;
 
+    const previousStart = this.inputs.startTime.value;
+    const previousEnd = this.inputs.endTime.value;
     const bookedTimeRanges = getBookedSlots(
       state.selectedFacility.id,
       dateVal,
@@ -354,6 +378,25 @@ export class ReservationModal {
 
     this.filterSelectOptions(this.inputs.startTime, takenHours, false);
     this.filterSelectOptions(this.inputs.endTime, takenHours, true);
+
+    // Preserve the selected time while editing. This also prevents date,
+    // facility, and availability refreshes from clearing the user's values.
+    if (previousStart) {
+      const startOption = this.inputs.startTime.querySelector(
+        `option[value="${previousStart}"]`,
+      );
+      if (startOption && !startOption.disabled) {
+        this.inputs.startTime.value = previousStart;
+      }
+    }
+    if (previousEnd) {
+      const endOption = this.inputs.endTime.querySelector(
+        `option[value="${previousEnd}"]`,
+      );
+      if (endOption && !endOption.disabled) {
+        this.inputs.endTime.value = previousEnd;
+      }
+    }
   }
 
   filterSelectOptions(selectEl, takenHours, isEndTime) {
@@ -550,7 +593,7 @@ export class ReservationModal {
       import("./FacilityListComponent.js").then(({ FacilityList }) => {
         const rl = new FacilityList();
         rl.selectFacility(facility);
-        this.updateAvailableTimes();
+        this.updateAvailableTimes(this.modal.dataset.editId || null);
         if (
           prevStart &&
           !this.inputs.startTime.querySelector(`option[value="${prevStart}"]`)
@@ -802,7 +845,7 @@ export class ReservationModal {
 
     // Date input (shown in edit/reschedule mode) — refresh times on change
     this.inputs.date?.addEventListener?.("change", () => {
-      this.updateAvailableTimes();
+      this.updateAvailableTimes(this.modal.dataset.editId || null);
       this.updateDurationInfo();
       this.checkTimeConflict();
     });
@@ -1042,13 +1085,15 @@ export class ReservationModal {
         return;
       }
 
-      let success;
+      let success = false;
+      let updateError = null;
       try {
         const res = await fetch(`/api/requests/${data.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...data,
+            _isEdit: true,
             userEditReason: reason,
             _editedByUser: true,
             blockReschedulePending: false,
@@ -1057,9 +1102,32 @@ export class ReservationModal {
             appointmentTime: null,
           }),
         });
-        success = res.ok;
-      } catch {
-        success = false;
+        const result = await res.json();
+        if (!res.ok) {
+          updateError = result.message || "The reservation could not be updated.";
+        } else {
+          const updatedRequest = result.request;
+          const sameValue = (saved, submitted) =>
+            String(saved ?? "").trim() === String(submitted ?? "").trim();
+          const sameTime = (saved, submitted) =>
+            String(saved ?? "").slice(0, 5) ===
+            String(submitted ?? "").slice(0, 5);
+          success =
+            sameValue(updatedRequest?.id, data.id) &&
+            sameValue(updatedRequest?.facilityId, data.facilityId) &&
+            sameValue(updatedRequest?.date, data.date) &&
+            sameTime(updatedRequest.startTime, data.startTime) &&
+            sameTime(updatedRequest.endTime, data.endTime) &&
+            Number(updatedRequest.attendees) === Number(data.attendees) &&
+            sameValue(updatedRequest.purpose, data.purpose) &&
+            sameValue(updatedRequest.additionalNotes, data.additionalNotes);
+          if (!success) {
+            updateError =
+              "The server did not save all of your reservation changes. Please try again.";
+          }
+        }
+      } catch (error) {
+        updateError = error.message || "The reservation could not be updated.";
       }
 
       if (success) {
@@ -1068,10 +1136,7 @@ export class ReservationModal {
         this.close();
         location.reload();
       } else {
-        showToast(
-          "Submission failed. Make sure the server is running, or the time slot may already be taken.",
-          "error",
-        );
+        showToast(updateError, "error");
       }
     } else {
       let success;

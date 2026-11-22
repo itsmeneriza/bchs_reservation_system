@@ -239,9 +239,9 @@ export function fromDbReservation(row) {
     ...(row.request_data || {}),
     id: row.reservation_code || String(row.id),
     reservationCode: row.reservation_code || String(row.id),
-    facilityId: row.request_data?.facilityId || row.facility_id || "global",
+    facilityId: row.facility_id || row.request_data?.facilityId || "global",
     facilityName:
-      row.request_data?.facilityName || facility?.name || row.facility_id || "",
+      facility?.name || row.request_data?.facilityName || row.facility_id || "",
     source: row.source,
     userType: row.user_type,
     staffId: row.staff_id,
@@ -333,6 +333,33 @@ function toDbReservationPatch(existing, changes) {
   }
 
   return patch;
+}
+
+function buildUserEditSnapshot(existing, payload) {
+  const previous = fromDbReservation(existing);
+  const next = {
+    facilityName: payload.request_data.facilityName || previous.facilityName,
+    date: payload.date ?? previous.date,
+    startTime: payload.start_time ?? previous.startTime,
+    endTime: payload.end_time ?? previous.endTime,
+    attendees: payload.attendees ?? previous.attendees,
+    purpose: payload.purpose ?? previous.purpose,
+    additionalNotes: payload.additional_notes ?? previous.additionalNotes,
+    totalAmount: payload.total_amount ?? previous.totalAmount,
+  };
+  const changes = {};
+
+  for (const field of Object.keys(next)) {
+    const before = previous[field] ?? null;
+    const after = next[field] ?? null;
+    const valuesMatch =
+      field === "startTime" || field === "endTime"
+        ? String(before ?? "").slice(0, 5) === String(after ?? "").slice(0, 5)
+        : before === after;
+    if (!valuesMatch) changes[field] = { before, after };
+  }
+
+  return { changedAt: new Date().toISOString(), changes };
 }
 
 function getReservationCodePrefix(payload) {
@@ -573,7 +600,7 @@ export function createRequestsRouter() {
       if (error) throw error;
       const reservations = (data || []).map((row) => ({
         id: row.reservation_code,
-        facilityId: row.request_data?.facilityId || row.facility_id || "global",
+        facilityId: row.facility_id || row.request_data?.facilityId || "global",
         date: row.date,
         startTime: row.start_time,
         endTime: row.end_time,
@@ -784,15 +811,14 @@ export function createRequestsRouter() {
           "cancellationReason",
           "cancellationRequestedAt",
         ]);
-        const isPendingUserEdit =
+        const isPendingFacilityEdit =
           existing.status === "pending" &&
-          changes._isEdit === true &&
-          changes._editedByUser === true;
-        if (isPendingUserEdit) allowedFields.add("facilityId");
+          Object.hasOwn(changes, "facilityId");
+        if (isPendingFacilityEdit) allowedFields.add("facilityId");
         authorizedChanges = Object.fromEntries(
           Object.entries(changes).filter(([key]) => allowedFields.has(key)),
         );
-        if (isPendingUserEdit) {
+        if (isPendingFacilityEdit) {
           const facilityId = authorizedChanges.facilityId;
           if (typeof facilityId !== "string" || !facilityId.trim()) {
             return res.status(400).json({
@@ -850,6 +876,8 @@ export function createRequestsRouter() {
             changes.endTime !== existing.end_time);
         if (
           req.auth.kind === "user" &&
+          existing.status !== "pending" &&
+          !changes._isEdit &&
           (isRescheduleSubmission || isDirectScheduleChange) &&
           existing.block_reschedule_pending !== true
         ) {
@@ -1127,6 +1155,12 @@ export function createRequestsRouter() {
           success: false,
           message: "Choose a valid reservation date.",
         });
+      }
+      if (pendingUserEditFacility) {
+        const userEditSnapshot = buildUserEditSnapshot(existing, payload);
+        if (Object.keys(userEditSnapshot.changes).length > 0) {
+          payload.request_data.userEditSnapshot = userEditSnapshot;
+        }
       }
 
       const scheduleChanged =
