@@ -255,7 +255,7 @@ export class Forecast {
           ${this.getMacroLayoutHtml(facility, macro)}
         </section>
 
-        <section class="user-forecast-card">
+        <section class="user-forecast-card micro-demand-card">
           <div class="forecast-facility-toolbar micro-facility-toolbar" aria-label="Select facility for weekly hourly demand">
             ${facilities.map((item) => `
               <button type="button"
