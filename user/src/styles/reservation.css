@@ -2120,6 +2120,11 @@ body.forecast-tab-active #calendar-legend {
     margin-top: 0.25rem;
   }
 
+  body.my-requests-tab-active #view-facility-btn,
+  body.my-requests-tab-active #calendar-legend-mobile {
+    display: none !important;
+  }
+
   .view-facility-btn:hover {
     opacity: 0.88;
   }

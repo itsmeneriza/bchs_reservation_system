@@ -144,6 +144,10 @@ class ReservationApp {
     const isCalendar = tab === "calendar";
     const isMobile = window.innerWidth <= 768;
     document.body.classList.toggle("forecast-tab-active", tab === "forecast");
+    document.body.classList.toggle(
+      "my-requests-tab-active",
+      tab === "my-requests",
+    );
     if (contentWrapper) {
       contentWrapper.classList.toggle("policy-page-scroll", tab === "policy");
     }
