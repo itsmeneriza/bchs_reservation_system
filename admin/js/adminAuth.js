@@ -36,10 +36,8 @@ function readStoredSession() {
 
     const session = JSON.parse(value);
     if (!session.admin_session_expires_at) {
-      session.admin_session_expires_at = Math.min(
-        session.expires_at || 0,
-        Math.floor(Date.now() / 1000) + ADMIN_SESSION_DURATION,
-      );
+      session.admin_session_expires_at =
+        Math.floor(Date.now() / 1000) + ADMIN_SESSION_DURATION;
     }
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     sessionStorage.removeItem(SESSION_KEY);
@@ -115,8 +113,7 @@ function saveSession(session) {
   sessionStorage.removeItem(SESSION_KEY);
   window.clearTimeout(sessionExpiryTimer);
   sessionExpiryTimer = window.setTimeout(() => {
-    clearSession();
-    showLogin("Your sign-in expired. Please sign in again.");
+    signOut({ revoke: false });
   }, Math.max(1000, session.admin_session_expires_at * 1000 - Date.now()));
   scheduleRefresh();
 }
@@ -169,7 +166,14 @@ async function refreshSession() {
     return true;
   } catch (error) {
     console.error("Could not refresh the admin session:", error);
-    if (isNetworkError(error)) return false;
+    if (isNetworkError(error)) {
+      window.clearTimeout(refreshTimer);
+      const remaining = currentSession.admin_session_expires_at * 1000 - Date.now();
+      if (remaining > 0) {
+        refreshTimer = window.setTimeout(refreshSession, Math.min(30_000, remaining));
+      }
+      return false;
+    }
     clearSession();
     showLogin("Your sign-in expired. Please sign in again.");
     return false;
@@ -222,15 +226,34 @@ window.adminFetch = async (input, options = {}) => {
   const headers = new Headers(options.headers || {});
   headers.set("Authorization", `Bearer ${accessToken}`);
 
-  const response = await fetch(input, { ...options, headers });
-  if (response.status === 401) {
-    await signOut({ revoke: false });
-    throw new Error("Your sign-in expired. Please sign in again.");
+  try {
+    let response = await fetch(input, { ...options, headers });
+
+    if (response.status === 401 && currentSession) {
+      const refreshed = await refreshSession();
+      if (refreshed) {
+        const retryHeaders = new Headers(options.headers || {});
+        retryHeaders.set("Authorization", `Bearer ${currentSession.access_token}`);
+        response = await fetch(input, { ...options, headers: retryHeaders });
+      } else if (!navigator.onLine) {
+        throw new Error("Connection unavailable. Your sign-in is still active.");
+      }
+    }
+
+    if (response.status === 401) {
+      await signOut({ revoke: false });
+      throw new Error("Your sign-in expired. Please sign in again.");
+    }
+    if (response.status === 403) {
+      throw new Error("Your account does not have administrator access.");
+    }
+    return response;
+  } catch (error) {
+    if (isNetworkError(error)) {
+      throw new Error("Connection unavailable. Your sign-in is still active.");
+    }
+    throw error;
   }
-  if (response.status === 403) {
-    throw new Error("Your account does not have administrator access.");
-  }
-  return response;
 };
 
 loginForm.addEventListener("submit", async (event) => {
@@ -308,6 +331,23 @@ async function restoreAdminSession() {
     if (isNetworkError(error) && currentSession) {
       showAdmin();
       return;
+    }
+    if (error.status === 401 && currentSession) {
+      if (await refreshSession()) {
+        try {
+          await verifyAdminSession(currentSession.access_token);
+          showAdmin();
+          return;
+        } catch (retryError) {
+          if (isNetworkError(retryError) || retryError.status === 503) {
+            showAdmin();
+            return;
+          }
+        }
+      } else if (currentSession) {
+        showAdmin();
+        return;
+      }
     }
     clearSession();
     showLogin(
