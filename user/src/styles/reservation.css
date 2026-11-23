@@ -728,6 +728,16 @@ body.forecast-tab-active #calendar-legend {
   box-sizing: border-box !important;
 }
 
+.day-header {
+  position: sticky;
+  top: 2.5rem;
+  z-index: 9;
+  padding: 0.25rem 0;
+  background: white;
+  text-align: center;
+  font-weight: 600;
+}
+
 .day-cell-wrapper {
   position: relative;
   display: block;
@@ -930,6 +940,84 @@ body.forecast-tab-active #calendar-legend {
     grid-template-columns: 220px minmax(0, 1fr) 280px;
     height: auto;
   }
+}
+
+/* Facility image viewer */
+#image-viewer-modal {
+  padding: 1.5rem;
+  background: rgba(2, 6, 23, 0.88);
+}
+
+.facility-view-modal {
+  width: min(100%, 1000px);
+  max-height: calc(100vh - 3rem);
+  max-height: calc(100dvh - 3rem);
+  padding: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  background: #111827;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.facility-view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.facility-view-counter {
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.facility-view-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.facility-view-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.facility-view-image-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.facility-view-image {
+  display: block;
+  width: 100%;
+  max-height: calc(100vh - 10rem);
+  max-height: calc(100dvh - 10rem);
+  border-radius: 0.75rem;
+  object-fit: contain;
+}
+
+.facility-view-caption {
+  padding: 0.9rem 0.25rem 0.1rem;
+  color: white;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 /* Viewer Modal Navigation Buttons */
@@ -2060,6 +2148,10 @@ body.forecast-tab-active #calendar-legend {
     box-sizing: border-box !important;
   }
 
+  .day-header {
+    top: 0;
+  }
+
   .day-cell {
     width: 100% !important;
     min-width: 0 !important;
@@ -2096,6 +2188,36 @@ body.forecast-tab-active #calendar-legend {
     border-radius: 1rem 1rem 0 0 !important;
     margin: 0 !important;
     overflow-y: auto;
+  }
+
+  #image-viewer-modal {
+    align-items: center !important;
+    padding: 1rem !important;
+  }
+
+  #image-viewer-modal .facility-view-modal {
+    width: 100% !important;
+    max-width: 1000px !important;
+    max-height: calc(100vh - 2rem) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    margin: auto !important;
+    padding: 0.75rem !important;
+    overflow: hidden !important;
+    border-radius: 1rem !important;
+  }
+
+  .facility-view-toolbar {
+    margin-bottom: 0.5rem;
+  }
+
+  .facility-view-image {
+    max-height: calc(100vh - 9rem);
+    max-height: calc(100dvh - 9rem);
+  }
+
+  .facility-view-caption {
+    padding-top: 0.65rem;
+    font-size: 0.9rem;
   }
 
   .modal-content.modal-small {

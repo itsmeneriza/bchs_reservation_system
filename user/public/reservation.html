@@ -1151,107 +1151,63 @@
 
     <!-- Image Preview Modal -->
     <div id="image-viewer-modal" class="modal">
-      <div
-        class="modal-content"
-        style="
-          background: transparent;
-          border-radius: 0;
-          box-shadow: none;
-          max-width: 1000px;
-          width: 95%;
-        "
-      >
-        <div
-          style="
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-          "
-        >
-          <div
-            style="
-              width: 100%;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 10px;
-            "
+      <div class="modal-content facility-view-modal">
+        <div class="facility-view-toolbar">
+          <div id="viewer-image-counter" class="facility-view-counter"></div>
+          <button
+            id="viewer-close"
+            class="facility-view-close"
+            type="button"
+            aria-label="Close facility view"
           >
-            <div
-              id="viewer-image-counter"
-              style="
-                background: rgba(0, 0, 0, 0.6);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 0.9rem;
-                font-weight: 600;
-              "
-            ></div>
-            <button
-              id="viewer-close"
-              class="modal-close"
-              style="background: rgba(255, 255, 255, 0.2); color: white"
-            >
-              &times;
-            </button>
-          </div>
-          <div style="position: relative; width: 100%">
-            <img
-              id="viewer-image"
-              src=""
-              alt="Facility View"
-              style="
-                width: 100%;
-                border-radius: 12px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-              "
-            />
-            <button
-              id="viewer-prev-btn"
-              class="viewer-nav-btn viewer-prev"
-              style="display: none"
-            >
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                stroke-width="2"
-              >
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-            <button
-              id="viewer-next-btn"
-              class="viewer-nav-btn viewer-next"
-              style="display: none"
-            >
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                stroke-width="2"
-              >
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
-          </div>
-          <div
-            id="viewer-caption"
-            style="
-              color: white;
-              text-align: center;
-              padding: 1rem;
-              font-size: 1.25rem;
-              font-weight: 600;
-            "
-          ></div>
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+        <div class="facility-view-image-wrap">
+          <img
+            id="viewer-image"
+            src=""
+            alt="Facility View"
+            class="facility-view-image"
+          />
+          <button
+            id="viewer-prev-btn"
+            class="viewer-nav-btn viewer-prev"
+            style="display: none"
+            type="button"
+            aria-label="Previous facility image"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="2"
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button
+            id="viewer-next-btn"
+            class="viewer-nav-btn viewer-next"
+            style="display: none"
+            type="button"
+            aria-label="Next facility image"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div id="viewer-caption" class="facility-view-caption"></div>
       </div>
     </div>
 
