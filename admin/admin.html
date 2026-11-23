@@ -84,6 +84,20 @@
           <h1>BCHS Facility Reservation Admin Portal</h1>
         </div>
         <button
+          class="mobile-nav-toggle"
+          id="mobileNavToggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="adminTabsList"
+          aria-label="Toggle navigation menu"
+        >
+          <span class="mobile-nav-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+        <button
           id="logoutAdminBtn"
           class="btn btn-outline btn-sm"
           type="button"
@@ -95,7 +109,7 @@
 
       <!-- Tabs Navigation -->
       <div class="tabs">
-        <div class="tabs-list">
+        <div class="tabs-list" id="adminTabsList">
           <button class="tab-trigger active" data-tab="portal">Portal</button>
           <button class="tab-trigger" data-tab="queue">
             Reservation Queue
@@ -142,6 +156,9 @@
           </button>
           <button class="tab-trigger" data-tab="forecast">Analytics</button>
           <button class="tab-trigger" data-tab="history">History</button>
+          <button class="mobile-menu-logout" id="mobileLogoutAdminBtn" type="button">
+            Logout
+          </button>
         </div>
 
         <!-- Portal Tab Content -->
@@ -342,9 +359,8 @@
                     <th>Name</th>
                     <th>Facility</th>
                     <th>Event Date</th>
-                    <th>Confirmation Date</th>
-                    <th>Reservation Details</th>
-                    <th></th>
+                    <th>Appointment Details</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="confirmedTableBody"></tbody>

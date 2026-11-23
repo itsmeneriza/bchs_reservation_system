@@ -732,6 +732,14 @@ body {
   display: block;
 }
 
+.mobile-nav-toggle {
+  display: none;
+}
+
+.mobile-menu-logout {
+  display: none;
+}
+
 /* Icons */
 .icon {
   width: 16px;
@@ -1716,5 +1724,445 @@ body {
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    width: 100%;
+    padding: 0 1rem;
+  }
+
+  .header {
+    align-items: center;
+    gap: 12px;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: clamp(1.1rem, 4vw, 1.4rem);
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .header #logoutAdminBtn {
+    display: none;
+  }
+
+  .header .mobile-nav-toggle {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    margin-left: auto !important;
+    padding: 0;
+  }
+
+  .tabs {
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem 0;
+  }
+
+  .mobile-nav-toggle {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: #334155;
+    cursor: pointer;
+  }
+
+  .mobile-nav-toggle:focus-visible {
+    outline: 2px solid #800020;
+    outline-offset: 2px;
+  }
+
+  .mobile-nav-icon {
+    display: flex;
+    width: 20px;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .mobile-nav-icon span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .mobile-nav-toggle.is-open .mobile-nav-icon span:first-child {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .mobile-nav-toggle.is-open .mobile-nav-icon span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-nav-toggle.is-open .mobile-nav-icon span:last-child {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .tabs-list {
+    position: absolute;
+    top: 0;
+    right: 1rem;
+    left: 1rem;
+    z-index: 1;
+    display: none;
+    max-height: calc(100dvh - 110px);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 8px 0 16px;
+    padding: 6px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  }
+
+  .tabs.is-open .tabs-list {
+    display: flex;
+  }
+
+  .tabs-list .tab-trigger {
+    justify-content: space-between;
+    width: 100%;
+    border: 0;
+    border-radius: 6px;
+    text-align: left;
+  }
+
+  .tabs-list .tab-trigger.active {
+    background: #fdf2f4;
+  }
+
+  .mobile-menu-logout {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    margin-top: 4px;
+    padding: 8px 10px;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+    color: #800020;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .payment-tabs-list {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+
+  .payment-tabs-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .payment-tab-trigger {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  .tab-content,
+  .dashboard-grid > *,
+  .card,
+  .filter-card {
+    min-width: 0;
+  }
+
+  .dashboard-grid {
+    gap: 16px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .card-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .scroll-area,
+  #paidTableContainer {
+    max-height: none;
+    overflow: visible;
+  }
+
+  #adminApp .table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  #adminApp .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  #adminApp .table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  #adminApp .table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 10px;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+  }
+
+  #adminApp .table tbody td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 6px;
+    border: 0;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+  }
+
+  #adminApp .table tbody td::before {
+    content: attr(data-label);
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  #adminApp .table tbody td[data-label="Purpose"],
+  #adminApp .table tbody td[data-label="Reservation Details"],
+  #adminApp .table tbody td[data-label="Appointment Details"],
+  #adminApp .table tbody td[data-label="Cancellation Reason"],
+  #adminApp .table tbody td[data-label="Reason"],
+  #adminApp .table tbody td[data-label="Reschedule"],
+  #adminApp .table tbody td[data-label="Payment Tracking"],
+  #adminApp .table tbody td[data-label="Actions"] {
+    grid-column: 1 / -1;
+  }
+
+  #adminApp .table tbody td[data-label="Actions"] {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 10px;
+  }
+
+  #adminApp .table tbody td[data-label="Actions"]::before {
+    content: none;
+  }
+
+  #adminApp .table tbody td .truncate {
+    max-width: 100%;
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+  }
+
+  #adminApp .table tbody td .badge {
+    white-space: normal;
+  }
+
+  #adminApp .table tbody td .btn {
+    min-height: 40px;
+  }
+
+  #adminApp .table tbody tr.responsive-empty-row {
+    display: block;
+  }
+
+  #adminApp .table tbody tr.responsive-empty-row td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-actions {
+    flex-wrap: wrap;
+  }
+
+  .filter-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filter-grid > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .filter-header {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .payment-summary-bar {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .payment-summary-card {
+    min-width: 0;
+    padding: 12px 8px;
+  }
+
+  .payment-summary-card .value {
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-header-cell {
+    font-size: 11px;
+  }
+
+  .calendar-day {
+    min-width: 0;
+    padding: 3px;
+    font-size: 12px;
+  }
+
+  .manual-control-hint {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  #adminApp .forecast-container .macro-forecast-scroll,
+  #adminApp .forecast-container .micro-forecast-wrap {
+    overflow-x: hidden;
+  }
+
+  #adminApp .forecast-container .macro-chart,
+  #adminApp .forecast-container .macro-forecast-grid,
+  #adminApp .forecast-container .micro-forecast-table {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #adminApp .forecast-container .macro-forecast-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.1rem;
+  }
+
+  .modal-content {
+    width: calc(100% - 24px);
+    max-height: 90dvh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: 0 0.75rem;
+  }
+
+  .header {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    padding: 0.85rem 0.75rem;
+  }
+
+  .header h1 {
+    font-size: 1rem;
+  }
+
+  .header #logoutAdminBtn {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .tabs {
+    margin: 0 -0.75rem;
+    padding: 0.5rem 0.75rem 0;
+  }
+
+  .tabs-list {
+    right: 0.75rem;
+    left: 0.75rem;
+  }
+
+  .tabs-list .tab-trigger {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+  }
+
+  .payment-summary-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-summary-card {
+    text-align: left;
+  }
+
+  .payment-summary-card .value {
+    font-size: 20px;
+  }
+
+  .calendar-grid {
+    gap: 3px;
+  }
+
+  .calendar-day {
+    padding: 2px;
+    font-size: 11px;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+  }
+
+  .modal-footer .btn {
+    flex: 1 1 120px;
   }
 }

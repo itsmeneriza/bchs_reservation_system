@@ -7,6 +7,36 @@
 let adminInitialized = false;
 let adminRefreshTimer;
 
+function setupResponsiveTableLabels() {
+  document.querySelectorAll("#adminApp .table").forEach((table) => {
+    const labels = Array.from(table.querySelectorAll("thead th")).map(
+      (header) => header.textContent.trim() || "Actions",
+    );
+    const body = table.tBodies[0];
+    if (!body) return;
+
+    const applyLabels = () => {
+      Array.from(body.rows).forEach((row) => {
+        const isEmptyState = row.cells.length === 1 && row.cells[0].colSpan > 1;
+        row.classList.toggle("responsive-empty-row", isEmptyState);
+
+        Array.from(row.cells).forEach((cell, index) => {
+          if (isEmptyState) {
+            cell.removeAttribute("data-label");
+          } else if (labels[index]) {
+            cell.dataset.label = labels[index];
+          }
+        });
+      });
+    };
+
+    applyLabels();
+    new MutationObserver(applyLabels).observe(body, { childList: true });
+  });
+}
+
+setupResponsiveTableLabels();
+
 window.addEventListener("bchs:admin-authenticated", async () => {
   if (adminInitialized) return;
   adminInitialized = true;
@@ -46,12 +76,47 @@ window.activateTab = function (tabName) {
   const trigger = document.querySelector(`.tab-trigger[data-tab="${tabName}"]`);
   if (trigger) trigger.classList.add("active");
   document.getElementById(`${tabName}-tab`)?.classList.add("active");
+  setMobileNavOpen(false);
 };
+
+function setMobileNavOpen(isOpen) {
+  const tabs = document.querySelector(".tabs");
+  const toggle = document.getElementById("mobileNavToggle");
+  if (!tabs || !toggle) return;
+
+  tabs.classList.toggle("is-open", isOpen);
+  toggle.classList.toggle("is-open", isOpen);
+  toggle.setAttribute("aria-expanded", String(isOpen));
+}
+
+document.addEventListener("keydown", (event) => {
+  const navToggle = document.getElementById("mobileNavToggle");
+  if (
+    event.key === "Escape" &&
+    navToggle?.getAttribute("aria-expanded") === "true"
+  ) {
+    setMobileNavOpen(false);
+    navToggle.focus();
+  }
+});
 
 function setupTabs() {
   document.querySelectorAll(".tab-trigger").forEach((tab) => {
     tab.addEventListener("click", () => window.activateTab(tab.dataset.tab));
   });
+
+  const navToggle = document.getElementById("mobileNavToggle");
+  navToggle?.addEventListener("click", () => {
+    const isOpen = navToggle.getAttribute("aria-expanded") === "true";
+    setMobileNavOpen(!isOpen);
+  });
+
+  document
+    .getElementById("mobileLogoutAdminBtn")
+    ?.addEventListener("click", () => {
+      setMobileNavOpen(false);
+      document.getElementById("logoutAdminBtn")?.click();
+    });
 }
 
 // ─── Filters ──────────────────────────────────────────────────────────────────
