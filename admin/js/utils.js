@@ -28,7 +28,14 @@ function escapeAdminJsArgument(value) {
 
 function getFacilityName(id) {
   if (id === "global") return "ALL FACILITIES";
-  return facilities.find((facility) => facility.id === id)?.name || id;
+  const key = String(id ?? "").trim().toLowerCase();
+  if (!key) return id;
+  const facility = facilities.find(
+    (item) =>
+      String(item.id ?? "").trim().toLowerCase() === key ||
+      String(item.name ?? "").trim().toLowerCase() === key,
+  );
+  return facility?.name || id;
 }
 
 function isAdminWeekendDate(dateStr) {

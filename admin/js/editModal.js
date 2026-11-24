@@ -821,7 +821,45 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
 
   // Populate booking fields
   populateFacilitySelects();
-  document.getElementById("editFacilityId").value = r.facilityId;
+  const editFacilitySelect = document.getElementById("editFacilityId");
+  if (editFacilitySelect) {
+    const facilityIdKey = String(r.facilityId ?? "").trim().toLowerCase();
+    const facilityNameKey = String(r.facilityName ?? "").trim().toLowerCase();
+    const resolvedFacility =
+      facilities.find(
+        (facility) =>
+          String(facility.id ?? "").trim().toLowerCase() === facilityIdKey,
+      ) ||
+      facilities.find(
+        (facility) =>
+          String(facility.name ?? "").trim().toLowerCase() === facilityNameKey,
+      ) ||
+      facilities.find(
+        (facility) =>
+          String(facility.name ?? "").trim().toLowerCase() === facilityIdKey,
+      );
+
+    if (resolvedFacility) {
+      editFacilitySelect.value = resolvedFacility.id;
+    } else {
+      const fallbackName =
+        r.facilityName || getFacilityName(r.facilityId) || r.facilityId;
+      if (fallbackName && fallbackName !== "global") {
+        editFacilitySelect.add(
+          new Option(
+            String(fallbackName),
+            String(r.facilityId ?? ""),
+            true,
+            true,
+          ),
+        );
+      } else if (fallbackName === "global") {
+        editFacilitySelect.add(
+          new Option("ALL FACILITIES", "global", true, true),
+        );
+      }
+    }
+  }
   document.getElementById("editDate").value = r.date;
   setScheduleTimeSelect(
     document.getElementById("editStartTime"),
