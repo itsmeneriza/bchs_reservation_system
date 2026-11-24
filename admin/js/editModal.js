@@ -925,6 +925,20 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
         );
       }
     }
+    const facilityDisplay = document.getElementById("editFacilityDisplay");
+    const selectedFacility = facilities.find(
+      (facility) => facility.id === editFacilitySelect.value,
+    );
+    if (facilityDisplay) {
+      facilityDisplay.textContent = selectedFacility
+        ? `${selectedFacility.name} (${selectedFacility.capacity} pax)`
+        : r.facilityName ||
+          getFacilityName(r.facilityId) ||
+          r.facilityId ||
+          "N/A";
+      facilityDisplay.style.display = isQueueReview ? "" : "none";
+    }
+    editFacilitySelect.style.display = isQueueReview ? "none" : "";
   }
   document.getElementById("editDate").value = r.date;
   setScheduleTimeSelect(
@@ -932,6 +946,19 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
     r.startTime,
   );
   setScheduleTimeSelect(document.getElementById("editEndTime"), r.endTime);
+  [
+    ["editStartTime", "editStartTimeDisplay"],
+    ["editEndTime", "editEndTimeDisplay"],
+  ].forEach(([selectId, displayId]) => {
+    const select = document.getElementById(selectId);
+    const display = document.getElementById(displayId);
+    if (!select || !display) return;
+    display.textContent =
+      select.selectedOptions[0]?.textContent ||
+      (select.value ? convertTo12Hour(select.value) : "N/A");
+    display.style.display = isQueueReview ? "" : "none";
+    select.style.display = isQueueReview ? "none" : "";
+  });
   document.getElementById("editAppointmentDate").value =
     r.appointmentDate || "";
 

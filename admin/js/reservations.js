@@ -18,6 +18,10 @@ function _getAdminFacilityPrice(facilityId) {
   return _getAdminFacilities().find((r) => r.id === facilityId)?.pricePerHour ?? 0;
 }
 
+function refreshManualFacilityPicker() {
+  renderAdminFacilityPicker();
+}
+
 let manualStaffProfile = null;
 let manualStaffLookupVersion = 0;
 
@@ -221,6 +225,8 @@ window.renderAdminFacilityPicker = function (filterPax) {
   const currentVal =
     document.getElementById("manualFacility")?.value || source[0]?.id || "";
   const selectedDate = document.getElementById("manualDate")?.value || "";
+  const startTime = document.getElementById("manualStartTime")?.value || "";
+  const endTime = document.getElementById("manualEndTime")?.value || "";
   const isGroundsWeekend = isAdminWeekendDate(selectedDate);
 
   if (!source.length) {
@@ -232,15 +238,29 @@ window.renderAdminFacilityPicker = function (filterPax) {
       const tooSmall = filterPax > 0 && r.capacity < filterPax;
       const groundsUnavailable =
         isAdminGroundsFacility(r.id) && isGroundsWeekend;
+      const conflict =
+        selectedDate && startTime && endTime
+          ? adminCheckConflict(r.id, selectedDate, startTime, endTime)
+          : null;
+      const timeUnavailable = Boolean(conflict);
       const isSelected = r.id === currentVal;
-      const unavailable = tooSmall || groundsUnavailable;
+      const unavailable = tooSmall || groundsUnavailable || timeUnavailable;
+      const unavailableReason = groundsUnavailable
+        ? "Grounds are unavailable on Saturdays and Sundays"
+        : timeUnavailable
+          ? conflict.status === "blocked"
+            ? "Facility is blocked for this date and time"
+            : `Time conflicts with ${conflict.name} (${conflict.startTime}–${conflict.endTime})`
+          : tooSmall
+            ? `Capacity: ${r.capacity} pax — too small for ${filterPax} attendees`
+            : `${r.name} · up to ${r.capacity} pax`;
       return `<button type="button"
             class="admin-facility-pill${isSelected ? " selected" : ""}${unavailable ? " disabled" : ""}"
             ${unavailable ? "disabled" : ""}
-            title="${escapeAdminText(groundsUnavailable ? "Grounds are unavailable on Saturdays and Sundays" : tooSmall ? `Capacity: ${r.capacity} pax — too small for ${filterPax} attendees` : `${r.name} · up to ${r.capacity} pax`)}"
+            title="${escapeAdminText(unavailableReason)}"
             onclick="selectAdminFacility(${escapeAdminJsArgument(r.id)})">
             <span class="facility-pill-name">${escapeAdminText(r.name)}</span>
-            <span class="facility-pill-cap">${r.capacity} pax</span>
+            <span class="facility-pill-cap">${timeUnavailable ? "Unavailable" : `${r.capacity} pax`}</span>
         </button>`;
     })
     .join("");
@@ -248,11 +268,23 @@ window.renderAdminFacilityPicker = function (filterPax) {
 
 window.selectAdminFacility = function (facilityId) {
   const date = document.getElementById("manualDate")?.value || "";
+  const startTime = document.getElementById("manualStartTime")?.value || "";
+  const endTime = document.getElementById("manualEndTime")?.value || "";
   if (
     isAdminGroundsFacility(facilityId) &&
     isAdminWeekendDate(date)
   ) {
     showToast("Grounds are unavailable on Saturdays and Sundays.", "error");
+    return;
+  }
+  const conflict = adminCheckConflict(facilityId, date, startTime, endTime);
+  if (conflict) {
+    showToast(
+      conflict.status === "blocked"
+        ? "This facility is blocked for the selected date and time."
+        : `This facility conflicts with "${conflict.name}" (${conflict.startTime}–${conflict.endTime}).`,
+      "error",
+    );
     return;
   }
   const hiddenInput = document.getElementById("manualFacility");
@@ -296,6 +328,8 @@ function openAddReservationModal(selectedDate) {
       el.addEventListener("change", updateManualPricing);
       el.removeEventListener("change", refreshManualConflicts);
       el.addEventListener("change", refreshManualConflicts);
+      el.removeEventListener("change", refreshManualFacilityPicker);
+      el.addEventListener("change", refreshManualFacilityPicker);
     }
   });
 
@@ -405,10 +439,16 @@ function updateManualPricing() {
 window.updateAdminFacilitySuggestion = function () {
   const attendees =
     parseInt(document.getElementById("manualAttendees").value) || 0;
+  const purposeSelect = document.getElementById("manualPurpose");
+  const purposeValue =
+    purposeSelect?.value === "Other"
+      ? document.getElementById("purposeOtherBox")?.value.trim()
+      : purposeSelect?.value || "";
+  const purpose = (purposeValue || "").toLowerCase();
   const facilitySelect = document.getElementById("manualFacility");
   const suggestionBox = document.getElementById("admin-facility-suggestion");
   const suggestionText = document.getElementById("admin-suggestion-text");
-  if (!attendees || attendees <= 0) {
+  if ((!attendees || attendees <= 0) && !purpose) {
     suggestionBox.style.display = "none";
     return;
   }
@@ -417,6 +457,59 @@ window.updateAdminFacilitySuggestion = function () {
   if (!currentFacility) {
     suggestionBox.style.display = "none";
     return;
+  }
+
+  if (purpose) {
+    const purposeMappings = [
+      {
+        keywords: ["basketball", "volleyball", "sports tournament", "physical education", "sport", "athletic", "game", "team building", "outdoor activity"],
+        ids: ["gym", "grounds"],
+        reason: "this is a physical or sports activity",
+      },
+      {
+        keywords: ["dance", "theater", "theatre", "performance", "concert", "cultural", "drama", "talent show"],
+        ids: ["avr", "auditorium", "gym"],
+        reason: "this activity needs stage, presentation, or audiovisual facilities",
+      },
+      {
+        keywords: ["study", "research", "examination", "library", "quiet", "book", "reading"],
+        ids: ["library", "avr"],
+        reason: "this is a focused academic or study activity",
+      },
+      {
+        keywords: ["lecture", "presentation", "seminar", "workshop", "training", "conference", "film screening", "media", "multimedia", "video", "slides"],
+        ids: ["avr", "auditorium"],
+        reason: "this activity requires audio-visual or presentation support",
+      },
+      {
+        keywords: ["graduation", "awards ceremony", "ceremony", "assembly", "cultural event", "exhibition"],
+        ids: ["auditorium", "grounds"],
+        reason: "this is a large event or ceremony",
+      },
+      {
+        keywords: ["meeting", "committee", "club", "organization", "board", "parent-teacher"],
+        ids: ["library", "avr", "auditorium"],
+        reason: "this is a meeting or organizational activity",
+      },
+    ];
+
+    const purposeMapping = purposeMappings.find((mapping) =>
+      mapping.keywords.some((keyword) => purpose.includes(keyword)),
+    );
+    if (purposeMapping) {
+      const suitable = purposeMapping.ids
+        .map((id) => facilities.find((facility) => facility.id === id))
+        .filter((facility) => facility && (!attendees || facility.capacity >= attendees))
+        .sort((a, b) => a.capacity - b.capacity);
+      const target = suitable.find((facility) => facility.id !== currentFacility.id);
+      if (target) {
+        suggestionText.innerHTML =
+          `<strong>Purpose suggestion:</strong> Because this reservation is for ${purposeMapping.reason}, ` +
+          `consider <strong><a href="#" onclick="document.getElementById('manualFacility').value=${escapeAdminJsArgument(target.id)};updateAdminFacilitySuggestion();return false;" style="color:#800020;">${escapeAdminText(target.name)} (${target.capacity} pax)</a></strong>.`;
+        suggestionBox.style.display = "block";
+        return;
+      }
+    }
   }
 
   if (attendees > currentFacility.capacity) {

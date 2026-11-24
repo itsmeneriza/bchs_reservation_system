@@ -453,8 +453,57 @@ export class ReservationModal {
     let recommendation = null;
     let switchOptions = [];
 
-    // 1. HARD CONSTRAINT: Over Pax Limit
-    if (attendees > currentFacility.capacity) {
+    // 1. PURPOSE CONSTRAINT: Facility suitability comes before pax efficiency
+    if (purpose) {
+      const mappings = [
+        {
+          ids: ["gym", "grounds"],
+          keywords: ["basketball", "volleyball", "sports tournament", "physical education", "sport", "athletic", "game", "outdoor activity", "team building"],
+          reason: "physical and sports activities fit the gymnasium or outdoor grounds",
+        },
+        {
+          ids: ["avr", "auditorium", "gym"],
+          keywords: ["dance", "theater", "theatre", "performance", "concert", "cultural", "drama", "talent show"],
+          reason: "dance, theater, and performance activities need stage or presentation facilities",
+        },
+        {
+          ids: ["library", "avr"],
+          keywords: ["study", "quiet", "research", "read", "exam", "book", "writing"],
+          reason: "focused academic and study activities are best suited to the library",
+        },
+        {
+          ids: ["avr", "auditorium"],
+          keywords: ["media", "audio", "video", "film", "movie", "projection", "presentation", "slides", "multimedia", "tech", "lecture", "seminar", "workshop", "training", "conference"],
+          reason: "presentations and audiovisual activities are fully supported by the AVR",
+        },
+        {
+          ids: ["auditorium", "grounds"],
+          keywords: ["graduation", "awards", "ceremony", "assembly", "summit", "convention", "exhibition"],
+          reason: "large-scale events and ceremonies are suited to the auditorium",
+        },
+        {
+          ids: ["library", "avr", "auditorium"],
+          keywords: ["meeting", "committee", "club", "organization", "board", "parent-teacher"],
+          reason: "meetings and organizational activities are suited to the library or AVR",
+        },
+      ];
+
+      const bestMapping = mappings.find((m) =>
+        m.keywords.some((k) => purpose.includes(k)),
+      );
+      if (bestMapping) {
+        const targetFacility = bestMapping.ids
+          .map((id) => state.facilities.find((r) => r.id === id))
+          .find((facility) => facility && facility.id !== currentFacility.id && facility.capacity >= attendees);
+        if (targetFacility && targetFacility.capacity >= attendees) {
+          switchOptions = [targetFacility];
+          recommendation = `<strong>Suggestion:</strong> Based on your purpose, the <strong>${targetFacility.name}</strong> is better suited (${bestMapping.reason}). Switch?`;
+        }
+      }
+    }
+
+    // 2. HARD CONSTRAINT: Over Pax Limit
+    if (!recommendation && attendees > currentFacility.capacity) {
       const fits = state.facilities
         .filter((r) => r.capacity >= attendees)
         .sort((a, b) => a.capacity - b.capacity);
@@ -463,96 +512,6 @@ export class ReservationModal {
         recommendation = `<strong>Over Pax Limit:</strong> ${currentFacility.name} fits ${currentFacility.capacity} pax. Switch to:`;
       } else {
         recommendation = `<strong>Extreme Pax Warning:</strong> ${attendees} pax exceeds our largest facility. Please contact Admin.`;
-      }
-    }
-
-    // 2. SOFT CONSTRAINT: Purpose/Facility Alignment
-    if (!recommendation && purpose) {
-      const mappings = [
-        {
-          id: "library",
-          keywords: [
-            "study",
-            "quiet",
-            "research",
-            "read",
-            "exam",
-            "book",
-            "writing",
-          ],
-          reason: "optimized for academic research and quiet study",
-        },
-        {
-          id: "gym",
-          keywords: [
-            "sport",
-            "game",
-            "basketball",
-            "volleyball",
-            "practice",
-            "training",
-            "dance",
-            "exercise",
-            "physical",
-          ],
-          reason: "equipped for physical education and sports",
-        },
-        {
-          id: "avr",
-          keywords: [
-            "media",
-            "audio",
-            "video",
-            "film",
-            "movie",
-            "projection",
-            "presentation",
-            "slides",
-            "multimedia",
-            "tech",
-          ],
-          reason: "fully equipped with audio-visual technology",
-        },
-        {
-          id: "auditorium",
-          keywords: [
-            "graduation",
-            "concert",
-            "assembly",
-            "performance",
-            "stage",
-            "seminar",
-            "summit",
-            "convention",
-            "theater",
-          ],
-          reason: "premier venue for large-scale events",
-        },
-        {
-          id: "grounds",
-          keywords: [
-            "outdoor",
-            "festival",
-            "rally",
-            "drill",
-            "field",
-            "open air",
-            "track",
-            "camp",
-          ],
-          reason: "best for outdoor activities",
-        },
-      ];
-
-      const bestMapping = mappings.find((m) =>
-        m.keywords.some((k) => purpose.includes(k)),
-      );
-      if (bestMapping && currentFacility.id !== bestMapping.id) {
-        const targetFacility = state.facilities.find((r) => r.id === bestMapping.id);
-        if (targetFacility && targetFacility.capacity >= attendees) {
-          switchOptions = [targetFacility];
-          recommendation = `<strong>Suggestion:</strong> Based on your purpose, the <strong>${targetFacility.name}</strong> is better suited (${bestMapping.reason}). Switch?`;
-        }
       }
     }
 

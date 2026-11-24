@@ -35,13 +35,6 @@ export class FacilityList {
       facilityCard.innerHTML = `
                 <div class="facility-info">
                     <div class="facility-name">${facility.name}</div>
-                    <div class="facility-capacity-badge">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                        </svg>
-                        <span>${facility.capacity}</span>
-                    </div>
                     ${tooSmall ? `<div class="facility-capacity-warning">Too small</div>` : ""}
                 </div>
             `;

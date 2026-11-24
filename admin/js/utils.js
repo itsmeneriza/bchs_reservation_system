@@ -38,6 +38,30 @@ function getFacilityName(id) {
   return facility?.name || id;
 }
 
+function adminFacilitiesMatch(firstId, firstName, secondId, secondName) {
+  if (firstId === "global" || secondId === "global") return true;
+
+  const keysFor = (id, name) => {
+    const keys = new Set(
+      [id, name]
+        .map((value) => String(value ?? "").trim().toLowerCase())
+        .filter(Boolean),
+    );
+    const facility = facilities.find(
+      (item) =>
+        keys.has(String(item.id ?? "").trim().toLowerCase()) ||
+        keys.has(String(item.name ?? "").trim().toLowerCase()),
+    );
+    if (facility) {
+      keys.add(String(facility.id ?? "").trim().toLowerCase());
+      keys.add(String(facility.name ?? "").trim().toLowerCase());
+    }
+    return keys;
+  };
+  const firstKeys = keysFor(firstId, firstName);
+  return [...keysFor(secondId, secondName)].some((key) => firstKeys.has(key));
+}
+
 function isAdminWeekendDate(dateStr) {
   if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return false;
@@ -171,8 +195,12 @@ function getAdminBookedHours(facilityId, dateStr, excludeId = null) {
     if (r.id === excludeId) return;
     if (["cancelled", "refused", "rejected"].includes(r.status)) return;
     if (!["approved", "pending", "blocked"].includes(r.status)) return;
-    const matchesFacility =
-      r.facilityId === facilityId || r.facilityId === "global";
+    const matchesFacility = adminFacilitiesMatch(
+      r.facilityId,
+      r.facilityName,
+      facilityId,
+      getFacilityName(facilityId),
+    );
     if (!matchesFacility || r.date !== dateStr) return;
     const [startH, startM] = r.startTime.split(":").map(Number);
     const [endH, endM] = r.endTime.split(":").map(Number);
@@ -315,7 +343,12 @@ function adminCheckConflict(
       if (!["approved", "accepted", "pending", "blocked"].includes(r.status))
         return false;
       const matchesFacility =
-        r.facilityId === facilityId || r.facilityId === "global";
+        adminFacilitiesMatch(
+          r.facilityId,
+          r.facilityName,
+          facilityId,
+          getFacilityName(facilityId),
+        );
       const matchesDate = r.isSchoolEvent
         ? r.date <= dateStr && (r.endDate || r.date) >= dateStr
         : r.date === dateStr;

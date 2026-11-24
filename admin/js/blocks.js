@@ -69,24 +69,40 @@ async function openQuickBlock(dateStr) {
 
     // Disable checkboxes for already-blocked facilities
     dayBlocks.forEach((b) => {
-      const facilityName = getFacilityName(b.facilityId);
-      const cb = Array.from(
-        document.querySelectorAll('input[name="facilityBlock"]'),
-      ).find(
-        (checkbox) => checkbox.value === facilityName,
-      );
-      if (cb) {
-        cb.disabled = true;
-        cb.checked = true;
-      }
       if (b.facilityId === "global") {
-        const allCb = document.querySelector(
-          'input[name="facilityBlock"][value="all"]',
+        document
+          .querySelectorAll('input[name="facilityBlock"]')
+          .forEach((checkbox) => {
+            checkbox.disabled = true;
+            checkbox.checked = true;
+          });
+        return;
+      }
+      const facilityCheckbox = Array.from(
+        document.querySelectorAll(
+          'input[name="facilityBlock"]:not([value="all"])',
+        ),
+      ).find((checkbox) => {
+        const facility = facilities.find(
+          (item) =>
+            String(item.name).trim().toLowerCase() ===
+              checkbox.value.trim().toLowerCase() ||
+            String(item.id).trim().toLowerCase() ===
+              checkbox.value.trim().toLowerCase(),
         );
-        if (allCb) {
-          allCb.disabled = true;
-          allCb.checked = true;
-        }
+        return (
+          facility &&
+          adminFacilitiesMatch(
+            b.facilityId,
+            b.facilityName,
+            facility.id,
+            facility.name,
+          )
+        );
+      });
+      if (facilityCheckbox) {
+        facilityCheckbox.disabled = true;
+        facilityCheckbox.checked = true;
       }
     });
   } else {
@@ -142,8 +158,16 @@ async function rescheduleBlockConflicts(blocks) {
       if (!["approved", "accepted", "pending"].includes(r.status)) return false;
       if (r.blockReschedulePending === true || r.isSchoolEvent) return false;
       if (r.date !== block.date) return false;
-      const isGlobal = block.facilityId === "global";
-      if (!isGlobal && r.facilityId !== block.facilityId) return false;
+      if (
+        !adminFacilitiesMatch(
+          block.facilityId,
+          block.facilityName,
+          r.facilityId,
+          r.facilityName,
+        )
+      ) {
+        return false;
+      }
       if (block.isFullDayBlock) return true;
       return r.startTime < block.endTime && r.endTime > block.startTime;
     });
@@ -307,21 +331,47 @@ async function confirmQuickBlock() {
   }
 
   const isFullDay = startTime === "07:00" && endTime === "18:00";
-  const newBlocks = selectedFacilities.map((facilityName) => ({
-    id: "block_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-    source: "walk_in",
-    facilityId: facilityName === "all" ? "global" : facilityName.toLowerCase(),
-    facilityName: facilityName === "all" ? "ALL FACILITIES" : facilityName,
-    name: "ADMIN BLOCK",
-    email: "admin@bchs.edu",
-    date: dateStr,
-    startTime,
-    endTime,
-    purpose: `ADMIN MANUAL BLOCK: ${reason}`,
-    status: "blocked",
-    isFullDayBlock: isFullDay,
-    submittedAt: new Date().toISOString(),
-  }));
+  const newBlocks = selectedFacilities.map((facilityName) => {
+    const facility =
+      facilityName === "all"
+        ? null
+        : facilities.find(
+            (item) =>
+              String(item.name).trim().toLowerCase() ===
+                facilityName.trim().toLowerCase() ||
+              String(item.id).trim().toLowerCase() ===
+                facilityName.trim().toLowerCase(),
+          );
+    return {
+      id:
+        "block_" +
+        Date.now() +
+        "_" +
+        Math.random().toString(36).substr(2, 5),
+      source: "walk_in",
+      facilityId: facilityName === "all" ? "global" : facility?.id,
+      facilityName:
+        facilityName === "all"
+          ? "ALL FACILITIES"
+          : facility?.name || facilityName,
+      name: "ADMIN BLOCK",
+      email: "admin@bchs.edu",
+      date: dateStr,
+      startTime,
+      endTime,
+      purpose: `ADMIN MANUAL BLOCK: ${reason}`,
+      status: "blocked",
+      isFullDayBlock: isFullDay,
+      submittedAt: new Date().toISOString(),
+    };
+  });
+  if (newBlocks.some((block) => !block.facilityId)) {
+    showToast(
+      "A selected facility is no longer available. Refresh and try again.",
+      "error",
+    );
+    return;
+  }
 
   const createdBlocks = [];
   let blockCreationFailure = null;
