@@ -57,7 +57,8 @@ function getManilaDateParts(now = new Date()) {
 
 function getTimeMinutes(value) {
   if (typeof value !== "string") return null;
-  const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  const rangeStart = value.split(/\s*[–-]\s*/)[0].trim();
+  const match = rangeStart.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
   if (!match) return null;
 
   let hours = Number(match[1]);
@@ -1004,6 +1005,34 @@ export function createRequestsRouter() {
             success: false,
             message: "At least 5 visit options are required.",
           });
+        }
+        if (Object.hasOwn(authorizedChanges, "visitOptions")) {
+          const eventDate = String(existing.date || "");
+          const eventStartMinutes = getTimeMinutes(existing.start_time);
+          const validOptions = authorizedChanges.visitOptions.every((option) => {
+            if (!option || typeof option !== "object") return false;
+            const visitDate = String(option.date || "").trim();
+            const visitTime = String(option.startTime || option.time || "").trim();
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(visitDate)) return false;
+            if (visitDate > eventDate) return false;
+            if (visitDate < eventDate) return true;
+            const visitStartMinutes = getTimeMinutes(visitTime);
+            return (
+              eventStartMinutes !== null &&
+              visitStartMinutes !== null &&
+              visitStartMinutes < eventStartMinutes
+            );
+          });
+          if (
+            Array.isArray(authorizedChanges.visitOptions) &&
+            !validOptions
+          ) {
+            return res.status(400).json({
+              success: false,
+              message:
+                "All visit options must be scheduled before the event date or start time.",
+            });
+          }
         }
         if (
           Object.hasOwn(authorizedChanges, "rescheduleOptions") &&

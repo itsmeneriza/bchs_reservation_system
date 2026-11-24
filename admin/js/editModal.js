@@ -82,6 +82,35 @@ function _isAllowedVisitDate(date) {
   return !date || date >= _getEarliestVisitDate();
 }
 
+function _isVisitBeforeEvent(date, time) {
+  if (currentModalMode === "RESCHEDULE_OR_REJECT") return true;
+
+  const request = requests.find((item) => item.id === selectedRequestToEdit);
+  if (!request || !_isAllowedVisitDate(date) || !request.date) return false;
+
+  if (date < request.date) return true;
+  if (date > request.date) return false;
+
+  const visitStartMinutes = parseTimeToMinutes(time);
+  const eventStartMinutes = parseTimeToMinutes(request.startTime);
+  return (
+    visitStartMinutes !== null &&
+    eventStartMinutes !== null &&
+    visitStartMinutes < eventStartMinutes
+  );
+}
+
+function getVisitDateAvailability(date) {
+  if (!date || !_isAllowedVisitDate(date)) {
+    return { available: 0, total: 0 };
+  }
+  const choices = getVisitTimeChoices();
+  const available = choices.filter((choice) =>
+    _isVisitBeforeEvent(date, choice.value),
+  ).length;
+  return { available, total: choices.length };
+}
+
 function getRescheduleDateAvailability(date) {
   const request = requests.find((item) => item.id === selectedRequestToEdit);
   if (!request || !_isAllowedVisitDate(date)) {
@@ -135,8 +164,8 @@ function renderVisitCalendar() {
     const selected = selectedVisitDates.includes(date);
     const availability = isRescheduleMode
       ? getRescheduleDateAvailability(date)
-      : { available: 1, total: 1 };
-    const hasAvailabilityData = isRescheduleMode && availability.total > 0;
+      : getVisitDateAvailability(date);
+    const hasAvailabilityData = availability.total > 0;
     const full =
       hasAvailabilityData &&
       availability.available === 0 &&
@@ -194,7 +223,13 @@ function renderVisitTimeOptions() {
   const container = document.getElementById("visitTimeOptions");
   if (!container) return;
   let choices = getVisitTimeChoices();
-  if (currentModalMode === "RESCHEDULE_OR_REJECT" && selectedVisitDates.length) {
+  if (currentModalMode === "QUEUE_REVIEW" && selectedVisitDates.length) {
+    choices = choices.filter((choice) =>
+      selectedVisitDates.some((date) =>
+        _isVisitBeforeEvent(date, choice.value),
+      ),
+    );
+  } else if (currentModalMode === "RESCHEDULE_OR_REJECT" && selectedVisitDates.length) {
     const request = requests.find((item) => item.id === selectedRequestToEdit);
     if (!request) {
       choices = [];
@@ -236,6 +271,19 @@ function renderVisitTimeOptions() {
 
 function parseTimeToMinutes(value) {
   if (!value || typeof value !== "string") return null;
+  const rangeStart = value.split(/\s*[–-]\s*/)[0].trim();
+  const twelveHourMatch = rangeStart.match(
+    /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i,
+  );
+  if (twelveHourMatch) {
+    let hours = Number(twelveHourMatch[1]);
+    const minutes = Number(twelveHourMatch[2]);
+    if (hours < 1 || hours > 12 || minutes > 59) return null;
+    const period = twelveHourMatch[3].toUpperCase();
+    if (period === "PM" && hours !== 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
   const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return null;
   const hours = Number(match[1]);
@@ -345,10 +393,11 @@ window.changeVisitCalendarMonth = function (offset) {
 
 window.toggleVisitDate = function (date) {
   if (!_isAllowedVisitDate(date)) return;
-  if (
-    currentModalMode === "RESCHEDULE_OR_REJECT" &&
-    getRescheduleDateAvailability(date).available === 0
-  ) {
+  const noAvailableTime =
+    currentModalMode === "RESCHEDULE_OR_REJECT"
+      ? getRescheduleDateAvailability(date).available === 0
+      : getVisitDateAvailability(date).available === 0;
+  if (noAvailableTime) {
     return;
   }
   if (selectedVisitDates.includes(date)) {
@@ -411,6 +460,7 @@ window.addVisitSlot = function () {
 
   let addedCount = 0;
   let conflictCount = 0;
+  let beforeEventCount = 0;
   const request = isReschedule
     ? requests.find((item) => item.id === selectedRequestToEdit)
     : null;
@@ -450,6 +500,10 @@ window.addVisitSlot = function () {
           addedCount++;
         }
       } else {
+        if (!_isVisitBeforeEvent(date, time)) {
+          beforeEventCount++;
+          return;
+        }
         const newKey = `${date}::${time}`;
         const exists = pendingVisitOptions.some((slot) => {
           const sDate = String(slot.date || "").trim();
@@ -465,6 +519,13 @@ window.addVisitSlot = function () {
   );
 
   if (addedCount === 0) {
+    if (beforeEventCount > 0) {
+      showToast(
+        "Visit options must be scheduled before the event date or start time.",
+        "error",
+      );
+      return;
+    }
     if (conflictCount > 0) {
       showToast(
         "Those alternate schedules conflict with another reservation or facility block.",
@@ -488,6 +549,11 @@ window.addVisitSlot = function () {
   if (conflictCount > 0) {
     showToast(
       `${addedCount} alternate schedule${addedCount === 1 ? "" : "s"} added; ${conflictCount} conflicting option${conflictCount === 1 ? "" : "s"} skipped.`,
+      "error",
+    );
+  } else if (beforeEventCount > 0) {
+    showToast(
+      `${addedCount} visit option${addedCount === 1 ? "" : "s"} added; ${beforeEventCount} option${beforeEventCount === 1 ? "" : "s"} skipped because it is not before the event.`,
       "error",
     );
   } else {
@@ -880,6 +946,7 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   const visitSlotInstructions = document.getElementById(
     "visitSlotInstructions",
   );
+  const visitTimingNote = document.getElementById("visitTimingNote");
   const visitCalendarTitle = document.getElementById("visitCalendarTitle");
   const visitTimesTitle = document.getElementById("visitTimesTitle");
   const addVisitSlotButton = document.getElementById("addVisitSlotButton");
@@ -901,7 +968,21 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
   if (visitSlotInstructions) {
     visitSlotInstructions.textContent = isRescheduleMode
       ? "Choose an event duration, then select alternate dates and start times. Available schedules will match the selected duration."
-      : "Select up to 5 dates and up to 9 time slots. Adding them creates a separate option for each date and time combination.";
+      : "Select up to 5 dates and up to 9 time slots that are before the event date and start time. Adding them creates a separate option for each date and time combination.";
+  }
+  if (visitTimingNote) {
+    visitTimingNote.style.display = isRescheduleMode ? "none" : "";
+    if (!isRescheduleMode) {
+      const eventDate = formatDateSimple(r.date);
+      const eventTime = r.startTime
+        ? convertTo12Hour(r.startTime)
+        : "the scheduled start time";
+      visitTimingNote.innerHTML =
+        `<strong>Why this rule applies:</strong> Visitation must be before the event ` +
+        `(currently <strong>${escapeAdminText(eventDate)}</strong> at ` +
+        `<strong>${escapeAdminText(eventTime)}</strong>). ` +
+        `Dates on or after the event and later times on the event date cannot be selected.`;
+    }
   }
   if (rescheduleDurationGroup)
     rescheduleDurationGroup.style.display = isRescheduleMode ? "" : "none";
@@ -955,6 +1036,11 @@ window.openEditModal = (id, mode = "FULL_EDIT") => {
           )
         : _normalizeOptions(
             Array.isArray(r.visitOptions) ? r.visitOptions : [],
+          ).filter((option) =>
+            _isVisitBeforeEvent(
+              option.date,
+              String(option.startTime || option.time || ""),
+            ),
           );
       renderVisitSlotList();
       selectedVisitDates = [];
@@ -1440,6 +1526,22 @@ async function savereservationChanges() {
   ) {
     showToast(
       "All visit options must be scheduled for today or later.",
+      "error",
+    );
+    return;
+  }
+  if (
+    Array.isArray(update.visitOptions) &&
+    update.visitOptions.some(
+      (option) =>
+        !_isVisitBeforeEvent(
+          option.date,
+          String(option.startTime || option.time || ""),
+        ),
+    )
+  ) {
+    showToast(
+      "All visit options must be scheduled before the event date or start time.",
       "error",
     );
     return;
