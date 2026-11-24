@@ -6,6 +6,7 @@
 import { state, setSelectedFacility } from "../core/state.js";
 import {
   convertTo12Hour,
+  formatDate,
   isPastDate,
   getLocalISODate,
 } from "../utils/dateUtils.js";
@@ -28,6 +29,7 @@ export class ReservationModal {
     this.conflictWarning = document.getElementById("conflict-warning");
     this.suggestionBox = null;
     this.pendingRequestData = null;
+    this.editingVisitSchedule = null;
 
     this.inputs = {
       name: document.getElementById("req-name"),
@@ -132,6 +134,13 @@ export class ReservationModal {
 
   open(editingId = null, prefill = null, options = {}) {
     if (!editingId) this.modal.dataset.editId = "";
+    this.editingVisitSchedule =
+      editingId && prefill?.appointmentDate && prefill?.appointmentTime
+        ? {
+            date: prefill.appointmentDate,
+            time: prefill.appointmentTime,
+          }
+        : null;
 
     // --- AUTH CHECK ---
     if (!state.isLoggedIn) {
@@ -752,6 +761,19 @@ export class ReservationModal {
       if (titleEl) titleEl.textContent = "Reason for Changes";
       if (acceptBtn) acceptBtn.textContent = "Submit Changes";
       if (declineBtn) declineBtn.textContent = "Cancel";
+      const visitSchedule = document.getElementById(
+        "policy-edit-visit-schedule",
+      );
+      const visitScheduleText = document.getElementById(
+        "policy-edit-visit-schedule-text",
+      );
+      if (visitSchedule && visitScheduleText) {
+        const schedule = this.editingVisitSchedule;
+        visitSchedule.style.display = schedule ? "block" : "none";
+        visitScheduleText.textContent = schedule
+          ? `${formatDate(schedule.date)} · ${schedule.time}`
+          : "";
+      }
       // Reset textarea and error
       const textarea = document.getElementById("policy-edit-reason-input");
       const error = document.getElementById("policy-edit-reason-error");
@@ -1098,8 +1120,6 @@ export class ReservationModal {
             _editedByUser: true,
             blockReschedulePending: false,
             blockRescheduleReason: null,
-            appointmentDate: null,
-            appointmentTime: null,
           }),
         });
         const result = await res.json();
