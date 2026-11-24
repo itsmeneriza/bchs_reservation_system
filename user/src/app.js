@@ -10,7 +10,6 @@ import { Calendar } from "./components/CalendarComponent.js";
 import { TimeSlots } from "./components/TimeSlotsComponent.js";
 import { Chat } from "./components/ChatComponent.js";
 import { ReservationModal } from "./components/ReservationModalComponent.js";
-import { Forecast } from "./components/ForecastComponent.js";
 import { CancellationHandler } from "./components/CancellationComponent.js";
 import { MyRequests } from "./components/MyRequestsComponent.js";
 import { registerMobileViewer } from "./utils/facilityUtils.js";
@@ -25,7 +24,6 @@ class ReservationApp {
     this.timeSlots = new TimeSlots();
     this.chat = new Chat();
     this.reservationModal = new ReservationModal();
-    this.forecast = new Forecast();
     this.cancellationHandler = new CancellationHandler();
     this.myRequests = new MyRequests();
   }
@@ -64,12 +62,6 @@ class ReservationApp {
       // Defer non-visible tab renders until after paint
       requestIdleCallback(() => {
         this.myRequests.render();
-        // Load forecast data then render (deferred — heaviest API call)
-        import("./services/dataService.js").then(({ dataService }) => {
-          dataService.loadAllDataWithForecast().then(() => {
-            state.forecast = dataService.getForecast();
-          });
-        });
       });
 
       this.setupAutoRefresh();
@@ -143,7 +135,6 @@ class ReservationApp {
     const mainContent = document.querySelector(".main-content");
     const isCalendar = tab === "calendar";
     const isMobile = window.innerWidth <= 768;
-    document.body.classList.toggle("forecast-tab-active", tab === "forecast");
     document.body.classList.toggle(
       "my-requests-tab-active",
       tab === "my-requests",
@@ -187,12 +178,9 @@ class ReservationApp {
       calendarHeaderOuter.style.display = isCalendar ? "" : "none";
     }
 
-    // Show a timed loader for the calendar and keep the forecast loader until rendering finishes.
-    if ((tab === "calendar" || tab === "forecast") && tabContent) {
+    // Show a timed loader for the calendar.
+    if (tab === "calendar" && tabContent) {
       const loader = this._showTabLoader(tabContent, tab);
-      if (tab === "forecast") {
-        this.forecast.render().finally(() => loader?.remove());
-      }
     }
 
     // Render My Requests when tab is clicked
@@ -206,25 +194,14 @@ class ReservationApp {
     if (existing) existing.remove();
 
     const overlay = document.createElement("div");
-    const isForecast = tab === "forecast";
-    overlay.className = `tab-loader-overlay${isForecast ? " forecast-tab-loader-overlay" : ""}`;
+    overlay.className = "tab-loader-overlay";
     overlay.setAttribute("role", "status");
     overlay.setAttribute("aria-live", "polite");
     overlay.setAttribute(
       "aria-label",
-      isForecast ? "Loading facility forecast" : "Loading calendar",
+      "Loading calendar",
     );
-    overlay.innerHTML = isForecast
-      ? `
-            <div class="tab-loader-inner forecast-tab-loader-inner">
-                <div class="forecast-loader-chart" aria-hidden="true">
-                    <span></span><span></span><span></span><span></span><span></span>
-                </div>
-                <strong>Preparing your forecast</strong>
-                <span>Analyzing facility activity and predictions…</span>
-            </div>
-        `
-      : `
+    overlay.innerHTML = `
             <div class="tab-loader-inner">
                 <svg class="tab-loader-spinner" viewBox="0 0 50 50">
                     <circle cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
@@ -233,10 +210,7 @@ class ReservationApp {
             </div>
         `;
     tabContent.appendChild(overlay);
-
-    if (!isForecast) {
-      setTimeout(() => overlay.remove(), 1500);
-    }
+    setTimeout(() => overlay.remove(), 1500);
 
     return overlay;
   }
@@ -249,7 +223,7 @@ class ReservationApp {
     const hash = window.location.hash.replace("#", "");
     if (
       hash &&
-      ["calendar", "my-requests", "forecast", "policy"].includes(hash)
+      ["calendar", "my-requests", "policy"].includes(hash)
     ) {
       const btn = document.querySelector(`.tab-btn[data-tab="${hash}"]`);
       if (btn) this.handleTabClick(btn);
