@@ -146,7 +146,7 @@ export class Forecast {
         mostPopular = facilityId;
       }
     });
-    stats.mostPopularFacility = mostPopular;
+    stats.mostPopularFacility = this.getFacilityName(mostPopular);
 
     let maxMonthCount = 0;
     let busiestMonth = "";
