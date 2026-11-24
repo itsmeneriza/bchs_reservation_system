@@ -1348,9 +1348,9 @@ export class Forecast {
     return `
             <div class="facility-performance-ranking">
                 <div class="facility-ranking-header">
-                    <button type="button" class="facility-ranking-featured" data-activity-facility="${top.facilityId}" aria-pressed="false">
-                        Best Performer: ${top.facilityName}
-                    </button>
+                    <span class="facility-ranking-featured">
+                        Best Facility: ${top.facilityName}
+                    </span>
                     <span class="facility-ranking-summary">${top.utilizationRate} utilization · ${top.totalreservations} bookings</span>
                 </div>
                 <div class="facility-ranking-content">

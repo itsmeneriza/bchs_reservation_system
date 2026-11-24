@@ -335,8 +335,10 @@ async function computeUserForecast(facilityId, referenceDate) {
 async function computeForecast({ includeRevenue = false } = {}) {
   const now = new Date();
   const analyzedYear = now.getFullYear() - 1;
-  const yearsToInclude = [analyzedYear];
-  if (analyzedYear - 1 >= 2024) yearsToInclude.push(analyzedYear - 1);
+  const comparisonYear = now.getFullYear();
+  const comparisonDate = now.toISOString().slice(0, 10);
+  const comparisonThroughMonth = now.getMonth() + 1;
+  const yearsToInclude = [comparisonYear, analyzedYear];
 
   const firstYear = Math.min(...yearsToInclude);
   const { data, error } = await createServiceRoleSupabaseClient()
@@ -344,7 +346,7 @@ async function computeForecast({ includeRevenue = false } = {}) {
     .select("*, facilities(name)")
     .in("status", ["approved", "accepted"])
     .gte("date", `${firstYear}-01-01`)
-    .lte("date", `${analyzedYear}-12-31`);
+    .lte("date", comparisonDate);
   if (error) throw error;
 
   const reservations = (data || [])
@@ -367,9 +369,9 @@ async function computeForecast({ includeRevenue = false } = {}) {
         reservations.filter((reservation) => reservation.facilityId === facilityId),
         facilityId,
         FACILITIES,
+        { comparisonYear, comparisonThroughMonth },
       ),
-    )
-    .filter(Boolean);
+    );
   const monthLabels = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -410,7 +412,10 @@ async function computeForecast({ includeRevenue = false } = {}) {
     const {
       facilityAnalytics: revenueFacilities,
       ...revenueSummary
-    } = computeRevenueForecast(reservations, facilityAnalytics);
+    } = computeRevenueForecast(reservations, facilityAnalytics, {
+      comparisonYear,
+      comparisonThroughMonth,
+    });
     forecast.summary = { ...summary, ...revenueSummary };
     forecast.facilityAnalytics = revenueFacilities;
   }

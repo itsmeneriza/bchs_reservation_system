@@ -80,9 +80,9 @@
 }
 
 .micro-demand-card {
-  width: 85%;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .macro-forecast-layout {
@@ -1062,7 +1062,6 @@
   margin-bottom: 0.75rem;
 }
 
-.facility-ranking-featured,
 .facility-ranking-button,
 .facility-ranking-clear {
   font: inherit;
@@ -1114,7 +1113,6 @@
 }
 
 .facility-ranking-button:focus-visible,
-.facility-ranking-featured:focus-visible,
 .facility-ranking-clear:focus-visible {
   outline: 2px solid #800020;
   outline-offset: 2px;

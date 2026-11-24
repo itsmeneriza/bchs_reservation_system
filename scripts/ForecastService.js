@@ -122,7 +122,8 @@ function computeUtilization(facilityData) {
  * @param {Object<string,string>} facilityNames   { id → displayName }
  * @param {object}   [opts]
  * @param {number}   [opts.comparisonYear]   Year to compare against for trend
- * @returns {object|null}  Analytics object, or null if facilityData is empty
+ * @param {number}   [opts.comparisonThroughMonth] Exclusive month cutoff for trend
+ * @returns {object|null}  Analytics object, or null if facilityData is missing
  */
 function computeFacilityAnalytics(
   facilityData,
@@ -130,7 +131,7 @@ function computeFacilityAnalytics(
   facilityNames,
   opts = {},
 ) {
-  if (!facilityData || facilityData.length === 0) return null;
+  if (!facilityData) return null;
 
   const currentYear = new Date().getFullYear();
   const compYear =
@@ -141,7 +142,8 @@ function computeFacilityAnalytics(
     (s, r) => s + (parseInt(r.attendees) || 0),
     0,
   );
-  const averageAttendees = Math.round(totalAtt / facilityData.length);
+  const averageAttendees =
+    facilityData.length > 0 ? Math.round(totalAtt / facilityData.length) : 0;
 
   // ── Peak days ──────────────────────────────────────────────────────────
   const dayCounts = {};
@@ -160,11 +162,21 @@ function computeFacilityAnalytics(
   const utilization = computeUtilization(facilityData);
 
   // ── Year-over-year trend ───────────────────────────────────────────────
-  const thisYearRes = facilityData.filter(
-    (r) => new Date(r.date).getFullYear() === compYear,
+  const approvedReservations = facilityData.filter(
+    (reservation) => reservation.status === "approved",
   );
-  const lastYearRes = facilityData.filter(
-    (r) => new Date(r.date).getFullYear() === compYear - 1,
+  const isWithinComparisonPeriod = (reservation) =>
+    opts.comparisonThroughMonth == null ||
+    Number(reservation.date.slice(5, 7)) < opts.comparisonThroughMonth;
+  const thisYearRes = approvedReservations.filter(
+    (r) =>
+      new Date(r.date).getFullYear() === compYear &&
+      isWithinComparisonPeriod(r),
+  );
+  const lastYearRes = approvedReservations.filter(
+    (r) =>
+      new Date(r.date).getFullYear() === compYear - 1 &&
+      isWithinComparisonPeriod(r),
   );
   const trend =
     thisYearRes.length > lastYearRes.length
@@ -304,7 +316,7 @@ function computeSummary(allData, facilityNames) {
   };
 }
 
-function computeRevenueForecast(allData, facilityAnalytics) {
+function computeRevenueForecast(allData, facilityAnalytics, opts = {}) {
   const isRevenueEligible = (reservation) =>
     !reservation.isStaff &&
     reservation.source !== "staff" &&
@@ -329,6 +341,7 @@ function computeRevenueForecast(allData, facilityAnalytics) {
       facilityBookings,
       facility.facilityId,
       { [facility.facilityId]: facility.facilityName },
+      opts,
     );
 
     return {
