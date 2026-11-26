@@ -1767,6 +1767,11 @@ input:checked + .slider:before {
   cursor: not-allowed;
   background: #f1f5f9;
   border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.facility-pill.disabled .facility-pill-cap {
+  color: #64748b;
 }
 
 .facility-pill-name {

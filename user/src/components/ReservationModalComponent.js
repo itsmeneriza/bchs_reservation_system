@@ -11,6 +11,7 @@ import {
   isInCurrentWeek,
   getNextWeekMonday,
   getLocalISODate,
+  isWeekend,
 } from "../utils/dateUtils.js";
 import {
   saveReservationRequest,
@@ -102,20 +103,29 @@ export class ReservationModal {
     row.innerHTML = "";
     state.facilities.forEach((facility) => {
       const tooSmall = filterPax > 0 && facility.capacity < filterPax;
+      const isGroundsWeekend =
+        facility.id === "grounds" && isWeekend(this.inputs.date.value);
       const isSelected =
-        state.selectedFacility && state.selectedFacility.id === facility.id;
+        !isGroundsWeekend &&
+        state.selectedFacility &&
+        state.selectedFacility.id === facility.id;
+      const isDisabled = tooSmall || isGroundsWeekend;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className =
         "facility-pill" +
         (isSelected ? " selected" : "") +
-        (tooSmall ? " disabled" : "");
-      btn.disabled = tooSmall;
-      btn.title = tooSmall
-        ? `Capacity: ${facility.capacity} pax — too small for ${filterPax} attendees`
-        : `${facility.name} · up to ${facility.capacity} pax`;
+        (isDisabled ? " disabled" : "");
+      btn.disabled = isDisabled;
+      if (isGroundsWeekend) {
+        btn.title = `${facility.name} are unavailable on weekends`;
+      } else if (tooSmall) {
+        btn.title = `Capacity: ${facility.capacity} pax — too small for ${filterPax} attendees`;
+      } else {
+        btn.title = `${facility.name} · up to ${facility.capacity} pax`;
+      }
       btn.innerHTML = `<span class="facility-pill-name">${facility.name}</span><span class="facility-pill-cap">${facility.capacity} pax</span>`;
-      if (!tooSmall) {
+      if (!isDisabled) {
         btn.addEventListener("click", () => {
           setSelectedFacility(facility);
           this.renderFacilityPicker(filterPax);
@@ -835,6 +845,7 @@ export class ReservationModal {
 
     // Date input (shown in edit/reschedule mode) — refresh times on change
     this.inputs.date?.addEventListener?.("change", () => {
+      this.renderFacilityPicker(parseInt(this.inputs.attendees?.value) || 0);
       this.updateAvailableTimes(this.modal.dataset.editId || null);
       this.updateDurationInfo();
       this.checkTimeConflict();
@@ -994,6 +1005,8 @@ export class ReservationModal {
       return showToast("Invalid time range.", "error");
     if (!state.selectedFacility)
       return showToast("Please select a facility first.", "error");
+    if (state.selectedFacility.id === "grounds" && isWeekend(formData.date))
+      return showToast("The School Grounds are unavailable on weekends.", "error");
 
     const minPax =
       state.selectedFacility?.minPax ??

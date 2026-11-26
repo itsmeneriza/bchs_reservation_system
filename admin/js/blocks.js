@@ -267,15 +267,9 @@ async function reconcileExistingFacilityBlocks() {
   );
   const result = await rescheduleBlockConflicts(existingBlocks);
   const { rescheduledRequests, updateFailures, notificationFailures } = result;
-  const pendingBlockReschedules = requests.some(
-    (request) => request.blockReschedulePending === true,
-  );
 
   if (rescheduledRequests.length > 0 || normalizedReasonCount > 0) {
     renderAll();
-  }
-  if (rescheduledRequests.length > 0 || pendingBlockReschedules) {
-    window.activateTab("rescheduling");
   }
 
   const failures = [

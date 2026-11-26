@@ -13,6 +13,7 @@ import {
   formatDate,
   isInCurrentWeek,
   getLocalISODate,
+  isWeekend,
 } from "../utils/dateUtils.js";
 import {
   getReservationDensity,
@@ -96,12 +97,10 @@ export class Calendar {
       (b) => b.status === "blocked" && b.isFullDayBlock,
     );
 
-    const dayOfWeek = date.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const isPast = date < today;
     const isCurrentWeek = isInCurrentWeek(date);
     const isGroundsWeekend =
-      state.selectedFacility.id === "grounds" && isWeekend;
+      state.selectedFacility.id === "grounds" && isWeekend(date);
     const isUnavailable =
       isAdminBlocked || hasSchoolEvent || isGroundsWeekend;
 
@@ -111,12 +110,14 @@ export class Calendar {
     let bgColor = "transparent";
     if (isUnavailable) {
       bgColor = "var(--calendar-unavailable-bg)";
+    } else if (isCurrentDay) {
+      bgColor = "var(--calendar-today-bg)";
     } else if (isPast) {
+      bgColor = "var(--calendar-past-bg)";
+    } else if (isCurrentWeek) {
       bgColor = "var(--calendar-past-bg)";
     } else if (selected) {
       bgColor = "var(--calendar-selected-bg)";
-    } else if (isCurrentDay) {
-      bgColor = "var(--calendar-today-bg)";
     } else if (hasPending && !hasApproved) {
       bgColor = "var(--calendar-pending-bg)";
     } else if (density === "full") {

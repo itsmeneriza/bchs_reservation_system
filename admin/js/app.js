@@ -42,6 +42,7 @@ window.addEventListener("bchs:admin-authenticated", async () => {
   adminInitialized = true;
 
   setupTabs();
+  window.activateTab("portal");
   setupModals();
   setupFilters();
   setupCalendarControls();

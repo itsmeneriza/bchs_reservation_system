@@ -83,6 +83,12 @@ export function isSameDate(date1, date2) {
            date1.getDate() === date2.getDate();
 }
 
+export function isWeekend(value) {
+    const date = parseDateForDisplay(value);
+    if (Number.isNaN(date.getTime())) return false;
+    return date.getDay() === 0 || date.getDay() === 6;
+}
+
 export function isPastDate(date) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
