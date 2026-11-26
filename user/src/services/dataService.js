@@ -9,7 +9,6 @@ export class DataService {
   constructor() {
     this.facilities = [];
     this.reservations = [];
-    this.forecast = null;
 
     this.facilityImages = {
       auditorium: [
@@ -36,17 +35,13 @@ export class DataService {
 
   async loadAllData() {
     try {
-      // Load facilities, reservations in parallel — skip forecast (deferred)
+      // Load facilities and reservations in parallel.
       await Promise.all([this.loadFacilities(), this.loadReservations()]);
       return true;
     } catch (error) {
       console.error("Could not load reservation data:", error);
       return false;
     }
-  }
-
-  async loadAllDataWithForecast() {
-    await this.loadForecast();
   }
 
   async loadFacilities() {
@@ -124,26 +119,12 @@ export class DataService {
     return parseEventTime(timeStr);
   }
 
-  async loadForecast() {
-    try {
-      const response = await fetch("/api/forecast");
-      const data = await response.json();
-      this.forecast = data.forecast;
-    } catch (e) {
-      this.forecast = null;
-    }
-  }
-
   getFacilities() {
     return this.facilities;
   }
   getReservations() {
     return this.reservations;
   }
-  getForecast() {
-    return this.forecast;
-  }
-
   getFacilityImage(facilityId, index = 0) {
     const images = this.facilityImages[facilityId];
     if (!images || images.length === 0)

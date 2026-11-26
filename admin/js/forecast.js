@@ -1,29 +1,28 @@
-import { Forecast } from '/scripts/ForecastTab.js';
-import { Forecast as UserForecast } from '/src/components/ForecastComponent.js';
+import { AnalyticsForecast, FacilityForecast } from './FacilityForecast.js';
 
 const container = document.getElementById('admin-forecast-content');
-const userForecastContainer = document.createElement('div');
-userForecastContainer.id = 'admin-user-forecast-content';
-userForecastContainer.className = 'forecast-container';
+const facilityForecastContainer = document.createElement('div');
+facilityForecastContainer.id = 'admin-facility-forecast-content';
+facilityForecastContainer.className = 'forecast-container';
 
 const adminForecastContainer = document.createElement('div');
 adminForecastContainer.id = 'admin-analytics-content';
 
 container?.append(adminForecastContainer);
-container?.append(userForecastContainer);
+container?.append(facilityForecastContainer);
 
-const userForecast = new UserForecast('admin-user-forecast-content');
-const adminForecast = new Forecast(adminForecastContainer, { includeRevenue: true });
+const facilityForecast = new FacilityForecast('admin-facility-forecast-content');
+const adminForecast = new AnalyticsForecast(adminForecastContainer);
 
 async function renderAnalytics() {
     await Promise.all([
-        userForecast.render(),
+        facilityForecast.render(),
         adminForecast.render(),
     ]);
 
     const revenueSection = adminForecastContainer.querySelector('.admin-revenue-section');
     if (revenueSection) {
-        revenueSection.insertAdjacentElement('afterend', userForecastContainer);
+        revenueSection.insertAdjacentElement('afterend', facilityForecastContainer);
     }
 }
 

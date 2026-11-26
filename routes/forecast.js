@@ -310,7 +310,7 @@ function buildMicroForecast(activity, facilityId, referenceDate) {
   );
 }
 
-async function computeUserForecast(facilityId, referenceDate) {
+async function computeFacilityForecast(facilityId, referenceDate) {
   const targetDate = dateParts(referenceDate) || dateParts(philippineDateString());
   const client = createServiceRoleSupabaseClient();
   const [{ data: facilities, error: facilitiesError }, activity] = await Promise.all([
@@ -439,20 +439,7 @@ export function createForecastRouter() {
     }
   });
 
-  router.get("/", async (_req, res) => {
-    try {
-      return res.json({ forecast: await computeForecast() });
-    } catch (error) {
-      console.error("Could not compute forecast from Supabase:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Could not compute forecast.",
-        error: error.message,
-      });
-    }
-  });
-
-  router.get("/user", async (req, res) => {
+  router.get("/admin/facility", requireAdmin, async (req, res) => {
     res.set("Cache-Control", "no-store");
     if (req.query.referenceDate && !dateParts(req.query.referenceDate)) {
       return res.status(400).json({
@@ -461,32 +448,16 @@ export function createForecastRouter() {
     }
     try {
       return res.json({
-        forecast: await computeUserForecast(
+        forecast: await computeFacilityForecast(
           req.query.facilityId,
           req.query.referenceDate,
         ),
       });
     } catch (error) {
-      console.error("Could not compute user forecast from Supabase:", error);
+      console.error("Could not compute admin facility forecast from Supabase:", error);
       return res.status(500).json({
         success: false,
-        message: "Could not compute facility booking forecast.",
-      });
-    }
-  });
-
-  router.post("/refresh", async (_req, res) => {
-    try {
-      return res.json({
-        success: true,
-        forecast: await computeForecast(),
-      });
-    } catch (error) {
-      console.error("Could not refresh forecast from Supabase:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Could not refresh forecast.",
-        error: error.message,
+        message: "Could not compute admin facility booking forecast.",
       });
     }
   });
