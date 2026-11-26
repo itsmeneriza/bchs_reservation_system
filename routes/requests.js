@@ -55,6 +55,32 @@ function getManilaDateParts(now = new Date()) {
   );
 }
 
+function getNextWeekMondayDate(now = new Date()) {
+  const parts = getManilaDateParts(now);
+  const todayUtc = new Date(
+    Date.UTC(
+      Number(parts.year),
+      Number(parts.month) - 1,
+      Number(parts.day),
+    ),
+  );
+  const day = todayUtc.getUTCDay();
+  const mondayOffset = ((day + 6) % 7);
+  todayUtc.setUTCDate(todayUtc.getUTCDate() - mondayOffset + 7);
+  return [
+    todayUtc.getUTCFullYear(),
+    String(todayUtc.getUTCMonth() + 1).padStart(2, "0"),
+    String(todayUtc.getUTCDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function isBeforeNextWeek(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return true;
+  }
+  return value < getNextWeekMondayDate();
+}
+
 function getTimeMinutes(value) {
   if (typeof value !== "string") return null;
   const rangeStart = value.split(/\s*[–-]\s*/)[0].trim();
@@ -710,6 +736,15 @@ export function createRequestsRouter() {
         });
       }
       if (
+        req.auth.kind === "user" &&
+        isBeforeNextWeek(payload.date)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Reservations cannot be made for the current week.",
+        });
+      }
+      if (
         isGroundsFacilityId(payload.facility_id) &&
         isWeekendDate(payload.date)
       ) {
@@ -1139,6 +1174,16 @@ export function createRequestsRouter() {
         const payload = toDbReservationPatch(existing, effectiveChanges);
         payload.request_data = requestData;
         if (
+          req.auth.kind === "user" &&
+          (payload.date || existing.date) !== existing.date &&
+          isBeforeNextWeek(payload.date || existing.date)
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Reservations cannot be made for the current week.",
+          });
+        }
+        if (
           isGroundsFacilityId(payload.facility_id ?? existing.facility_id) &&
           isWeekendDate(payload.date || existing.date)
         ) {
@@ -1191,6 +1236,16 @@ export function createRequestsRouter() {
       }
 
       const payload = toDbReservationPatch(existing, authorizedChanges);
+      if (
+        req.auth.kind === "user" &&
+        (payload.date || existing.date) !== existing.date &&
+        isBeforeNextWeek(payload.date || existing.date)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Reservations cannot be made for the current week.",
+        });
+      }
       if (
         isGroundsFacilityId(payload.facility_id ?? existing.facility_id) &&
         isWeekendDate(payload.date || existing.date)

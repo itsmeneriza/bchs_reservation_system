@@ -8,6 +8,8 @@ import {
   convertTo12Hour,
   formatDate,
   isPastDate,
+  isInCurrentWeek,
+  getNextWeekMonday,
   getLocalISODate,
 } from "../utils/dateUtils.js";
 import {
@@ -183,6 +185,13 @@ export class ReservationModal {
         );
         return;
       }
+      if (isInCurrentWeek(state.selectedDate)) {
+        showToast(
+          "Reservations cannot be made for the current week.",
+          "error",
+        );
+        return;
+      }
     }
 
     // Set date — use prefill date if editing, else selected calendar date
@@ -191,7 +200,7 @@ export class ReservationModal {
     const dateGroup = document.getElementById("req-date-group");
     if (dateInput) {
       dateInput.value = dateToUse;
-      dateInput.min = new Date().toISOString().split("T")[0];
+      dateInput.min = getNextWeekMonday();
     }
     if (dateGroup) dateGroup.style.display = editingId ? "" : "none";
     // Keep this.inputs.date in sync
@@ -979,6 +988,8 @@ export class ReservationModal {
 
     if (isPastDate(new Date(formData.date)))
       return showToast("Cannot book for past dates.", "error");
+    if (!editingId && isInCurrentWeek(new Date(formData.date)))
+      return showToast("Reservations cannot be made for the current week.", "error");
     if (formData.startTime >= formData.endTime)
       return showToast("Invalid time range.", "error");
     if (!state.selectedFacility)

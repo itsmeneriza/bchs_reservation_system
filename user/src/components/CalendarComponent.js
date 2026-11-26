@@ -11,7 +11,7 @@ import {
   isToday,
   isSameDate,
   formatDate,
-  isPastDate,
+  isInCurrentWeek,
   getLocalISODate,
 } from "../utils/dateUtils.js";
 import {
@@ -99,13 +99,14 @@ export class Calendar {
     const dayOfWeek = date.getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const isPast = date < today;
+    const isCurrentWeek = isInCurrentWeek(date);
     const isGroundsWeekend =
       state.selectedFacility.id === "grounds" && isWeekend;
     const isUnavailable =
       isAdminBlocked || hasSchoolEvent || isGroundsWeekend;
 
-    // Disabled dates: past days, unavailable dates, and Grounds weekends
-    const isDisabled = isPast || isUnavailable;
+    // User reservations start from the next week.
+    const isDisabled = isPast || isCurrentWeek || isUnavailable;
 
     let bgColor = "transparent";
     if (isUnavailable) {

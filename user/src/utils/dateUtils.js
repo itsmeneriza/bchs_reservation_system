@@ -91,6 +91,35 @@ export function isPastDate(date) {
     return checkDate < today;
 }
 
+export function isInCurrentWeek(date) {
+    let checkDate;
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        const [year, month, day] = date.split('-').map(Number);
+        checkDate = new Date(year, month - 1, day);
+    } else {
+        checkDate = new Date(date);
+    }
+    checkDate.setHours(0, 0, 0, 0);
+    if (Number.isNaN(checkDate.getTime())) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+    return checkDate >= monday && checkDate < nextMonday;
+}
+
+export function getNextWeekMonday() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7) + 7);
+    return getLocalISODate(monday);
+}
+
 /**
  * Returns local date string in YYYY-MM-DD format without UTC shift
  */
