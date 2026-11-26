@@ -978,6 +978,7 @@ export class ReservationModal {
 
   async handleSubmit(e) {
     e.preventDefault();
+    const editingId = this.modal.dataset.editId || null;
 
     // Get purpose from dropdown or custom input
     const purposeValue =
@@ -1018,7 +1019,6 @@ export class ReservationModal {
       );
     }
 
-    const editingId = this.modal.dataset.editId || null;
     const conflict = findConflict(
       state.selectedFacility.id,
       formData.date,
