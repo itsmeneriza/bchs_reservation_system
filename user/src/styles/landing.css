@@ -557,6 +557,60 @@
     border-color: var(--primary-color, #800020);
 }
 
+.landing-form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #64748b;
+    font-size: 0.72rem;
+}
+
+.landing-phone-input {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    background: white;
+}
+
+.landing-phone-input span {
+    padding: 0.6rem 0.75rem;
+    border-right: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.landing-phone-input input {
+    border: 0;
+    border-radius: 0;
+    outline: none;
+}
+
+.landing-auth-description {
+    margin: -0.5rem 0 1.25rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.landing-auth-prompt {
+    margin: 1rem 0 0;
+    color: #64748b;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.landing-auth-prompt button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--primary-color, #800020);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .landing-staff-toggle-row {
     display: flex;
     align-items: center;

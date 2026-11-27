@@ -3,7 +3,7 @@
  * Handles login, session management, and auth UI for the landing page.
  * Login state is shared with the reservation app through core/state.js.
  */
-import { loginUser } from '../services/authService.js';
+import { loginUser, signupGuest } from '../services/authService.js';
 import { state, setLoginState } from '../core/state.js';
 
 (function () {
@@ -43,6 +43,15 @@ import { state, setLoginState } from '../core/state.js';
         // Login modal open/close
         document.getElementById('landing-login-btn').onclick   = () => showModal('landing-login-modal');
         document.getElementById('landing-login-close').onclick = () => hideModal('landing-login-modal');
+        document.getElementById('landing-open-signup').onclick = () => {
+            hideModal('landing-login-modal');
+            showModal('landing-signup-modal');
+        };
+        document.getElementById('landing-signup-close').onclick = () => hideModal('landing-signup-modal');
+        document.getElementById('landing-back-to-login').onclick = () => {
+            hideModal('landing-signup-modal');
+            showModal('landing-login-modal');
+        };
 
         // User menu open/close
         document.getElementById('landing-menu-close').onclick = () => hideModal('landing-user-menu');
@@ -53,6 +62,9 @@ import { state, setLoginState } from '../core/state.js';
         };
         document.getElementById('landing-user-menu').onclick = (e) => {
             if (e.target.id === 'landing-user-menu') hideModal('landing-user-menu');
+        };
+        document.getElementById('landing-signup-modal').onclick = (e) => {
+            if (e.target.id === 'landing-signup-modal') hideModal('landing-signup-modal');
         };
 
         // Profile button → populate and open user menu
@@ -84,12 +96,17 @@ import { state, setLoginState } from '../core/state.js';
             slider.style.background = toggle.checked ? 'var(--primary-color, #800020)' : '#cbd5e1';
             document.getElementById('landing-phone-group').style.display   = toggle.checked ? 'none'  : 'block';
             document.getElementById('landing-staffid-group').style.display = toggle.checked ? 'block' : 'none';
+            document.getElementById('landing-signup-prompt').style.display = toggle.checked ? 'none' : 'block';
         };
 
         // Login form submission
         document.getElementById('landing-login-form').onsubmit = async (e) => {
             e.preventDefault();
             await handleLogin(toggle);
+        };
+        document.getElementById('landing-signup-form').onsubmit = async (e) => {
+            e.preventDefault();
+            await handleSignup();
         };
     }
 
@@ -116,6 +133,31 @@ import { state, setLoginState } from '../core/state.js';
             syncUI();
         } catch (error) {
             errEl.textContent = error.message || 'Authentication failed.';
+            errEl.style.display = 'block';
+        }
+    }
+
+    async function handleSignup() {
+        const errEl = document.getElementById('landing-signup-error');
+        errEl.style.display = 'none';
+        const rawPhone = document.getElementById('landing-signup-phone').value.trim().replace(/\s|-/g, '');
+
+        if (!/^9\d{9}$/.test(rawPhone)) {
+            errEl.textContent = 'Enter a valid PH number (e.g. 9171234567).';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        try {
+            const user = await signupGuest({
+                fullName: document.getElementById('landing-signup-name').value.trim(),
+                phone: `0${rawPhone}`,
+            });
+            setLoginState(true, user);
+            hideModal('landing-signup-modal');
+            syncUI();
+        } catch (error) {
+            errEl.textContent = error.message || 'Unable to create your account.';
             errEl.style.display = 'block';
         }
     }

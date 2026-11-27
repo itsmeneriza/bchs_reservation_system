@@ -80,10 +80,87 @@ async function handleLogin(req, res) {
             sessionToken: buildSessionToken(user),
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message || 'Unable to sign in. Please try again.'});
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || 'Unable to sign in. Please try again.',
+        });
+    }
+}
+
+async function handleSignup(req, res) {
+    const fullName = typeof req.body?.fullName === 'string' ? req.body.fullName.trim() : '';
+    const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : '';
+
+    if (!fullName || fullName.length > 120) {
+        return res.status(400).json({ success: false, message: 'Enter your name (up to 120 characters).' });
+    }
+
+    if (!/^09\d{9}$/.test(phone)) {
+        return res.status(400).json({ success: false, message: 'Enter a valid Philippine mobile number.' });
+    }
+
+    try {
+        getSessionSecret();
+        const result = await AuthService.signupGuest(fullName, phone);
+        const user = { ...result.user, isStaff: false };
+        return res.status(201).json({
+            success: true,
+            ...result,
+            sessionToken: buildSessionToken(user),
+        });
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || 'Unable to create your account. Please try again.',
+        });
+    }
+}
+
+async function handleUpdateProfile(req, res) {
+    const authHeader = req.get('authorization') || '';
+    const accessToken = authHeader.startsWith('Bearer ')
+        ? authHeader.slice('Bearer '.length).trim()
+        : '';
+    const session = verifySessionToken(accessToken);
+
+    if (!session) {
+        return res.status(401).json({ success: false, message: 'Your sign-in is invalid or expired.' });
+    }
+    if (session.isStaff) {
+        return res.status(403).json({ success: false, message: 'Staff profiles cannot be edited here.' });
+    }
+
+    const fullName = typeof req.body?.fullName === 'string' ? req.body.fullName.trim() : '';
+    const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : '';
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+
+    if (!fullName || fullName.length > 120) {
+        return res.status(400).json({ success: false, message: 'Enter your name (up to 120 characters).' });
+    }
+    if (!/^09\d{9}$/.test(phone)) {
+        return res.status(400).json({ success: false, message: 'Enter a valid Philippine mobile number.' });
+    }
+    if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+        return res.status(400).json({ success: false, message: 'Enter a valid email address.' });
+    }
+
+    try {
+        const guest = await AuthService.updateGuestProfile(session.sub, {
+            fullName,
+            email: email || null,
+            phone,
+        });
+        return res.status(200).json({ success: true, user: guest });
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || 'Unable to update your profile. Please try again.',
+        });
     }
 }
 
 router.post('/login', handleLogin);
+router.post('/signup', handleSignup);
+router.put('/profile', handleUpdateProfile);
 
 export default router;

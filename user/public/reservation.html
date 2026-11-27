@@ -635,6 +635,69 @@
                 Continue to Portal
               </button>
             </div>
+            <p class="auth-form-prompt" id="signup-prompt">
+              Don't have an account?
+              <button type="button" id="open-signup-btn">Sign up</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signup-modal" class="modal">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Create your account</h2>
+          <button
+            id="signup-modal-close"
+            class="modal-close"
+            type="button"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-form-description">
+            Register with your name and mobile number to manage reservations.
+          </p>
+          <form id="signup-form">
+            <div class="form-group" style="margin-bottom: 1.25rem">
+              <label for="signup-name">Full Name *</label>
+              <input
+                id="signup-name"
+                type="text"
+                maxlength="120"
+                autocomplete="name"
+                required
+              />
+            </div>
+            <div class="form-group" style="margin-bottom: 1.25rem">
+              <label for="signup-phone">Mobile Number *</label>
+              <div class="signup-phone-input">
+                <span>+63</span>
+                <input
+                  id="signup-phone"
+                  type="tel"
+                  placeholder="9171234567"
+                  pattern="9\d{9}"
+                  maxlength="10"
+                  autocomplete="tel-national"
+                  required
+                />
+              </div>
+              <small class="auth-form-hint">
+                Enter 10 digits after +63 (e.g. 9171234567).
+              </small>
+            </div>
+            <div id="signup-error" class="auth-form-error" role="alert"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%">
+              Create account
+            </button>
+            <p class="auth-form-prompt">
+              Already have an account?
+              <button type="button" id="back-to-login-btn">Log in</button>
+            </p>
           </form>
         </div>
       </div>
@@ -685,12 +748,56 @@
             </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 0.75rem">
+          <div id="community-profile-section" style="display: none">
+            <form id="community-profile-form">
+              <div class="form-group" style="margin-bottom: 1rem">
+                <label for="profile-full-name">Full Name *</label>
+                <input
+                  id="profile-full-name"
+                  type="text"
+                  maxlength="120"
+                  autocomplete="name"
+                  required
+                />
+              </div>
+              <div class="form-group" style="margin-bottom: 1rem">
+                <label for="profile-email">Email Address</label>
+                <input
+                  id="profile-email"
+                  type="email"
+                  maxlength="254"
+                  autocomplete="email"
+                  placeholder="your.email@example.com"
+                />
+              </div>
+              <div class="form-group" style="margin-bottom: 1rem">
+                <label for="profile-phone">Mobile Number *</label>
+                <div class="signup-phone-input">
+                  <span>+63</span>
+                  <input
+                    id="profile-phone"
+                    type="tel"
+                    placeholder="9171234567"
+                    pattern="9\d{9}"
+                    maxlength="10"
+                    autocomplete="tel-national"
+                    required
+                  />
+                </div>
+              </div>
+              <div id="profile-update-error" class="auth-form-error" role="alert"></div>
+            </form>
+          </div>
+
+          <div class="profile-actions">
             <button
-              id="logout-btn"
-              class="btn btn-destructive"
-              style="width: 100%"
+              type="submit"
+              form="community-profile-form"
+              class="btn btn-primary"
             >
+              Save Changes
+            </button>
+            <button id="logout-btn" class="btn btn-destructive">
               Logout
             </button>
           </div>

@@ -17,39 +17,67 @@ export class AuthService {
         return { user: staff, isStaff: true };
     }
 
-    // Guest login by mobile number; create an account when the number is new.
+    // Guest login is limited to accounts that have already been registered.
     static async loginGuest(phoneNumber) {
         const client = createServiceRoleSupabaseClient();
         const { data: guest, error } = await client
             .from('guests')
-            .select('id, mobile_number')
+            .select('id, full_name, email, mobile_number')
             .eq('mobile_number', phoneNumber)
             .maybeSingle();
 
         if (error) throw new Error(error.message);
         if (guest) return { user: guest, isStaff: false };
 
-        const { data: newGuest, error: createError } = await client
+        const notFoundError = new Error('No account found for this phone number. Please sign up first.');
+        notFoundError.statusCode = 404;
+        throw notFoundError;
+    }
+
+    static async signupGuest(fullName, phoneNumber) {
+        const client = createServiceRoleSupabaseClient();
+        const { data: guest, error } = await client
             .from('guests')
-            .insert([{ mobile_number: phoneNumber }])
-            .select('id, mobile_number')
+            .insert([{ full_name: fullName, mobile_number: phoneNumber }])
+            .select('id, full_name, email, mobile_number')
             .single();
 
-        if (!createError) {
-            return { user: newGuest, isStaff: false };
+        if (error?.code === '23505') {
+            const duplicateError = new Error('An account with this phone number already exists. Please log in.');
+            duplicateError.statusCode = 409;
+            throw duplicateError;
         }
 
-        if (createError.code === '23505') {
-            const { data: existingGuest, error: lookupError } = await client
-                .from('guests')
-                .select('id, mobile_number')
-                .eq('mobile_number', phoneNumber)
-                .maybeSingle();
+        if (error) throw new Error(error.message);
+        return { user: guest, isStaff: false };
+    }
 
-            if (lookupError) throw new Error(lookupError.message);
-            if (existingGuest) return { user: existingGuest, isStaff: false };
+    static async updateGuestProfile(guestId, profile) {
+        const client = createServiceRoleSupabaseClient();
+        const { data: guest, error } = await client
+            .from('guests')
+            .update({
+                full_name: profile.fullName,
+                email: profile.email,
+                mobile_number: profile.phone,
+            })
+            .eq('id', guestId)
+            .select('id, full_name, email, mobile_number')
+            .maybeSingle();
+
+        if (error?.code === '23505') {
+            const duplicateError = new Error('An account with this phone number already exists.');
+            duplicateError.statusCode = 409;
+            throw duplicateError;
         }
 
-        throw new Error(createError.message);
+        if (error) throw new Error(error.message);
+        if (!guest) {
+            const notFoundError = new Error('User profile was not found.');
+            notFoundError.statusCode = 404;
+            throw notFoundError;
+        }
+
+        return guest;
     }
 }

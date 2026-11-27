@@ -70,6 +70,81 @@
   margin-bottom: 1.5rem;
 }
 
+.auth-form-prompt {
+  margin: 1rem 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.auth-form-prompt button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-color);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-form-description {
+  margin: 0 0 1.25rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.signup-phone-input {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: white;
+}
+
+.signup-phone-input span {
+  padding: 0.65rem 0.75rem;
+  border-right: 1px solid #cbd5e1;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.signup-phone-input input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+.auth-form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.auth-form-error {
+  display: none;
+  margin-bottom: 1rem;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.profile-actions > button {
+  flex: 1;
+}
+
 .switch {
   position: relative;
   display: inline-block;

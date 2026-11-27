@@ -213,6 +213,65 @@
           </div>
           <div id="landing-login-error" class="landing-error"></div>
           <button type="submit" class="landing-submit-btn">Continue</button>
+          <p id="landing-signup-prompt" class="landing-auth-prompt">
+            Don't have an account?
+            <button type="button" id="landing-open-signup">Sign up</button>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="landing-signup-modal" class="landing-modal">
+      <div class="landing-modal-box">
+        <div class="landing-modal-header">
+          <h2>Create your account</h2>
+          <button
+            id="landing-signup-close"
+            class="landing-modal-close"
+            type="button"
+          >
+            &times;
+          </button>
+        </div>
+        <p class="landing-auth-description">
+          Register with your name and mobile number to manage reservations.
+        </p>
+        <form id="landing-signup-form">
+          <div class="landing-form-group">
+            <label for="landing-signup-name">Full name *</label>
+            <input
+              id="landing-signup-name"
+              type="text"
+              maxlength="120"
+              autocomplete="name"
+              required
+            />
+          </div>
+          <div class="landing-form-group">
+            <label for="landing-signup-phone">Mobile number *</label>
+            <div class="landing-phone-input">
+              <span>+63</span>
+              <input
+                id="landing-signup-phone"
+                type="tel"
+                placeholder="9171234567"
+                pattern="9\d{9}"
+                maxlength="10"
+                autocomplete="tel-national"
+                required
+              />
+            </div>
+            <small>Enter 10 digits after +63 (e.g. 9171234567).</small>
+          </div>
+          <div id="landing-signup-error" class="landing-error"></div>
+          <button type="submit" class="landing-submit-btn">
+            Create account
+          </button>
+          <p class="landing-auth-prompt">
+            Already have an account?
+            <button type="button" id="landing-back-to-login">Log in</button>
+          </p>
         </form>
       </div>
     </div>

@@ -37,7 +37,7 @@ export async function loginUser({ isStaff, staffId, phone }) {
     return {
         ...profile,
         isStaff: result.isStaff,
-        name: result.isStaff ? profile.full_name : guestPhone,
+        name: result.isStaff ? profile.full_name : (profile.full_name || guestPhone),
         phone: result.isStaff
             ? profile.phone_number || profile.staff_id
             : guestPhone,
@@ -45,4 +45,57 @@ export async function loginUser({ isStaff, staffId, phone }) {
         sessionToken,
     };
     
+}
+
+export async function signupGuest({ fullName, phone }) {
+    const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fullName, phone }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.user) {
+        throw new Error(result.message || 'Unable to create your account. Please try again.');
+    }
+
+    const profile = result.user;
+    return {
+        ...profile,
+        isStaff: false,
+        name: profile.full_name || profile.mobile_number,
+        phone: profile.mobile_number,
+        email: profile.email || '',
+        loginTime: new Date().toISOString(),
+        sessionToken: result.sessionToken || '',
+    };
+}
+
+export async function updateGuestProfile({ fullName, email, phone }) {
+    const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fullName, email, phone }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.user) {
+        throw new Error(result.message || 'Unable to update your profile. Please try again.');
+    }
+
+    const profile = result.user;
+    return {
+        ...profile,
+        isStaff: false,
+        name: profile.full_name,
+        phone: profile.mobile_number,
+        email: profile.email || '',
+        loginTime: new Date().toISOString(),
+    };
 }
