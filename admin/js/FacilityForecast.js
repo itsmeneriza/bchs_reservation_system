@@ -116,15 +116,15 @@ export function formatMacroPeriod(item) {
 
 function getMacroAdvice(item) {
   if (item?.isObserved === true) {
-    return "This completed week is based on recorded reservation and event activity.";
+    return "This percentage shows the facility's recorded utilization for the completed period.";
   }
   switch (item?.demand_tier) {
     case "High":
-      return "High demand is expected. Submit your reservation early and consider alternate dates.";
+      return "High utilization is forecasted. Review staffing, resources, and availability for this period.";
     case "Moderate":
-      return "Moderate demand is expected. Plan ahead and check availability before finalizing.";
+      return "Moderate utilization is forecasted. Monitor bookings and adjust resources as needed.";
     default:
-      return "Low demand is expected. Check availability and submit your request when ready.";
+      return "Low utilization is forecasted. Consider scheduling maintenance or promoting availability.";
   }
 }
 
@@ -279,9 +279,6 @@ export class FacilityForecast {
             </table>
           </div>
         </section>
-        <section class="forecast-policy-card" aria-label="Forecast notice">
-          <p class="forecast-policy-note">Note: Forecasts are a general guide only. Actual availability depends on real-time bookings and school events.</p>
-        </section>
       </div>`;
 
     this.bindEvents();
@@ -352,7 +349,6 @@ export class FacilityForecast {
             <strong class="macro-insight-title">${escapeHtml(selectedMacro ? formatMacroPeriod(selectedMacro) : "Weekly outlook")}</strong>
             <div class="macro-insight-demand-line">
               <span class="macro-insight-value">${selectedValue}%</span>
-              <span class="macro-insight-tier">${selectedObserved ? "Observed" : "Demand"}</span>
             </div>
             <p class="forecast-selection-note">${escapeHtml(getMacroAdvice(selectedMacro))}</p>
           </div>`;
@@ -449,9 +445,8 @@ export class FacilityForecast {
         const heading = this.container.querySelector(".macro-summary-panel h4");
         const title = this.container.querySelector(".macro-insight-title");
         const value = this.container.querySelector(".macro-insight-value");
-        const tier = this.container.querySelector(".macro-insight-tier");
         const note = this.container.querySelector(".forecast-selection-note");
-        if (item && title && value && tier && note) {
+        if (item && title && value && note) {
           this.selectedMacroPeriodKey = item.periodKey;
           this.container.querySelectorAll(".macro-forecast-bar").forEach((forecastBar) => {
             const selected = forecastBar === bar;
@@ -462,7 +457,6 @@ export class FacilityForecast {
           const observed = item.isObserved === true || item.endDate < this.referenceDate;
           const observedItem = observed ? { ...item, isObserved: true } : item;
           value.textContent = `${observed ? (item.observed_pct ?? 0) : item.forecasted_pct}%`;
-          tier.textContent = observed ? "Observed" : "Demand";
           note.textContent = getMacroAdvice(observedItem);
           if (heading) {
             const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
@@ -912,15 +906,7 @@ export class AnalyticsForecast {
                 <div class="hero-header">
                     <div>
                         <h2 class="hero-title">Facility Analytics Dashboard</h2>
-                        <p class="hero-subtitle">Real-time insights and predictions for BCHS facilities</p>
                         <p class="forecast-baseline">Forecast baseline: historical data from ${baselineYears.join(" and ")}</p>
-                    </div>
-                    <div class="last-updated">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>Updated ${this.formatTimeAgo(forecast.lastUpdated)}</span>
                     </div>
                 </div>
                 
@@ -952,7 +938,14 @@ export class AnalyticsForecast {
                         <div class="hero-stat-content">
                             <div class="hero-stat-value">${currentSummary.averageAttendees}</div>
                             <div class="hero-stat-label">Avg Attendees</div>
-                            ${comparison ? this.renderChangeIndicator(comparison.totalChange, comparison.totalChangePercent) : ""}
+                            ${comparison ? this.renderChangeIndicator(comparison.attendeesChange, comparison.attendeesChangePercent) : ""}
+                        </div>
+                    </div>
+                    <div class="hero-stat-card accent">
+                        <div class="hero-stat-icon"></div>
+                        <div class="hero-stat-content">
+                            <div class="hero-stat-value">${this.formatCurrency(summary.averageRevenuePerReservation)}</div>
+                            <div class="hero-stat-label">Avg Revenue per Reservation</div>
                         </div>
                     </div>
                 </div>
@@ -1636,19 +1629,6 @@ export class AnalyticsForecast {
         if (highlightCount)
           highlightCount.textContent = `${peakEntry[1]} reservations`;
 
-        const insight = section.querySelector(
-          ".patterns-insight .insight-text",
-        );
-        if (insight) {
-          const label =
-            this.getBusyPatternFacilities().find((f) => f.id === selected)
-              ?.label || "All";
-          const facilityText = selected === "all" ? "" : ` for ${label}`;
-          const peakedDayLabel = peakEntry[0].endsWith("s")
-            ? peakEntry[0]
-            : `${peakEntry[0]}s`;
-          insight.innerHTML = `<strong>Planning Tip:</strong> ${peakedDayLabel} were historically the busiest${facilityText}. Consider booking early on these peak days or explore alternative dates for better availability.`;
-        }
       });
     });
   }
@@ -1694,14 +1674,6 @@ export class AnalyticsForecast {
       })
       .join("");
 
-    const facilityLabel =
-      facilityOptions.find((f) => f.id === selectedFacility)?.label || "All";
-    const facilityText =
-      selectedFacility === "all" ? "" : ` for ${facilityLabel}`;
-    const peakedDayLabel = peakEntry[0].endsWith("s")
-      ? peakEntry[0]
-      : `${peakEntry[0]}s`;
-
     return `
                 <div class="forecast-section busy-patterns-section">
                     <div class="section-header">
@@ -1737,12 +1709,6 @@ export class AnalyticsForecast {
                         </div>
                     </div>
 
-                    <div class="patterns-insight">
-                        <div class="insight-icon"></div>
-                        <div class="insight-text">
-                            <strong>Planning Tip:</strong> ${peakedDayLabel} were historically the busiest${facilityText}. Consider booking early on these peak days or explore alternative dates for better availability.
-                        </div>
-                    </div>
                 </div>
             `;
   }
