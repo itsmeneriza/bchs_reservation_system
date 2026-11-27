@@ -1159,13 +1159,13 @@
           <div class="form-grid">
             <div class="form-group full-width" id="manualNameGroup">
               <label id="manualNameLabel" for="manualName"
-                >Event Name / Organization Name *</label
+                >Name *</label
               >
               <input
                 type="text"
                 class="input"
                 id="manualName"
-                placeholder="e.g., Science Dept. Conference"
+                placeholder="Enter name"
               />
             </div>
             <div
@@ -1193,6 +1193,9 @@
                 class="input"
                 id="manualContactNumber"
                 placeholder="e.g., 09123456789"
+                inputmode="numeric"
+                maxlength="13"
+                oninput="this.value = this.value.replace(/\D/g, '').slice(0, 13)"
               />
             </div>
             <div class="form-group" id="manualEmailGroup">

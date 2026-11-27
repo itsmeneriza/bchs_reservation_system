@@ -75,7 +75,7 @@ function updateManualRequesterFields() {
   if (nameLabel)
     nameLabel.textContent = isStaff
       ? "Full Name *"
-      : "Event Name / Organization Name *";
+      : "Name *";
   if (contactNumber) {
     contactNumber.value = "";
   }
@@ -580,9 +580,25 @@ async function saveManualReservation() {
     );
     return;
   }
+  const rawContact = isStaff
+    ? ""
+    : document.getElementById("manualContactNumber").value.trim();
+  const contactDigits = rawContact.replace(/[\s-]/g, "");
+  const localContactDigits = contactDigits.startsWith("0")
+    ? contactDigits.slice(1)
+    : contactDigits;
+  if (rawContact && !DateUtils.isValidPHPhone(localContactDigits)) {
+    showToast(
+      "Enter a valid Philippine mobile number (e.g. 09123456789).",
+      "error",
+    );
+    return;
+  }
   const contact = isStaff
     ? manualStaffProfile.staffId
-    : document.getElementById("manualContactNumber").value.trim() || "N/A";
+    : rawContact
+      ? DateUtils.normalizePHPhone(localContactDigits)
+      : "N/A";
   const email = isStaff
     ? manualStaffProfile.email
     : document.getElementById("manualEmail").value.trim() || "admin@bchs.edu";
