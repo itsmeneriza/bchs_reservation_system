@@ -41,7 +41,10 @@ function renderPayments() {
   if (!body) return;
 
   const approved = requests.filter(
-    (r) => ["approved", "accepted"].includes(r.status) && !r.isSchoolEvent,
+    (r) =>
+      ["approved", "accepted"].includes(r.status) &&
+      !r.isSchoolEvent &&
+      !/^(evt_|event_)/.test(String(r.id || "")),
   );
 
   // ── Collect payment totals ────────────────────────────────────────────────
@@ -101,16 +104,21 @@ function renderPayments() {
     ? approved
         .map((b) => {
           const isStaff = isStaffRequest(b);
-          const downPaid = isStaff || b.downPaymentPaid || false;
-          const remainingPaid = isStaff || b.remainingBalancePaid || false;
           const totalAmount = parseFloat(b.totalAmount) || 0;
+          const isZeroAmount = totalAmount === 0;
+          const downPaid = isStaff || isZeroAmount || b.downPaymentPaid || false;
+          const remainingPaid =
+            isStaff || isZeroAmount || b.remainingBalancePaid || false;
           const downPaymentAmount = computeDownPayment(totalAmount);
           const remainingBalance = Math.max(0, totalAmount - downPaymentAmount);
           const effectiveStatus = isStaff
             ? "free"
-            : ["pending", "half_paid"].includes(b.paymentStatus)
-              ? "half_paid"
-              : b.paymentStatus || "unpaid";
+            : isZeroAmount
+              ? "paid"
+              : ["pending", "half_paid"].includes(b.paymentStatus)
+                ? "half_paid"
+                : b.paymentStatus || "unpaid";
+          const paymentControlsDisabled = isStaff || isZeroAmount;
           const safeId = escapeAdminJsArgument(b.id);
           const safeName = escapeAdminText(b.name);
           const safeFacilityId = escapeAdminText(b.facilityId);
@@ -126,14 +134,14 @@ function renderPayments() {
                 ${isStaff ? `<span class="badge badge-secondary">FREE</span>` : `
                 <div style="display:flex;gap:6px;margin-bottom:6px;">
                     <button class="btn btn-sm ${downPaid ? "btn-success" : "btn-outline"}"
-                            onclick="${isStaff ? "" : `toggleDownPayment(${safeId},${!downPaid})`}"
-                            ${isStaff ? "disabled" : ""}
+                            onclick="${paymentControlsDisabled ? "" : `toggleDownPayment(${safeId},${!downPaid})`}"
+                            ${paymentControlsDisabled ? "disabled" : ""}
                             style="flex:1;font-size:11px;padding:6px 8px;${downPaid ? "background:#22c55e;color:white;border-color:#22c55e;" : ""}">
                         ${downPaid ? "Paid" : "Unpaid"} Down (₱${downPaymentAmount.toLocaleString("en-PH", { minimumFractionDigits: 0 })})
                     </button>
                     <button class="btn btn-sm ${remainingPaid ? "btn-success" : "btn-outline"}"
-                            onclick="${isStaff ? "" : `toggleRemainingBalance(${safeId},${!remainingPaid})`}"
-                            ${isStaff ? "disabled" : ""}
+                            onclick="${paymentControlsDisabled ? "" : `toggleRemainingBalance(${safeId},${!remainingPaid})`}"
+                            ${paymentControlsDisabled ? "disabled" : ""}
                             style="flex:1;font-size:11px;padding:6px 8px;${remainingPaid ? "background:#22c55e;color:white;border-color:#22c55e;" : ""}">
                         ${remainingPaid ? "Paid" : "Unpaid"} Balance (₱${remainingBalance.toLocaleString("en-PH", { minimumFractionDigits: 0 })})
                     </button>
@@ -141,8 +149,8 @@ function renderPayments() {
             </td>
             <td>
                 <span class="badge badge-interactive ${getPaymentBadgeClass(effectiveStatus)}"
-                      onclick="${isStaff ? "" : `cyclePaymentStatus(${safeId},${escapeAdminJsArgument(effectiveStatus)})`}"
-                      style="${isStaff ? "cursor:default;opacity:0.85;" : ""}">
+                      onclick="${paymentControlsDisabled ? "" : `cyclePaymentStatus(${safeId},${escapeAdminJsArgument(effectiveStatus)})`}"
+                      style="${paymentControlsDisabled ? "cursor:default;opacity:0.85;" : ""}">
                     ${isStaff ? "FREE (Staff)" : effectiveStatus === "half_paid" ? "HALF PAID" : effectiveStatus.toUpperCase()}
                 </span>
             </td>
@@ -178,7 +186,7 @@ window.cyclePaymentStatus = async (id, currentStatus) => {
   const map = {
     pending: "paid",
     half_paid: "paid",
-    unpaid: "half_paid",
+    unpaid: "paid",
   };
   const next = map[currentStatus || req.paymentStatus || "unpaid"] || "unpaid";
   const saved = await patchRequest(id, { paymentStatus: next });

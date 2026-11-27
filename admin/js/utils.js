@@ -172,7 +172,11 @@ async function patchRequest(id, update) {
     if (!response.ok) {
       console.error(
         `Could not update reservation ${id}:`,
-        result.message || response.statusText,
+        {
+          status: response.status,
+          message: result.message || response.statusText,
+          error: result.error,
+        },
       );
       return false;
     }
