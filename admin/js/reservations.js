@@ -708,7 +708,14 @@ async function saveManualReservation() {
         result.message || `Reservations API returned ${res.status}.`,
       );
     }
-    showToast("Manual reservation added successfully", "success");
+    const reservationCode = result.request?.reservationCode;
+    if (!reservationCode) {
+      throw new Error("The server did not return a reservation number.");
+    }
+    showToast(
+      `Manual reservation added. Reservation number: ${reservationCode}`,
+      "success",
+    );
   } catch (error) {
     showToast(`Failed to save reservation: ${error.message}`, "error");
     return;

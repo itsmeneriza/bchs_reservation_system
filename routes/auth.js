@@ -16,6 +16,7 @@ function buildSessionToken(user) {
     const payload = {
         sub: user?.id || user?.staff_id || user?.mobile_number || user?.email || 'guest',
         isStaff: Boolean(user?.isStaff),
+        mobile_number: user?.mobile_number || null,
         role: 'user',
         issuedAt: Date.now(),
         expiresAt: Date.now() + 1000 * 60 * 60 * 12,

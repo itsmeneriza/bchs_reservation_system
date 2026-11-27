@@ -141,6 +141,7 @@ export function isTimeSlotBooked(
 
   return reservations.some((reservation) => {
     if (excludeId && reservation.id === excludeId) return false;
+    if (reservation.status === "pending") return false;
     if (reservation.isSchoolEvent === true) return true;
     // If the whole day is blocked, every slot is booked
     if (reservation.status === "blocked" && reservation.isFullDayBlock)
@@ -203,6 +204,7 @@ export function findConflict(
   const relevant = getReservationsForDate(facilityId, date);
   return relevant.find((reservation) => {
     if (excludeId && reservation.id === excludeId) return false;
+    if (reservation.status === "pending") return false;
     if (reservation.isSchoolEvent === true) return true;
     // Full day blocks conflict with everything
     if (reservation.status === "blocked" && reservation.isFullDayBlock)

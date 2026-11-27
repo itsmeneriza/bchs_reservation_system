@@ -473,6 +473,7 @@ function getCurrentIsoWeekRange() {
 }
 
 const ACTIVE_RESERVATION_STATUSES = ["pending", "approved", "accepted", "blocked"];
+const CONFLICTING_RESERVATION_STATUSES = ["approved", "accepted", "blocked"];
 
 function timeToMinutes(value) {
   if (typeof value !== "string") return null;
@@ -498,7 +499,7 @@ async function findReservationConflict(client, candidate, excludeCode = null) {
     .from("reservations")
     .select("reservation_code,facility_id,start_time,end_time")
     .eq("date", candidate.date)
-    .in("status", ACTIVE_RESERVATION_STATUSES);
+    .in("status", CONFLICTING_RESERVATION_STATUSES);
   if (excludeCode) query = query.neq("reservation_code", excludeCode);
 
   const { data, error } = await query;
@@ -534,22 +535,70 @@ function getRequestOwnerMatches(actor) {
   return [...matches].filter(Boolean);
 }
 
+function normalizePhilippineMobileNumber(value) {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  const localNumber = digits.startsWith("63")
+    ? `0${digits.slice(2)}`
+    : digits.length === 10 && digits.startsWith("9")
+      ? `0${digits}`
+      : digits;
+  return /^09\d{9}$/.test(localNumber) ? localNumber : null;
+}
+
 export function isRequestOwnedByUser(actor, row) {
   const matches = getRequestOwnerMatches(actor);
   if (!matches || !row) return false;
 
   const normalizedMatches = matches.map((value) => String(value));
+  const userPhoneMatches = [
+    actor.user?.phone,
+    actor.user?.mobile_number,
+  ]
+    .map(normalizePhilippineMobileNumber)
+    .filter(Boolean);
   const contactValue = row.contact ? String(row.contact) : "";
   const emailValue = row.email ? String(row.email) : "";
   const staffId = row.staff_id ? String(row.staff_id) : "";
   const guestId = row.guest_id ? String(row.guest_id) : "";
+  const normalizedContact = normalizePhilippineMobileNumber(row.contact);
 
   return (
     normalizedMatches.includes(staffId) ||
     normalizedMatches.includes(guestId) ||
     normalizedMatches.includes(contactValue) ||
-    normalizedMatches.includes(emailValue)
+    normalizedMatches.includes(emailValue) ||
+    (normalizedContact !== null && userPhoneMatches.includes(normalizedContact))
   );
+}
+
+async function resolveRequestOwnerActor(client, actor) {
+  const user = actor?.kind === "user" ? actor.user : null;
+  if (
+    !user ||
+    user.isStaff === true ||
+    user.mobile_number ||
+    user.phone ||
+    !user.sub
+  ) {
+    return actor;
+  }
+
+  const isUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      user.sub,
+    );
+  let guestQuery = client.from("guests").select("mobile_number");
+  guestQuery = isUuid
+    ? guestQuery.eq("id", user.sub)
+    : guestQuery.eq("mobile_number", user.sub);
+  const { data: guest, error } = await guestQuery.maybeSingle();
+  if (error) throw error;
+  if (!guest?.mobile_number) return actor;
+
+  return {
+    ...actor,
+    user: { ...user, mobile_number: guest.mobile_number },
+  };
 }
 
 export async function getRequestActor(req) {
@@ -630,8 +679,11 @@ export function createRequestsRouter() {
       );
 
       const isUserScoped = req.auth.kind === "user";
+      const ownerActor = isUserScoped
+        ? await resolveRequestOwnerActor(client, req.auth)
+        : req.auth;
       const visible = isUserScoped
-        ? currentRows.filter((row) => isRequestOwnedByUser(req.auth, row))
+        ? currentRows.filter((row) => isRequestOwnedByUser(ownerActor, row))
         : currentRows;
 
       return res.json({ requests: visible.map(fromDbReservation) });
@@ -674,7 +726,8 @@ export function createRequestsRouter() {
       if (!data) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
-      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, data)) {
+      const ownerActor = await resolveRequestOwnerActor(client, req.auth);
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(ownerActor, data)) {
         return res.status(403).json({ success: false, message: "You do not have access to this request." });
       }
       const current = await clearExpiredVisitSlot(client, data);
@@ -767,6 +820,22 @@ export function createRequestsRouter() {
       }
 
       const client = createServiceRoleSupabaseClient();
+      if (
+        req.auth.kind === "admin" &&
+        payload.source === "walk_in" &&
+        payload.user_type === "guest" &&
+        !payload.guest_id &&
+        /^09\d{9}$/.test(payload.contact)
+      ) {
+        const { data: guest, error: guestError } = await client
+          .from("guests")
+          .select("id")
+          .eq("mobile_number", payload.contact)
+          .maybeSingle();
+        if (guestError) throw guestError;
+        if (guest) payload.guest_id = guest.id;
+      }
+
       const conflict = await findReservationConflict(client, payload);
       if (conflict) {
         return res.status(409).json({
@@ -847,7 +916,8 @@ export function createRequestsRouter() {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
       const existing = await clearExpiredVisitSlot(client, found);
-      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
+      const ownerActor = await resolveRequestOwnerActor(client, req.auth);
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(ownerActor, existing)) {
         return res.status(403).json({ success: false, message: "You do not have permission to update this request." });
       }
 
@@ -1420,7 +1490,8 @@ export function createRequestsRouter() {
       if (!existing) {
         return res.status(404).json({ success: false, message: "Request not found." });
       }
-      if (req.auth.kind === "user" && !isRequestOwnedByUser(req.auth, existing)) {
+      const ownerActor = await resolveRequestOwnerActor(client, req.auth);
+      if (req.auth.kind === "user" && !isRequestOwnedByUser(ownerActor, existing)) {
         return res.status(403).json({ success: false, message: "You do not have permission to delete this request." });
       }
 

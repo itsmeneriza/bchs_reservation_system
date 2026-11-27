@@ -22,7 +22,7 @@ export class AuthService {
         const client = createServiceRoleSupabaseClient();
         const { data: guest, error } = await client
             .from('guests')
-            .select('id, full_name, email, mobile_number')
+            .select('id, mobile_number')
             .eq('mobile_number', phoneNumber)
             .maybeSingle();
 

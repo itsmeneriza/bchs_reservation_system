@@ -52,6 +52,16 @@ function getCalendarDaysUntil(dateValue) {
   return Math.round((eventDate.getTime() - todayDate) / 86400000);
 }
 
+function normalizePhilippineMobileNumber(value) {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  const localNumber = digits.startsWith("63")
+    ? `0${digits.slice(2)}`
+    : digits.length === 10 && digits.startsWith("9")
+      ? `0${digits}`
+      : digits;
+  return /^09\d{9}$/.test(localNumber) ? localNumber : null;
+}
+
 export class MyRequests {
   constructor() {
     this.container = document.getElementById("my-requests-container");
@@ -470,7 +480,15 @@ export class MyRequests {
 
     // Filter requests by user's contact number or email
     const userRequests = allRequests.filter((req) => {
-      if (state.user.phone && req.contact === state.user.phone) return true;
+      if (state.user.id && req.guestId === state.user.id) return true;
+      if (state.user.id && req.staffId === state.user.id) return true;
+      const userPhone = normalizePhilippineMobileNumber(state.user.phone);
+      if (
+        userPhone &&
+        normalizePhilippineMobileNumber(req.contact) === userPhone
+      ) {
+        return true;
+      }
       if (state.user.email && req.email === state.user.email) return true;
       return false;
     });
@@ -489,23 +507,6 @@ export class MyRequests {
       const workingDaysLeft = this.getWorkingDaysUntil(req.date);
       return workingDaysLeft >= 0 && workingDaysLeft <= 5;
     });
-
-    if (userRequests.length === 0) {
-      this.updateBadge(0);
-      this.container.innerHTML = `
-                <div style="text-align: center; padding: 3rem; color: #64748b;">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem;">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <p style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">No requests found</p>
-                    <p style="font-size: 0.875rem;">You haven't made any reservation requests yet.</p>
-                </div>
-            `;
-      return;
-    }
 
     const reminderBanners = paymentReminders
       .map((req) => {
@@ -543,7 +544,9 @@ export class MyRequests {
                 <p style="font-size: 0.8rem; color: #64748b;">Total: ${userRequests.length} request${userRequests.length > 1 ? "s" : ""}</p>
             </div>
             <div class="requests-landscape">
-                ${userRequests.map((req) => this.renderRequestCard(req)).join("")}
+                ${userRequests.length
+                  ? userRequests.map((req) => this.renderRequestCard(req)).join("")
+                  : '<p style="text-align:center;padding:2rem;color:#64748b;">No reservation requests are associated with your account.</p>'}
             </div>
         `;
 
@@ -838,7 +841,7 @@ export class MyRequests {
       : "";
 
     return `
-            <div style="background: white; border: ${isBlockForced ? "2px solid #f59e0b" : hasRescheduleOptions || hasVisitOptions ? "2px solid #93c5fd" : "1px solid #e2e8f0"}; border-radius: 0.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; font-size: 0.8rem; overflow: hidden;"
+            <div id="request-card-${req.id}" style="background: white; border: ${isBlockForced ? "2px solid #f59e0b" : hasRescheduleOptions || hasVisitOptions ? "2px solid #93c5fd" : "1px solid #e2e8f0"}; border-radius: 0.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; font-size: 0.8rem; overflow: hidden;"
                  onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(15, 23, 42, 0.12)'"
                  onmouseout="this.style.transform='';this.style.boxShadow=''">
 
@@ -852,6 +855,7 @@ export class MyRequests {
                             ${isPast ? '<span style="background:#f3f4f6;color:#6b7280;padding:0.15rem 0.5rem;border-radius:0.375rem;font-size:0.7rem;font-weight:600;">Past</span>' : ""}
                         </div>
                         <div style="display:flex;gap:1rem;font-size:0.72rem;color:#64748b;flex-wrap:wrap;">
+                            <span>Reservation no. ${escapeHtml(req.reservationCode || req.id)}</span>
                             <span>${formatDate(req.date)}</span>
                             <span>${convertTo12Hour(req.startTime)}–${convertTo12Hour(req.endTime)}</span>
                             <span>${req.attendees} pax</span>

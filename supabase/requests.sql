@@ -176,7 +176,7 @@ begin
     from public.reservations existing
     where existing.reservation_code <> new.reservation_code
       and existing.date = new.date
-      and existing.status in ('pending', 'approved', 'accepted', 'blocked')
+      and existing.status in ('approved', 'accepted', 'blocked')
       and (
         existing.facility_id is null
         or new.facility_id is null

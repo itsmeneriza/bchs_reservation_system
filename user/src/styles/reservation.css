@@ -145,6 +145,11 @@
   flex: 1;
 }
 
+.profile-actions > button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .switch {
   position: relative;
   display: inline-block;

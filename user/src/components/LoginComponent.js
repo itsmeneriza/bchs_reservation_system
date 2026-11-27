@@ -126,10 +126,12 @@ export class LoginHandler {
         if (typeEl) typeEl.textContent = state.user?.isStaff ? `BCHS Staff Member` : 'Community Member';
 
         const profileSection = document.getElementById('community-profile-section');
+        const isStaff = state.user?.isStaff === true;
         if (profileSection) {
-            profileSection.style.display = state.user?.isStaff ? 'none' : 'block';
+            profileSection.style.display = isStaff ? 'none' : 'block';
         }
-        if (!state.user?.isStaff) {
+        document.getElementById('save-profile-btn').style.display = isStaff ? 'none' : '';
+        if (!isStaff) {
             document.getElementById('profile-full-name').value = state.user?.name || '';
             document.getElementById('profile-email').value = state.user?.email || '';
             const phone = state.user?.phone || '';
@@ -233,10 +235,16 @@ export class LoginHandler {
         const errorEl = document.getElementById('profile-update-error');
         errorEl.style.display = 'none';
         const fullName = document.getElementById('profile-full-name').value.trim();
+        const email = document.getElementById('profile-email').value.trim();
         const rawPhone = document.getElementById('profile-phone').value.trim();
 
         if (!fullName || fullName.length > 120) {
             errorEl.textContent = 'Enter your name (up to 120 characters).';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+            errorEl.textContent = 'Enter a valid email address.';
             errorEl.style.display = 'block';
             return;
         }
@@ -246,10 +254,13 @@ export class LoginHandler {
             return;
         }
 
+        const saveButton = document.getElementById('save-profile-btn');
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
         try {
             const user = await updateGuestProfile({
                 fullName,
-                email: document.getElementById('profile-email').value.trim(),
+                email,
                 phone: normalizePHPhone(rawPhone),
             });
             setLoginState(true, user);
@@ -261,6 +272,9 @@ export class LoginHandler {
         } catch (error) {
             errorEl.textContent = error.message || 'Unable to update your profile. Please try again.';
             errorEl.style.display = 'block';
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Changes';
         }
     }
 
