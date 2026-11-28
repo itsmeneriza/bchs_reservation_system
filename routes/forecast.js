@@ -18,7 +18,7 @@ const FACILITIES = {
 };
 
 const ACTIVE_STATUSES = ["confirmed", "approved", "accepted", "completed"];
-const WEEK_LABELS = ["W1", "W2", "W3", "W4"];
+const WEEK_LABELS = ["W1", "W2", "W3", "W4", "W5"];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MICRO_WEEK_WEIGHTS = [0.4, 0.3, 0.2, 0.1];
 const MICRO_START_HOUR = 7;
@@ -144,11 +144,20 @@ function expandEvent(event, fromDate, throughDate) {
 }
 
 function getMacroWeekRange(year, monthIndex, weekNumber) {
-  const start = new Date(Date.UTC(year, monthIndex, 1));
-  start.setUTCDate(start.getUTCDate() - start.getUTCDay() + weekNumber * 7);
+  const firstOfMonth = new Date(Date.UTC(year, monthIndex, 1));
+  const firstWednesdayOffset = (3 - firstOfMonth.getUTCDay() + 7) % 7;
+  const start = new Date(firstOfMonth);
+  start.setUTCDate(1 + firstWednesdayOffset + weekNumber * 7 - 3);
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + 6);
   return { start, end };
+}
+
+function getMacroWeekCount(year, monthIndex) {
+  const firstOfMonth = new Date(Date.UTC(year, monthIndex, 1));
+  const firstWednesdayDay = 1 + ((3 - firstOfMonth.getUTCDay() + 7) % 7);
+  const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  return Math.floor((daysInMonth - firstWednesdayDay) / 7) + 1;
 }
 
 async function fetchAllRows(query) {
@@ -206,17 +215,21 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
   const start = dateParts(referenceDate) || dateParts(philippineDateString());
   const startMonth = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
   const forecastYears = [startMonth.getUTCFullYear() - 2, startMonth.getUTCFullYear() - 1, startMonth.getUTCFullYear()];
+  const historicalWeights = [0.15, 0.3, 0.55];
   const facilityActivity = activity.filter((entry) => entry.facilityId === facilityId);
   const macro = [];
 
-  for (let offset = 0; macro.length < 48; offset += 1) {
+  for (let offset = 0; offset < 12; offset += 1) {
     const forecastMonth = new Date(Date.UTC(startMonth.getUTCFullYear(), startMonth.getUTCMonth() + offset, 1));
     const monthIndex = forecastMonth.getUTCMonth();
     const month = MONTHS[monthIndex];
     const year = forecastMonth.getUTCFullYear();
-    for (const [weekNumber, weekLabel] of WEEK_LABELS.entries()) {
+    const weekCount = getMacroWeekCount(year, monthIndex);
+    for (let weekNumber = 0; weekNumber < weekCount; weekNumber += 1) {
+      const weekLabel = WEEK_LABELS[weekNumber];
       const forecastRange = getMacroWeekRange(year, monthIndex, weekNumber);
-      const observedByYear = forecastYears.map((observedYear) => {
+      const historicalPeriods = forecastYears.flatMap((observedYear, index) => {
+        if (getMacroWeekCount(observedYear, monthIndex) <= weekNumber) return [];
         const observedRange = getMacroWeekRange(observedYear, monthIndex, weekNumber);
         const hours = facilityActivity.reduce((total, entry) => {
           const date = dateParts(entry.date);
@@ -226,14 +239,24 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
             ? total + (entry.endMinute - entry.startMinute) / 60
             : total;
         }, 0);
-        return Math.min(100, (hours / 54) * 100);
+        return [{
+          utilization: Math.min(100, (hours / 54) * 100),
+          weight: historicalWeights[index],
+        }];
       });
+      const availableWeight = historicalPeriods.reduce((total, period) => total + period.weight, 0);
+      const historicalForecast = availableWeight > 0
+        ? historicalPeriods.reduce(
+          (total, period) => total + period.utilization * period.weight,
+          0,
+        ) / availableWeight
+        : 0;
       const adjustment = monthIndex === 3 || monthIndex === 4 ? -40 : monthIndex === 8 ? 15 : 0;
       const forecasted = Math.max(
         0,
         Math.min(
           100,
-          observedByYear[0] * 0.15 + observedByYear[1] * 0.3 + observedByYear[2] * 0.55 + adjustment,
+          historicalForecast + adjustment,
         ),
       );
       const observedHours = facilityActivity.reduce((total, entry) => {
@@ -264,7 +287,6 @@ function buildMacroForecast(activity, facilityId, referenceDate) {
             ? "Peak orientation and event season adjustment"
             : "Historical activity and live bookings",
       });
-      if (macro.length === 48) break;
     }
   }
   return macro;
@@ -469,6 +491,7 @@ export {
   buildMacroForecast,
   buildMicroForecast,
   expandEvent,
+  getMacroWeekCount,
   getMacroWeekRange,
   normalizeActivity,
 };

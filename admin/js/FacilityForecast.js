@@ -13,6 +13,7 @@ const MONTH_ABBREVIATIONS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 const MICRO_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MACRO_MONTHS_PER_PAGE = 3;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -84,15 +85,25 @@ function getCurrentWeekRange() {
   return `${format(sunday, { month: "short" })} ${sunday.getDate()}-${saturday.getDate()}, ${saturday.getFullYear()}`;
 }
 
+export function getVisibleMacroPeriods(macro, monthOffset) {
+  const monthLabels = [...new Set(macro.map((item) => item.monthLabel))];
+  const visibleMonthLabels = new Set(
+    monthLabels.slice(monthOffset, monthOffset + MACRO_MONTHS_PER_PAGE),
+  );
+  return macro.filter((item) => visibleMonthLabels.has(item.monthLabel));
+}
+
 function getMacroDateRange(item) {
-  const match = String(item.periodKey || "").match(/^([A-Za-z]{3})\s+(\d{4})\s+W([1-4])$/);
+  if (item.dateRange) return item.dateRange;
+  const match = String(item.periodKey || "").match(/^([A-Za-z]{3})\s+(\d{4})\s+W([1-5])$/);
   if (!match) return item.dateRange || "";
 
   const [, month, year, week] = match;
   const monthIndex = MONTH_ABBREVIATIONS.indexOf(month);
   if (monthIndex < 0) return item.dateRange || "";
   const start = new Date(Date.UTC(Number(year), monthIndex, 1));
-  start.setUTCDate(start.getUTCDate() - start.getUTCDay() + (Number(week) - 1) * 7);
+  const firstWednesdayOffset = (3 - start.getUTCDay() + 7) % 7;
+  start.setUTCDate(1 + firstWednesdayOffset + (Number(week) - 1) * 7 - 3);
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + 6);
   const startMonth = MONTH_ABBREVIATIONS[start.getUTCMonth()];
@@ -159,7 +170,7 @@ export class FacilityForecast {
     this.selectedFacilityId = "auditorium";
     this.referenceDate = todayAsDateString();
     this.forecast = null;
-    this.macroOffset = 0;
+    this.macroMonthOffset = 0;
     this.selectedMacroPeriodKey = null;
     this.facilityRequestId = 0;
     this.loadedFacilityId = this.selectedFacilityId;
@@ -175,7 +186,7 @@ export class FacilityForecast {
     const referenceDate = todayAsDateString();
     if (referenceDate === this.referenceDate) return false;
     this.referenceDate = referenceDate;
-    this.macroOffset = 0;
+    this.macroMonthOffset = 0;
     this.selectedMacroPeriodKey = null;
     return true;
   }
@@ -220,7 +231,7 @@ export class FacilityForecast {
     const facility = facilities.find(({ id }) => id === this.selectedFacilityId) || facilities[0];
     this.selectedFacilityId = facility.id;
     this.loadedFacilityId = facility.id;
-    const visibleMacro = macro.slice(this.macroOffset, this.macroOffset + 12);
+    const visibleMacro = getVisibleMacroPeriods(macro, this.macroMonthOffset);
     const selectedMacro = visibleMacro.find(
       ({ periodKey }) => periodKey === this.selectedMacroPeriodKey,
     ) || visibleMacro.find(
@@ -285,8 +296,9 @@ export class FacilityForecast {
   }
 
   getMacroLayoutHtml(facility, macro) {
-    const visibleMacro = macro.slice(this.macroOffset, this.macroOffset + 12);
+    const visibleMacro = getVisibleMacroPeriods(macro, this.macroMonthOffset);
     const monthLabels = [...new Set(visibleMacro.map((item) => item.monthLabel))];
+    const totalMonths = new Set(macro.map((item) => item.monthLabel)).size;
     const monthRange = monthLabels.length
       ? `${monthLabels[0]} – ${monthLabels[monthLabels.length - 1]}`
       : "12-month outlook";
@@ -309,7 +321,7 @@ export class FacilityForecast {
           <div class="macro-forecast-scroll">
             <div class="macro-chart">
               <div class="macro-y-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>
-              <div class="macro-forecast-grid">
+              <div class="macro-forecast-grid" style="--macro-week-count:${visibleMacro.length}">
                 ${visibleMacro.map((item) => {
                   const observed = item.isObserved === true || item.endDate < this.referenceDate;
                   const value = observed ? (item.observed_pct ?? 0) : item.forecasted_pct;
@@ -331,9 +343,9 @@ export class FacilityForecast {
             </div>
           </div>
           <div class="macro-forecast-toolbar">
-            <button type="button" class="macro-nav-button macro-nav-previous" aria-label="Show previous three months" ${this.macroOffset === 0 ? "disabled" : ""}>&lt;</button>
+            <button type="button" class="macro-nav-button macro-nav-previous" aria-label="Show previous three months" ${this.macroMonthOffset === 0 ? "disabled" : ""}>&lt;</button>
             <strong>${escapeHtml(monthRange)}</strong>
-            <button type="button" class="macro-nav-button macro-nav-next" aria-label="Show next three months" ${this.macroOffset + 12 >= macro.length ? "disabled" : ""}>&gt;</button>
+            <button type="button" class="macro-nav-button macro-nav-next" aria-label="Show next three months" ${this.macroMonthOffset + MACRO_MONTHS_PER_PAGE >= totalMonths ? "disabled" : ""}>&gt;</button>
           </div>
         </div>
         <aside class="macro-summary-panel">
@@ -370,7 +382,7 @@ export class FacilityForecast {
       this.updateReferenceDate();
       const requestId = ++this.facilityRequestId;
       this.selectedFacilityId = facilityId;
-      this.macroOffset = 0;
+      this.macroMonthOffset = 0;
       this.selectedMacroPeriodKey = null;
 
       this.container.querySelectorAll(".forecast-facility-button").forEach((facilityButton) => {
@@ -420,7 +432,7 @@ export class FacilityForecast {
     if (previousButton && previousButton.dataset.bound !== "true") {
       previousButton.dataset.bound = "true";
       previousButton.addEventListener("click", () => {
-      this.macroOffset = Math.max(0, this.macroOffset - 12);
+      this.macroMonthOffset = Math.max(0, this.macroMonthOffset - MACRO_MONTHS_PER_PAGE);
       const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
       this.refreshMacroForecast(facility);
       });
@@ -429,7 +441,11 @@ export class FacilityForecast {
     if (nextButton && nextButton.dataset.bound !== "true") {
       nextButton.dataset.bound = "true";
       nextButton.addEventListener("click", () => {
-      this.macroOffset = Math.min(this.forecast.macro.length - 12, this.macroOffset + 12);
+      const totalMonths = new Set(this.forecast.macro.map((item) => item.monthLabel)).size;
+      this.macroMonthOffset = Math.min(
+        Math.max(0, totalMonths - MACRO_MONTHS_PER_PAGE),
+        this.macroMonthOffset + MACRO_MONTHS_PER_PAGE,
+      );
       const facility = this.forecast.facilities.find(({ id }) => id === this.selectedFacilityId) || this.forecast.facilities[0];
       this.refreshMacroForecast(facility);
       });
